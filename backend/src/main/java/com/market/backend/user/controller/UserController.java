@@ -2,6 +2,7 @@ package com.market.backend.user.controller;
 
 import com.market.backend.user.dto.EmailCodeVerifyRequest;
 import com.market.backend.user.dto.EmailVerificationRequest;
+import com.market.backend.user.dto.LoginRequest;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.service.EmailVerificationService;
 import com.market.backend.user.service.UserService;
@@ -24,7 +25,7 @@ public class UserController {
 
         emailVerificationService.sendVerificationCode(request.getEmail());
 
-        return "인증번호 발송 완료";
+        return "\uC778\uC99D\uBC88\uD638 \uBC1C\uC1A1 \uC644\uB8CC";
     }
 
     @PostMapping("/email/verify")
@@ -32,7 +33,7 @@ public class UserController {
 
         emailVerificationService.verifyCode(request.getEmail(), request.getCode());
 
-        return "이메일 인증 완료";
+        return "\uC774\uBA54\uC77C \uC778\uC99D \uC644\uB8CC";
     }
 
     @PostMapping("/signup")
@@ -40,6 +41,14 @@ public class UserController {
 
         userService.signup(request);
 
-        return "회원가입 성공";
+        return "\uD68C\uC6D0\uAC00\uC785 \uC131\uACF5";
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest request) {
+
+        userService.login(request);
+
+        return "\uB85C\uADF8\uC778 \uC131\uACF5";
     }
 }
