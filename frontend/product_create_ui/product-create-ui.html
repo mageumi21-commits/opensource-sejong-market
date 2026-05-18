@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>상품 등록</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      background-color: #e9ecef;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      color: #222;
+    }
+
+    .phone {
+      width: 900px;
+      min-height: 100vh;
+      background-color: #fff;
+      position: relative;
+      overflow: visible;
+    }
+
+    .header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid #ff5057;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background-color: #ff5057;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .content {
+      padding-bottom: 0;
+    }
+
+    .section {
+      padding: 28px 34px;
+      border-bottom: 7px solid #f3f4f5;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .photo-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      margin-bottom: 18px;
+      padding-bottom: 6px;
+      min-height: 106px;
+      border-radius: 10px;
+      transition: 0.15s;
+    }
+
+    .photo-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .photo-row.drag-over {
+      background-color: #fff1f2;
+      outline: 2px dashed #ff5057;
+      padding: 8px;
+    }
+
+    .photo-add {
+      width: 96px;
+      height: 96px;
+      border-radius: 8px;
+      background-color: #f0f3f5;
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #c5ccd3;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .photo-add:hover {
+      background-color: #eef1f4;
+    }
+
+    .camera {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .photo-item {
+      width: 96px;
+      height: 96px;
+      border-radius: 8px;
+      background-color: #ddd;
+      flex: 0 0 auto;
+      position: relative;
+      overflow: visible;
+    }
+
+    .photo-item.active {
+      border: 2px solid #ff5057;
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .photo-remove {
+      position: absolute;
+      right: -7px;
+      top: -7px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background-color: white;
+      border: 1px solid #d8dde2;
+      color: #9ba1a8;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    .photo-remove:hover {
+      color: #ff5057;
+      border-color: #ff5057;
+    }
+
+    .upload-help {
+      margin-top: -8px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: #a0a7af;
+      font-weight: 700;
+    }
+
+    .info-list {
+      border-top: 1px solid #e3e7eb;
+    }
+
+    .info-row {
+      display: flex;
+      height: 54px;
+      border-bottom: 1px solid #e3e7eb;
+    }
+
+    .info-label {
+      width: 110px;
+      background-color: #f2f5f7;
+      display: flex;
+      align-items: center;
+      padding-left: 18px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #a6adb5;
+      flex-shrink: 0;
+    }
+
+    .info-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0 14px;
+      font-size: 15px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .info-input::placeholder {
+      color: #b2b8bf;
+      font-weight: 700;
+    }
+
+    .info-select {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0 14px;
+      font-size: 15px;
+      color: #333;
+      font-weight: 600;
+      background-color: white;
+    }
+
+    .price-input-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .price-input {
+      width: 100%;
+      padding-right: 38px;
+    }
+
+    .price-unit {
+      position: absolute;
+      right: 14px;
+      color: #333;
+      font-size: 15px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .method-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 0 14px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .method-box label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .method-box input {
+      accent-color: #ff5057;
+    }
+
+    .description-top {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .textarea-wrap {
+      height: 170px;
+      border: 1px solid #dfe4e8;
+      border-radius: 8px;
+      position: relative;
+      padding: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 16px;
+      font-family: inherit;
+      font-weight: 700;
+      color: #333;
+    }
+
+    textarea::placeholder {
+      color: #b2b8bf;
+      font-weight: 700;
+    }
+
+    .text-count {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #b5bbc2;
+    }
+
+    .sub-text {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #a0a7af;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .campus-map-wrap {
+      position: relative;
+      width: 100%;
+      margin-top: 18px;
+      border: 1px solid #dfe4e8;
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: #f5f5f5;
+    }
+
+    .campus-map {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .map-point {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      transform: translate(-50%, -50%);
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .map-point:hover {
+      outline: 4px solid rgba(255, 80, 87, 0.35);
+      background-color: rgba(255, 80, 87, 0.15);
+    }
+
+    .selected-pin {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background-color: #ff5057;
+      color: white;
+      font-size: 17px;
+      font-weight: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 6;
+      box-shadow: 0 0 0 5px rgba(255, 80, 87, 0.25);
+      pointer-events: none;
+    }
+
+    .selected-location-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 8px;
+      background-color: #f3f4f5;
+      font-size: 15px;
+      color: #555;
+    }
+
+    .selected-location-box strong {
+      color: #ff5057;
+    }
+
+    .bottom-bar {
+      height: 78px;
+      background-color: white;
+      border-top: 1px solid #e6e9ec;
+      padding: 14px 34px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 50px;
+      border: none;
+      border-radius: 8px;
+      background-color: #ff5057;
+      color: white;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background-color: #f0444b;
+    }
+
+    .submit-btn:disabled {
+      background-color: #c8c8c8;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        background-color: white;
+      }
+
+      .phone {
+        width: 100%;
+        min-height: 100vh;
+      }
+
+      .section {
+        padding: 24px 20px;
+      }
+
+      .bottom-bar {
+        padding: 14px 20px;
+      }
+
+      .header-title {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="phone">
+    <header class="header">
+      <h1 class="header-title">상품 등록</h1>
+    </header>
+
+    <main class="content">
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">상품 정보</h2>
+        </div>
+
+        <div class="photo-row" id="photoRow">
+          <label class="photo-add" id="photoAdd">
+            <input
+              type="file"
+              id="photoInput"
+              accept="image/*"
+              multiple
+              hidden
+            />
+            <div class="camera">📷</div>
+            <div><span id="photoCount">0</span>/10</div>
+          </label>
+        </div>
+
+        <p class="upload-help">
+          이미지를 클릭해서 선택하거나 이 영역에 드래그해서 추가할 수 있어요.
+        </p>
+
+        <div class="info-list">
+          <div class="info-row">
+            <div class="info-label">상품명</div>
+            <input
+              id="productName"
+              class="info-input"
+              type="text"
+              placeholder="상품명을 입력해 주세요."
+            />
+          </div>
+
+          <div class="info-row">
+            <div class="info-label">카테고리</div>
+            <select id="productCategory" class="info-select">
+              <option value="">카테고리를 선택해 주세요.</option>
+              <option value="전자기기">전자기기</option>
+              <option value="도서">도서</option>
+              <option value="의류">의류</option>
+              <option value="생활용품">생활용품</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+
+          <div class="info-row">
+            <div class="info-label">판매가</div>
+
+            <div class="price-input-wrap">
+              <input
+                id="productPrice"
+                class="info-input price-input"
+                type="text"
+                inputmode="numeric"
+                placeholder="가격을 입력해 주세요."
+              />
+              <span class="price-unit">원</span>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-label">수령 방식</div>
+            <div class="method-box">
+              <label>
+                <input type="radio" name="tradeMethod" value="직거래" />
+                직거래
+              </label>
+
+              <label>
+                <input type="radio" name="tradeMethod" value="택배" checked />
+                택배
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="description-top">
+          <h2 class="section-title">상품 설명</h2>
+        </div>
+
+        <div class="textarea-wrap">
+          <textarea
+            id="description"
+            maxlength="1000"
+            placeholder="상품 설명을 입력해 주세요."
+          ></textarea>
+          <span class="text-count"><span id="descCount">0</span>/1000</span>
+        </div>
+      </section>
+
+      <section class="section" id="directLocationSection" style="display: none;">
+        <h2 class="section-title">거래 위치</h2>
+        <p class="sub-text">직거래하고 싶은 캠퍼스 위치 번호를 선택해 주세요.</p>
+
+        <div class="campus-map-wrap">
+          <img src="sejong-map.png" alt="세종대학교 캠퍼스 지도" class="campus-map" />
+
+          <div id="selectedPin" class="selected-pin">1</div>
+
+          <button class="map-point" data-num="1" data-name="집현관(대학본부)" style="left:22.3%; top:33.3%;"></button>
+          <button class="map-point" data-num="2" data-name="대양홀" style="left:15.5%; top:55.5%;"></button>
+          <button class="map-point" data-num="3" data-name="모짜르트홀" style="left:10.7%; top:48.4%;"></button>
+          <button class="map-point" data-num="4" data-name="군자관" style="left:29.8%; top:43.5%;"></button>
+          <button class="map-point" data-num="5" data-name="광개토관" style="left:33.9%; top:26.2%;"></button>
+          <button class="map-point" data-num="6" data-name="이당관" style="left:44.5%; top:26.5%;"></button>
+          <button class="map-point" data-num="7" data-name="진관홀" style="left:49.9%; top:32.4%;"></button>
+          <button class="map-point" data-num="8" data-name="용덕관" style="left:56.2%; top:33.0%;"></button>
+          <button class="map-point" data-num="9" data-name="흥진구조실험센터" style="left:60.5%; top:28.8%;"></button>
+          <button class="map-point" data-num="10" data-name="세종초등학교" style="left:78.5%; top:24.8%;"></button>
+          <button class="map-point" data-num="11" data-name="미래교육원 별관" style="left:81.0%; top:33.9%;"></button>
+          <button class="map-point" data-num="12" data-name="세종초등학교 강당" style="left:77.4%; top:42.4%;"></button>
+          <button class="map-point" data-num="13" data-name="영실관" style="left:71.2%; top:34.6%;"></button>
+          <button class="map-point" data-num="14" data-name="충무관" style="left:66.7%; top:39.8%;"></button>
+          <button class="map-point" data-num="15" data-name="율곡관" style="left:62.9%; top:39.0%;"></button>
+          <button class="map-point" data-num="16" data-name="다산관" style="left:69.7%; top:50.8%;"></button>
+          <button class="map-point" data-num="17" data-name="주차빌딩" style="left:74.8%; top:53.5%;"></button>
+          <button class="map-point" data-num="18" data-name="동천관(학술정보원)" style="left:60.2%; top:49.3%;"></button>
+          <button class="map-point" data-num="19" data-name="우정당" style="left:62.5%; top:60.6%;"></button>
+          <button class="map-point" data-num="20" data-name="박물관" style="left:57.5%; top:69.6%;"></button>
+          <button class="map-point" data-num="21" data-name="아사달 연못" style="left:54.8%; top:67.0%;"></button>
+          <button class="map-point" data-num="22" data-name="대양 타워" style="left:51.3%; top:45.8%;"></button>
+          <button class="map-point" data-num="23" data-name="애지헌" style="left:44.8%; top:47.1%;"></button>
+          <button class="map-point" data-num="24" data-name="대양 AI 센터" style="left:47.8%; top:69.6%;"></button>
+          <button class="map-point" data-num="25" data-name="운동장" style="left:41.2%; top:73.7%;"></button>
+          <button class="map-point" data-num="26" data-name="세종관" style="left:37.3%; top:62.0%;"></button>
+          <button class="map-point" data-num="27" data-name="학생회관" style="left:32.9%; top:68.2%;"></button>
+          <button class="map-point" data-num="28" data-name="새날관" style="left:84.9%; top:10.3%;"></button>
+          <button class="map-point" data-num="29" data-name="무방관" style="left:88.6%; top:17.1%;"></button>
+        </div>
+
+        <div class="selected-location-box">
+          선택한 위치:
+          <strong id="selectedLocationText">아직 선택하지 않음</strong>
+        </div>
+
+        <input type="hidden" id="selectedLocationNumber" name="selectedLocationNumber" />
+        <input type="hidden" id="selectedLocationName" name="selectedLocationName" />
+      </section>
+    </main>
+
+    <div class="bottom-bar">
+      <button class="submit-btn" id="submitBtn">등록하기</button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================
+       지도 위치 선택
+    ========================= */
+    const points = document.querySelectorAll(".map-point");
+    const selectedPin = document.getElementById("selectedPin");
+    const selectedLocationText = document.getElementById("selectedLocationText");
+    const selectedLocationNumber = document.getElementById("selectedLocationNumber");
+    const selectedLocationName = document.getElementById("selectedLocationName");
+
+    points.forEach(point => {
+      point.addEventListener("click", () => {
+        const num = point.dataset.num;
+        const name = point.dataset.name;
+
+        selectedPin.style.left = point.style.left;
+        selectedPin.style.top = point.style.top;
+        selectedPin.textContent = num;
+        selectedPin.style.display = "flex";
+
+        selectedLocationText.textContent = `${num}번 ${name}`;
+        selectedLocationNumber.value = num;
+        selectedLocationName.value = name;
+      });
+    });
+
+    /* =========================
+       이미지 업로드 / 드래그앤드롭
+    ========================= */
+    const photoRow = document.getElementById("photoRow");
+    const photoInput = document.getElementById("photoInput");
+    const photoCount = document.getElementById("photoCount");
+
+    let selectedImages = [];
+
+    function updatePhotoCount() {
+      photoCount.textContent = selectedImages.length;
+    }
+
+    function createPhotoPreview(file) {
+      if (!file.type.startsWith("image/")) {
+        alert("이미지 파일만 업로드할 수 있어요.");
+        return;
+      }
+
+      if (selectedImages.length >= 10) {
+        alert("이미지는 최대 10장까지 등록할 수 있어요.");
+        return;
+      }
+
+      selectedImages.push(file);
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        const photoItem = document.createElement("div");
+        photoItem.className = "photo-item";
+
+        if (selectedImages.length === 1) {
+          photoItem.classList.add("active");
+        }
+
+        const img = document.createElement("img");
+        img.src = event.target.result;
+        img.alt = "상품 이미지";
+
+        const removeBtn = document.createElement("span");
+        removeBtn.className = "photo-remove";
+        removeBtn.textContent = "×";
+
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+
+          const index = selectedImages.indexOf(file);
+
+          if (index !== -1) {
+            selectedImages.splice(index, 1);
+          }
+
+          photoItem.remove();
+
+          const firstPhoto = photoRow.querySelector(".photo-item");
+          const activePhoto = photoRow.querySelector(".photo-item.active");
+
+          if (!activePhoto && firstPhoto) {
+            firstPhoto.classList.add("active");
+          }
+
+          updatePhotoCount();
+        });
+
+        photoItem.addEventListener("click", () => {
+          document.querySelectorAll(".photo-item").forEach(item => {
+            item.classList.remove("active");
+          });
+
+          photoItem.classList.add("active");
+        });
+
+        photoItem.appendChild(img);
+        photoItem.appendChild(removeBtn);
+        photoRow.appendChild(photoItem);
+
+        updatePhotoCount();
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    photoInput.addEventListener("change", function () {
+      const files = Array.from(photoInput.files);
+
+      files.forEach(file => {
+        createPhotoPreview(file);
+      });
+
+      photoInput.value = "";
+    });
+
+    photoRow.addEventListener("dragover", function (event) {
+      event.preventDefault();
+      photoRow.classList.add("drag-over");
+    });
+
+    photoRow.addEventListener("dragleave", function () {
+      photoRow.classList.remove("drag-over");
+    });
+
+    photoRow.addEventListener("drop", function (event) {
+      event.preventDefault();
+      photoRow.classList.remove("drag-over");
+
+      const files = Array.from(event.dataTransfer.files);
+
+      files.forEach(file => {
+        createPhotoPreview(file);
+      });
+    });
+
+    /* =========================
+       상품 설명 글자 수
+    ========================= */
+    const description = document.getElementById("description");
+    const descCount = document.getElementById("descCount");
+
+    description.addEventListener("input", () => {
+      descCount.textContent = description.value.length;
+    });
+
+    /* =========================
+       판매가 입력 처리
+       숫자만 입력 가능 + 자동으로 10,000 형식 표시
+
+       주의:
+       input 안에는 "원"을 넣지 않음.
+       "원"은 HTML의 span.price-unit으로 따로 보여줌.
+    ========================= */
+    const productPrice = document.getElementById("productPrice");
+
+    productPrice.addEventListener("input", () => {
+      let onlyNumber = productPrice.value.replace(/[^0-9]/g, "");
+
+      if (onlyNumber === "") {
+        productPrice.value = "";
+        return;
+      }
+
+      productPrice.value = Number(onlyNumber).toLocaleString("ko-KR");
+    });
+
+    /* =========================
+       수령 방식 선택
+       기본값: 택배
+       직거래 선택 시 지도 표시
+       택배 선택 시 지도 숨김
+    ========================= */
+    const tradeMethodRadios = document.querySelectorAll("input[name='tradeMethod']");
+    const directLocationSection = document.getElementById("directLocationSection");
+
+    tradeMethodRadios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        const selectedMethod = document.querySelector("input[name='tradeMethod']:checked").value;
+
+        if (selectedMethod === "직거래") {
+          directLocationSection.style.display = "block";
+        } else {
+          directLocationSection.style.display = "none";
+
+          selectedPin.style.display = "none";
+          selectedLocationText.textContent = "아직 선택하지 않음";
+          selectedLocationNumber.value = "";
+          selectedLocationName.value = "";
+        }
+      });
+    });
+
+    /* =========================
+       TODO: 백엔드 연결 위치
+       백엔드 개발자분은 이 부분을 보면 됩니다.
+    ========================= */
+    const submitBtn = document.getElementById("submitBtn");
+
+    submitBtn.addEventListener("click", async () => {
+      /*
+        TODO 1. 화면에서 유저가 입력한 값 가져오기
+
+        productNameValue          : 상품명
+        productCategoryValue      : 카테고리
+        productPriceValue         : 판매가, 숫자만 들어감
+        descriptionValue          : 상품 설명
+        tradeMethodValue          : 수령 방식, 직거래 또는 택배
+        selectedLocationNum       : 선택한 거래 위치 번호
+        selectedLocationNameValue : 선택한 거래 위치 이름
+        selectedImages            : 사용자가 등록한 이미지 파일 배열
+      */
+
+      const productNameValue = document.getElementById("productName").value;
+      const productCategoryValue = document.getElementById("productCategory").value;
+
+      // 화면에는 10,000으로 보이지만, 백엔드에는 10000처럼 숫자만 보내기
+      const productPriceText = document.getElementById("productPrice").value;
+      const productPriceValue = productPriceText.replace(/[^0-9]/g, "");
+
+      const descriptionValue = document.getElementById("description").value;
+      const tradeMethodValue = document.querySelector("input[name='tradeMethod']:checked").value;
+
+      const selectedLocationNum = document.getElementById("selectedLocationNumber").value;
+      const selectedLocationNameValue = document.getElementById("selectedLocationName").value;
+
+      /*
+        TODO 2. 간단한 입력 검사
+      */
+
+      if (productNameValue.trim() === "") {
+        alert("상품명을 입력해 주세요.");
+        return;
+      }
+
+      if (productCategoryValue.trim() === "") {
+        alert("카테고리를 선택해 주세요.");
+        return;
+      }
+
+      if (productPriceValue.trim() === "") {
+        alert("가격을 입력해 주세요.");
+        return;
+      }
+
+      if (descriptionValue.trim() === "") {
+        alert("상품 설명을 입력해 주세요.");
+        return;
+      }
+
+      if (tradeMethodValue === "직거래" && selectedLocationNum === "") {
+        alert("직거래 위치를 선택해 주세요.");
+        return;
+      }
+
+      /*
+        TODO 3. 백엔드로 보낼 데이터 만들기
+
+        이미지 파일이 포함되어 있으므로 FormData를 사용합니다.
+        백엔드에서는 multipart/form-data 형식으로 받으면 됩니다.
+      */
+
+      const formData = new FormData();
+
+      formData.append("productName", productNameValue);
+      formData.append("category", productCategoryValue);
+      formData.append("price", productPriceValue);
+      formData.append("description", descriptionValue);
+      formData.append("tradeMethod", tradeMethodValue);
+
+      if (tradeMethodValue === "직거래") {
+        formData.append("locationNumber", selectedLocationNum);
+        formData.append("locationName", selectedLocationNameValue);
+      }
+
+      selectedImages.forEach((imageFile) => {
+        formData.append("images", imageFile);
+      });
+
+      /*
+        TODO 4. 백엔드 API 주소 연결
+
+        아래 "/api/products" 부분을 실제 백엔드 주소로 바꾸면 됩니다.
+
+        예시:
+        fetch("http://localhost:8080/api/products", { ... })
+        fetch("/products", { ... })
+      */
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "등록 중...";
+
+        const response = await fetch("/api/products", {
+          method: "POST",
+          body: formData
+        });
+
+        /*
+          TODO 5. 백엔드 응답 처리
+        */
+
+        if (!response.ok) {
+          throw new Error("상품 등록 실패");
+        }
+
+        const result = await response.json();
+
+        console.log("백엔드 응답:", result);
+
+        alert("상품이 등록되었습니다.");
+
+        /*
+          TODO 6. 등록 성공 후 이동할 페이지가 있으면 여기에서 이동하면 됩니다.
+
+          예시:
+          location.href = "product-list.html";
+          location.href = `product-detail.html?id=${result.productId}`;
+        */
+
+      } catch (error) {
+        console.error(error);
+        alert("상품 등록 중 오류가 발생했습니다.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "등록하기";
+      }
+    });
+  </script>
+</body>
+</html>
