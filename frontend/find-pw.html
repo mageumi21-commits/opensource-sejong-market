@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>비밀번호 찾기 — 세종대학교 중고거래</title>
+    <link rel="stylesheet" href="common.css" />
+    <link rel="stylesheet" href="find.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-inner">
+        <div class="nav-logo">
+          <img
+            src="logo.png"
+            alt="세종대학교 로고"
+            class="nav-logo-img"
+            onerror="this.style.display = 'none'"
+          />
+          <span class="nav-logo-text">세종대학교 중고거래</span>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#">홈</a></li>
+          <li><a href="#">중고거래</a></li>
+          <li><a href="#">상품등록</a></li>
+          <li><a href="#">마이페이지</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="page">
+      <div class="card">
+        <!-- 헤더 -->
+        <div class="find-header">
+          <a href="login.html" class="back-link">
+            <i class="ti ti-arrow-left"></i> 로그인으로 돌아가기
+          </a>
+          <h1 class="find-title">비밀번호 찾기</h1>
+          <p class="find-sub">
+            가입한 이름과 이메일로 본인 확인 후 비밀번호를 알려드려요.
+          </p>
+        </div>
+
+        <!-- STEP 1: 본인 확인 -->
+        <div class="step-content active" id="pw-step1">
+          <div class="step-bar">
+            <div class="step active">
+              <div class="step-dot">1</div>
+              <span class="step-label">본인 확인</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+              <div class="step-dot">2</div>
+              <span class="step-label">이메일 인증</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+              <div class="step-dot">3</div>
+              <span class="step-label">비밀번호 확인</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="pwFindId">아이디 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="ti ti-user"></i>
+              <input type="text" id="pwFindId" placeholder="아이디 입력" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="pwFindName">이름 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="ti ti-user-circle"></i>
+              <input type="text" id="pwFindName" placeholder="실명 입력" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="pwFindEmail"
+              >학교 이메일 <span class="required">*</span></label
+            >
+            <div class="email-row">
+              <div class="input-wrap">
+                <i class="ti ti-mail"></i>
+                <input
+                  type="text"
+                  id="pwFindEmail"
+                  placeholder="학번 또는 아이디"
+                />
+              </div>
+              <div class="domain-tag">@sju.ac.kr</div>
+            </div>
+          </div>
+
+          <button class="primary-btn" onclick="pwGoStep2()">
+            <i class="ti ti-send"></i> 인증 코드 발송
+          </button>
+        </div>
+
+        <!-- STEP 2: 이메일 인증 -->
+        <div class="step-content" id="pw-step2">
+          <div class="step-bar">
+            <div class="step done">
+              <div class="step-dot"><i class="ti ti-check"></i></div>
+              <span class="step-label">본인 확인</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step active">
+              <div class="step-dot">2</div>
+              <span class="step-label">이메일 인증</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+              <div class="step-dot">3</div>
+              <span class="step-label">비밀번호 확인</span>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <i class="ti ti-mail-forward"></i>
+            <span id="sentEmailText"
+              >입력하신 이메일로 인증 코드를 발송했어요.</span
+            >
+          </div>
+
+          <div class="field">
+            <label for="pwCode"
+              >인증 코드 <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <i class="ti ti-key"></i>
+              <input
+                type="text"
+                id="pwCode"
+                placeholder="6자리 코드 입력"
+                maxlength="6"
+              />
+            </div>
+            <p class="hint">유효 시간: <span id="pwTimer">3:00</span></p>
+          </div>
+
+          <button class="primary-btn" onclick="pwGoStep3()">
+            <i class="ti ti-circle-check"></i> 인증 확인
+          </button>
+          <button class="text-btn" onclick="resendCode()">
+            <i class="ti ti-refresh"></i> 인증 코드 재발송
+          </button>
+        </div>
+
+        <!-- STEP 3: 비밀번호 표시 -->
+        <div class="step-content" id="pw-step3">
+          <div class="step-bar">
+            <div class="step done">
+              <div class="step-dot"><i class="ti ti-check"></i></div>
+              <span class="step-label">본인 확인</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step done">
+              <div class="step-dot"><i class="ti ti-check"></i></div>
+              <span class="step-label">이메일 인증</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step active">
+              <div class="step-dot">3</div>
+              <span class="step-label">비밀번호 확인</span>
+            </div>
+          </div>
+
+          <!-- 비밀번호 결과 박스 -->
+          <div class="pw-result-box">
+            <p class="pw-result-label">회원님의 비밀번호</p>
+            <div class="pw-display-row">
+              <span class="pw-value" id="foundPw">••••••••</span>
+              <button
+                class="pw-toggle-btn"
+                id="pwToggleBtn"
+                onclick="togglePwVisible()"
+              >
+                <i class="ti ti-eye" id="pwToggleIcon"></i>
+              </button>
+            </div>
+            <p class="pw-result-hint">
+              보안을 위해 비밀번호 확인 후 변경을 권장해요.
+            </p>
+          </div>
+
+          <div class="result-actions" style="margin-top: 1.25rem">
+            <a href="login.html" class="result-btn primary">로그인하기</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="find.js"></script>
+  </body>
+</html>

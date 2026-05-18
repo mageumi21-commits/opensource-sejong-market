@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회원가입 — 세종대학교 중고거래</title>
+    <link rel="stylesheet" href="common.css" />
+    <link rel="stylesheet" href="signup.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- 상단 네비게이션 -->
+    <nav class="navbar">
+      <div class="nav-inner">
+        <div class="nav-logo">
+          <img
+            src="logo.png"
+            alt="세종대학교 로고"
+            class="nav-logo-img"
+            onerror="this.style.display = 'none'"
+          />
+          <span class="nav-logo-text">세종대학교 중고거래</span>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#">홈</a></li>
+          <li><a href="#">중고거래</a></li>
+          <li><a href="#">상품등록</a></li>
+          <li><a href="#">마이페이지</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="page">
+      <div class="card">
+        <!-- 헤더 -->
+        <div class="signup-header">
+          <h1 class="signup-title">회원가입</h1>
+          <p class="signup-sub">
+            세종대 학생만 이용할 수 있어요. 학교 이메일로 인증해 주세요.
+          </p>
+        </div>
+
+        <!-- 진행 단계 표시 -->
+        <div class="step-bar">
+          <div class="step active" id="step1-dot">
+            <div class="step-dot">1</div>
+            <span class="step-label">이메일 인증</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step2-dot">
+            <div class="step-dot">2</div>
+            <span class="step-label">기본 정보</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step3-dot">
+            <div class="step-dot">3</div>
+            <span class="step-label">비밀번호</span>
+          </div>
+        </div>
+
+        <!-- STEP 1: 이메일 인증 -->
+        <div class="step-content active" id="step1">
+          <div class="section-label">학교 이메일 인증</div>
+
+          <div class="field">
+            <label for="emailId"
+              >학교 이메일 <span class="required">*</span></label
+            >
+            <div class="email-row">
+              <div class="input-wrap">
+                <i class="ti ti-mail"></i>
+                <input
+                  type="text"
+                  id="emailId"
+                  placeholder="학번 또는 아이디"
+                />
+              </div>
+              <div class="domain-tag">@sju.ac.kr</div>
+              <button class="action-btn" id="verifyBtn" disabled>인증</button>
+            </div>
+            <span class="hint" id="verifyHint" style="display: none"
+              >인증 코드를 이메일로 보내드려요.</span
+            >
+            <span class="badge-verified" id="verifiedBadge">
+              <i class="ti ti-circle-check"></i> 인증 완료
+            </span>
+          </div>
+
+          <div class="field" id="codeField" style="display: none">
+            <label for="codeInput"
+              >인증 코드 <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <i class="ti ti-key"></i>
+              <input
+                type="text"
+                id="codeInput"
+                placeholder="6자리 코드 입력"
+                maxlength="6"
+              />
+            </div>
+            <p class="hint">유효 시간: <span id="timer">3:00</span></p>
+          </div>
+
+          <button class="next-btn" id="nextStep1" disabled onclick="goStep(2)">
+            다음 <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- STEP 2: 기본 정보 -->
+        <div class="step-content" id="step2">
+          <div class="section-label">기본 정보 입력</div>
+
+          <div class="field">
+            <label for="name">이름 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="ti ti-user"></i>
+              <input type="text" id="name" placeholder="실명 입력" />
+            </div>
+            <span class="error-msg" id="nameErr">이름을 입력해 주세요.</span>
+          </div>
+
+          <div class="field">
+            <label for="studentId">학번 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="ti ti-id-badge"></i>
+              <input
+                type="text"
+                id="studentId"
+                placeholder="예: 23011234"
+                maxlength="8"
+              />
+            </div>
+            <span class="error-msg" id="studentIdErr"
+              >8자리 학번을 입력해 주세요.</span
+            >
+          </div>
+
+          <div class="dept-row">
+            <div class="field">
+              <label for="college">단과대학</label>
+              <select id="college">
+                <option value="">선택</option>
+                <option>공과대학</option>
+                <option>인공지능융합대학</option>
+                <option>경영경제대학</option>
+                <option>인문과학대학</option>
+                <option>자연과학대학</option>
+                <option>사회과학대학</option>
+                <option>생명과학대학</option>
+                <option>호텔관광대학</option>
+                <option>예체능대학</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="dept">학과</label>
+              <select id="dept">
+                <option value="">선택</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="back-btn" onclick="goStep(1)">
+              <i class="ti ti-arrow-left"></i> 이전
+            </button>
+            <button class="next-btn flex1" onclick="goStep(3)">
+              다음 <i class="ti ti-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: 비밀번호 + 약관 -->
+        <div class="step-content" id="step3">
+          <div class="section-label">비밀번호 설정</div>
+
+          <div class="field">
+            <label for="pw">비밀번호 <span class="required">*</span></label>
+            <div class="input-wrap">
+              <i class="ti ti-lock"></i>
+              <input
+                type="password"
+                id="pw"
+                placeholder="8자 이상, 영문+숫자+특수문자"
+              />
+            </div>
+            <div class="strength-bar">
+              <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <p class="strength-label" id="strengthLabel"></p>
+            <span class="error-msg" id="pwErr"
+              >비밀번호 조건을 확인해 주세요.</span
+            >
+          </div>
+
+          <div class="field">
+            <label for="pwConfirm"
+              >비밀번호 확인 <span class="required">*</span></label
+            >
+            <div class="input-wrap">
+              <i class="ti ti-lock-check"></i>
+              <input
+                type="password"
+                id="pwConfirm"
+                placeholder="비밀번호 재입력"
+              />
+            </div>
+            <span class="error-msg" id="pwConfirmErr"
+              >비밀번호가 일치하지 않아요.</span
+            >
+          </div>
+
+          <hr class="divider" />
+
+          <div class="section-label">약관 동의</div>
+
+          <label class="terms-row terms-all">
+            <input type="checkbox" id="termAll" />
+            <span class="terms-text terms-bold">전체 동의</span>
+          </label>
+          <label class="terms-row">
+            <input type="checkbox" class="term" id="term1" />
+            <span class="terms-text"
+              ><a href="#">서비스 이용약관</a> 동의 <em>(필수)</em></span
+            >
+          </label>
+          <label class="terms-row">
+            <input type="checkbox" class="term" id="term2" />
+            <span class="terms-text"
+              ><a href="#">개인정보 처리방침</a> 동의 <em>(필수)</em></span
+            >
+          </label>
+          <label class="terms-row">
+            <input type="checkbox" class="term" id="term3" />
+            <span class="terms-text"
+              >마케팅 정보 수신 동의 <em>(선택)</em></span
+            >
+          </label>
+
+          <div class="btn-row">
+            <button class="back-btn" onclick="goStep(2)">
+              <i class="ti ti-arrow-left"></i> 이전
+            </button>
+            <button class="submit-btn flex1" onclick="handleSignup()">
+              <i class="ti ti-user-plus"></i> 회원가입 완료
+            </button>
+          </div>
+        </div>
+
+        <p class="login-link">
+          이미 계정이 있으신가요? <a href="login.html">로그인</a>
+        </p>
+      </div>
+    </main>
+
+    <script src="signup.js"></script>
+  </body>
+</html>
