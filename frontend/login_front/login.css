@@ -1,0 +1,247 @@
+/* ===========================
+   세종마켓 — 로그인 페이지 스타일 (login.css)
+   =========================== */
+
+.card {
+  max-width: 440px;
+  padding: 2.5rem 2.5rem 2rem;
+}
+
+/* ── 로고 영역 ── */
+.logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.seal-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;   /* 이미지 비율 유지 */
+  margin-bottom: 0.75rem;
+}
+
+.brand-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+/* ── 탭 바 ── */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  flex: 1;
+  height: 42px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--text-secondary);
+}
+
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ── 탭 콘텐츠 ── */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ── 인풋 그룹 (상하 묶음 스타일) ── */
+.input-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  height: 50px;
+  gap: 10px;
+}
+
+.input-row i {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.input-row input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.input-row input::placeholder {
+  color: var(--text-muted);
+}
+
+.divider-line {
+  height: 1px;
+  background: var(--border);
+  margin: 0 14px;
+}
+
+/* ── 옵션 행 ── */
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.keep-login {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.keep-login input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.ip-badge {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.ip-badge strong {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ── 로그인 버튼 ── */
+.login-btn {
+  width: 100%;
+  height: 48px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  margin-bottom: 1.25rem;
+}
+
+.login-btn:hover {
+  background: var(--primary-dark);
+}
+
+.login-btn:active {
+  transform: scale(0.99);
+}
+
+/* ── 하단 링크 ── */
+.bottom-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.bottom-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.bottom-links a:hover {
+  color: var(--primary);
+}
+
+.sep {
+  color: var(--border);
+}
+
+/* ── QR 탭 ── */
+.qr-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0 0.5rem;
+  gap: 1rem;
+}
+
+.qr-box {
+  width: 160px;
+  height: 160px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  color: var(--text-muted);
+}
+
+.qr-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.qr-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  margin-bottom: 0.5rem;
+}
+
+.qr-refresh-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
