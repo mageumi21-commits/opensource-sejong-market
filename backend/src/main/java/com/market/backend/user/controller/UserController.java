@@ -3,13 +3,16 @@ package com.market.backend.user.controller;
 import com.market.backend.user.dto.EmailCodeVerifyRequest;
 import com.market.backend.user.dto.EmailVerificationRequest;
 import com.market.backend.user.dto.LoginRequest;
+import com.market.backend.user.dto.MyPageResponse;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.service.EmailVerificationService;
 import com.market.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -50,5 +53,11 @@ public class UserController {
         userService.login(request);
 
         return "\uB85C\uADF8\uC778 \uC131\uACF5";
+    }
+
+    @GetMapping("/me")
+    public MyPageResponse getMyPage(@RequestParam String email) {
+
+        return userService.getMyPage(email);
     }
 }
