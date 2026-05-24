@@ -2,6 +2,8 @@
 //  세종마켓 — 로그인 스크립트 (login.js)
 // ===========================
 
+const API_BASE_URL = 'http://localhost:8080';
+
 // ── 탭 전환 ──
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
