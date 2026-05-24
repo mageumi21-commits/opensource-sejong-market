@@ -808,6 +808,22 @@
 
       const selectedLocationNum = document.getElementById("selectedLocationNumber").value;
       const selectedLocationNameValue = document.getElementById("selectedLocationName").value;
+      let sellerEmail = "";
+
+      try {
+        const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+
+        sellerEmail =
+          loginUser?.email ||
+          localStorage.getItem("loginEmail") ||
+          localStorage.getItem("userEmail") ||
+          "";
+      } catch (error) {
+        sellerEmail =
+          localStorage.getItem("loginEmail") ||
+          localStorage.getItem("userEmail") ||
+          "";
+      }
 
       /*
         TODO 2. 간단한 입력 검사
@@ -846,6 +862,10 @@
       */
 
       const formData = new FormData();
+
+      if (sellerEmail.trim() !== "") {
+        formData.append("sellerEmail", sellerEmail.trim());
+      }
 
       formData.append("productName", productNameValue);
       formData.append("category", productCategoryValue);
