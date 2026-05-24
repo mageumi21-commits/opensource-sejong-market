@@ -781,6 +781,35 @@
        백엔드 개발자분은 이 부분을 보면 됩니다.
     ========================= */
     const submitBtn = document.getElementById("submitBtn");
+    const PRODUCT_CREATE_SUCCESS_REDIRECT_URL = "";
+
+    function resetProductCreateForm() {
+      document.getElementById("productName").value = "";
+      document.getElementById("productCategory").value = "";
+      document.getElementById("productPrice").value = "";
+      document.getElementById("description").value = "";
+      descCount.textContent = "0";
+
+      selectedImages = [];
+      document.querySelectorAll(".photo-item").forEach(item => item.remove());
+      updatePhotoCount();
+
+      document.querySelector("input[name='tradeMethod'][value='택배']").checked = true;
+      directLocationSection.style.display = "none";
+      selectedPin.style.display = "none";
+      selectedLocationText.textContent = "아직 선택하지 않음";
+      selectedLocationNumber.value = "";
+      selectedLocationName.value = "";
+    }
+
+    function moveAfterProductCreate(result) {
+      if (!PRODUCT_CREATE_SUCCESS_REDIRECT_URL) {
+        return;
+      }
+
+      const productId = result.id || result.productId;
+      location.href = PRODUCT_CREATE_SUCCESS_REDIRECT_URL.replace("{id}", productId || "");
+    }
 
     submitBtn.addEventListener("click", async () => {
       /*
@@ -808,6 +837,22 @@
 
       const selectedLocationNum = document.getElementById("selectedLocationNumber").value;
       const selectedLocationNameValue = document.getElementById("selectedLocationName").value;
+      let sellerEmail = "";
+
+      try {
+        const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+
+        sellerEmail =
+          loginUser?.email ||
+          localStorage.getItem("loginEmail") ||
+          localStorage.getItem("userEmail") ||
+          "";
+      } catch (error) {
+        sellerEmail =
+          localStorage.getItem("loginEmail") ||
+          localStorage.getItem("userEmail") ||
+          "";
+      }
 
       /*
         TODO 2. 간단한 입력 검사
@@ -847,6 +892,10 @@
 
       const formData = new FormData();
 
+      if (sellerEmail.trim() !== "") {
+        formData.append("sellerEmail", sellerEmail.trim());
+      }
+
       formData.append("productName", productNameValue);
       formData.append("category", productCategoryValue);
       formData.append("price", productPriceValue);
@@ -876,7 +925,7 @@
         submitBtn.disabled = true;
         submitBtn.textContent = "등록 중...";
 
-        const response = await fetch("/api/products", {
+        const response = await fetch("http://localhost:8080/api/products", {
           method: "POST",
           body: formData
         });
@@ -893,15 +942,15 @@
 
         console.log("백엔드 응답:", result);
 
+        const createdProductId = result.id || result.productId;
+
+        if (createdProductId) {
+          localStorage.setItem("lastCreatedProductId", String(createdProductId));
+        }
+
         alert("상품이 등록되었습니다.");
-
-        /*
-          TODO 6. 등록 성공 후 이동할 페이지가 있으면 여기에서 이동하면 됩니다.
-
-          예시:
-          location.href = "product-list.html";
-          location.href = `product-detail.html?id=${result.productId}`;
-        */
+        resetProductCreateForm();
+        moveAfterProductCreate(result);
 
       } catch (error) {
         console.error(error);
