@@ -4,9 +4,9 @@
 
 본 프로젝트는 **GitHub Flow 전략**을 사용한다.
 
-모든 팀원은 먼저 원본 저장소(Upstream Repository)를 **Fork**한 뒤, 자신의 저장소를 로컬 환경에 Clone하여 작업한다.
+모든 팀원은 먼저 원본 저장소(Upstream Repository)를 **Clone** 한 뒤,
 
-각 작업은 반드시 **기능별 브랜치**를 생성하여 진행한다.
+가장 최신 master 브랜치에서  **기능별 브랜치**를 생성하여 작업을 진행한다.
 
 작업이 완료되면 원본 저장소의 `master` 브랜치로 Pull Request를 생성한다.
 
