@@ -28,8 +28,8 @@ public class MyProductResponse {
 
     public static MyProductResponse from(Product product) {
         return new MyProductResponse(
-                product.getTitle(),
-                product.getImageUrl(),
+                product.getProductName(),
+                product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0),
                 product.getPrice(),
                 product.getDescription(),
                 product.getCreatedAt()
