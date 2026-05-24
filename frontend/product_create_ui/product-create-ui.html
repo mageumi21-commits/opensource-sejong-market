@@ -876,7 +876,7 @@
         submitBtn.disabled = true;
         submitBtn.textContent = "등록 중...";
 
-        const response = await fetch("/api/products", {
+        const response = await fetch("http://localhost:8080/api/products", {
           method: "POST",
           body: formData
         });
