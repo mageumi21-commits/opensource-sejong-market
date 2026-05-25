@@ -4,6 +4,19 @@
 
 const API_BASE_URL = 'http://localhost:8080';
 
+function normalizeLoginEmail(id) {
+  if (id.includes('@')) {
+    return id;
+  }
+
+  return id + '@sju.ac.kr';
+}
+
+async function readErrorMessage(response) {
+  const message = await response.text();
+  return message || '요청 처리 중 오류가 발생했습니다.';
+}
+
 // ── 탭 전환 ──
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -22,9 +35,10 @@ tabs.forEach(function (tab) {
 });
 
 // ── 로그인 처리 ──
-function handleLogin() {
+async function handleLogin() {
   const id = document.getElementById('loginId').value.trim();
   const pw = document.getElementById('loginPw').value;
+  const loginBtn = document.querySelector('#tab-id .login-btn');
 
   if (!id) {
     alert('아이디 또는 이메일을 입력해 주세요.');
@@ -37,12 +51,46 @@ function handleLogin() {
     return;
   }
 
-  // 실제 서비스에서는 서버에 로그인 요청을 보내요
-  // 예: fetch('/api/login', { method: 'POST', body: JSON.stringify({ id, pw }) })
+  const email = normalizeLoginEmail(id);
 
-  // 데모: 성공 메시지 후 메인 페이지로 이동
-  alert('로그인 성공! 환영합니다 :)');
-  // window.location.href = 'index.html';
+  try {
+    if (loginBtn) {
+      loginBtn.disabled = true;
+      loginBtn.textContent = '로그인 중...';
+    }
+
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        password: pw
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    const loginUser = {
+      email: email
+    };
+
+    localStorage.setItem('loginUser', JSON.stringify(loginUser));
+    localStorage.setItem('loginEmail', email);
+
+    alert('로그인 성공! 환영합니다 :)');
+    // window.location.href = 'index.html';
+  } catch (error) {
+    alert(error.message || '로그인 중 오류가 발생했습니다.');
+  } finally {
+    if (loginBtn) {
+      loginBtn.disabled = false;
+      loginBtn.textContent = '로그인';
+    }
+  }
 }
 
 // ── 엔터 키로 로그인 ──
