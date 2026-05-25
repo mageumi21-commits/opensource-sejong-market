@@ -4,6 +4,15 @@
 
 const API_BASE_URL = 'http://localhost:8080';
 
+function getSignupEmail() {
+  return emailIdInput.value.trim() + '@sju.ac.kr';
+}
+
+async function readErrorMessage(response) {
+  const message = await response.text();
+  return message || '요청 처리 중 오류가 발생했습니다.';
+}
+
 // ── 단과대학별 학과 목록 ──
 const deptMap = {
   '공과대학': ['기계공학과', '우주항공시스템공학부', '건설환경공학과', '건축학과', '건축공학과', '에너지자원공학과', '양자원자력공학과', '국방AI융합시스템공학과', '환경융합공학과', '나노신소재공학과'],
@@ -76,22 +85,44 @@ emailIdInput.addEventListener('input', function () {
 });
 
 // 인증 버튼 클릭
-verifyBtn.addEventListener('click', function () {
+verifyBtn.addEventListener('click', async function () {
   const emailId = emailIdInput.value.trim();
   if (!emailId) return;
 
-  // 실제 서비스: fetch('/api/send-verify', { method: 'POST', body: JSON.stringify({ email: emailId + '@sju.ac.kr' }) })
+  const email = getSignupEmail();
 
-  codeField.style.display = 'block';
-  verifyBtn.textContent = '재발송';
-  verifyBtn.disabled = true;
+  try {
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = '발송 중';
 
-  startTimer();
+    const response = await fetch(`${API_BASE_URL}/users/email/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email
+      })
+    });
 
-  // 30초 뒤 재발송 활성화
-  setTimeout(function () {
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    codeField.style.display = 'block';
+    verifyBtn.textContent = '재발송';
+
+    startTimer();
+
+    // 30초 뒤 재발송 활성화
+    setTimeout(function () {
+      verifyBtn.disabled = false;
+    }, 30000);
+  } catch (error) {
+    alert(error.message || '인증번호 발송 중 오류가 발생했습니다.');
     verifyBtn.disabled = false;
-  }, 30000);
+    verifyBtn.textContent = '인증';
+  }
 });
 
 // 3분 타이머
@@ -112,18 +143,49 @@ function startTimer() {
   }, 1000);
 }
 
-// 인증 코드 6자리 입력 완료
-codeInput.addEventListener('input', function () {
-  if (this.value.length === 6) {
-    // 실제 서비스: 서버에 코드 검증 요청
-    verified = true;
-    clearInterval(timerInterval);
+function completeEmailVerification() {
+  verified = true;
+  clearInterval(timerInterval);
 
-    codeField.style.display = 'none';
-    verifyHint.style.display = 'none';
-    verifyBtn.style.display = 'none';
-    verifiedBadge.classList.add('show');
-    nextStep1Btn.disabled = false; // 다음 버튼 활성화
+  codeField.style.display = 'none';
+  verifyHint.style.display = 'none';
+  verifyBtn.style.display = 'none';
+  verifiedBadge.classList.add('show');
+  nextStep1Btn.disabled = false; // 다음 버튼 활성화
+}
+
+// 인증 코드 6자리 입력 완료
+codeInput.addEventListener('input', async function () {
+  if (this.value.length === 6) {
+    const email = getSignupEmail();
+    const code = this.value;
+
+    try {
+      codeInput.disabled = true;
+
+      const response = await fetch(`${API_BASE_URL}/users/email/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          code: code
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      completeEmailVerification();
+    } catch (error) {
+      alert(error.message || '인증번호 확인 중 오류가 발생했습니다.');
+      codeInput.value = '';
+      codeInput.focus();
+    } finally {
+      codeInput.disabled = false;
+    }
   }
 });
 
@@ -219,13 +281,14 @@ termChecks.forEach(function (check) {
 //  최종 회원가입 제출
 // ===========================
 
-function handleSignup() {
+async function handleSignup() {
   const name      = document.getElementById('name').value.trim();
   const studentId = document.getElementById('studentId').value;
   const pw        = pwInput.value;
   const pwConfirm = pwConfirmInput.value;
   const term1     = document.getElementById('term1').checked;
   const term2     = document.getElementById('term2').checked;
+  const submitBtn = document.querySelector('.submit-btn');
 
   if (!verified) { alert('이메일 인증을 완료해 주세요.'); return; }
   if (!name) { alert('이름을 입력해 주세요.'); return; }
@@ -234,8 +297,37 @@ function handleSignup() {
   if (pw !== pwConfirm) { alert('비밀번호가 일치하지 않아요.'); return; }
   if (!term1 || !term2) { alert('필수 약관에 동의해 주세요.'); return; }
 
-  // 실제 서비스: fetch('/api/signup', { method: 'POST', body: JSON.stringify({...}) })
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '가입 중...';
+    }
 
-  alert('회원가입이 완료됐어요! 환영합니다 :)');
-  window.location.href = 'login.html';
+    const response = await fetch(`${API_BASE_URL}/users/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: getSignupEmail(),
+        password: pw,
+        nickname: name,
+        studentId: studentId
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    alert('회원가입이 완료됐어요! 환영합니다 :)');
+    window.location.href = 'login.html';
+  } catch (error) {
+    alert(error.message || '회원가입 중 오류가 발생했습니다.');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="ti ti-user-plus"></i> 회원가입 완료';
+    }
+  }
 }
