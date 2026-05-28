@@ -1,0 +1,394 @@
+/* ===========================
+   세종마켓 — 마이페이지 스타일 (mypage.css)
+   =========================== */
+
+/* ── 레이아웃 ── */
+.mypage-layout {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem 3rem;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+/* ── 왼쪽 프로필 패널 ── */
+.profile-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 64px;
+}
+
+/* ── 아바타 ── */
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--primary);
+  margin-bottom: 0.875rem;
+}
+
+.profile-nickname {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.profile-dept {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+/* ── 정보 목록 ── */
+.profile-info-list {
+  width: 100%;
+  background: #f9f9f9;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.profile-info-row i {
+  font-size: 15px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── 통계 ── */
+.profile-stats {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--primary-light);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 0;
+  margin-bottom: 1.25rem;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 30px;
+  background: #f5b7b1;
+}
+
+/* ── 정보 수정 버튼 ── */
+.edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 38px;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.edit-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── 오른쪽 상품 패널 ── */
+.products-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.panel-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.register-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.register-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* ── 상품 카드 ── */
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.product-card {
+  display: flex;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  transition: box-shadow 0.15s;
+  position: relative;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* ── 상품 이미지 ── */
+.product-img-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.product-img-placeholder {
+  width: 90px;
+  height: 90px;
+  background: #f5f5f5;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #ccc;
+}
+
+.product-img-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+/* ── 상태 뱃지 ── */
+.product-status {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.product-status.on-sale {
+  background: var(--primary);
+  color: #fff;
+}
+
+.product-status.sold-out {
+  background: #888;
+  color: #fff;
+}
+
+/* ── 상품 정보 ── */
+.product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.product-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.product-meta i {
+  font-size: 13px;
+  margin-right: 2px;
+}
+
+/* ── 수정/삭제 버튼 ── */
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.action-icon-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.action-icon-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.action-icon-btn.danger:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+/* ── 빈 상태 ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  gap: 0.75rem;
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  font-size: 48px;
+  color: #ddd;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+
+.empty-register-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 38px;
+  padding: 0 16px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 0.5rem;
+  transition: background 0.15s;
+}
+
+.empty-register-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* ── 현재 페이지 네비 강조 ── */
+.nav-active {
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  border-bottom: 2px solid #fff;
+  padding-bottom: 2px;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .mypage-layout {
+    flex-direction: column;
+  }
+
+  .profile-panel {
+    width: 100%;
+    position: static;
+  }
+
+  .product-img-placeholder {
+    width: 70px;
+    height: 70px;
+  }
+}
