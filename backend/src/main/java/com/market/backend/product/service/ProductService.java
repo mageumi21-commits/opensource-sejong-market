@@ -1,6 +1,7 @@
 package com.market.backend.product.service;
 
 import com.market.backend.product.dto.ProductResponse;
+import com.market.backend.product.dto.ProductListResponse;
 import com.market.backend.product.entity.Product;
 import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.entity.User;
@@ -61,6 +62,14 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
         return ProductResponse.from(savedProduct);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductListResponse> getProducts() {
+        return productRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(ProductListResponse::from)
+                .toList();
     }
 
     private void validateProduct(
