@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>세종마켓 메인 페이지</title>
+
+    <style>
+      :root {
+        --primary: #d93025;
+        --primary-dark: #b71c1c;
+        --primary-light: #fdecec;
+        --text-primary: #1a1a1a;
+        --text-secondary: #555;
+        --text-muted: #999;
+        --border: #e0e0e0;
+        --bg-page: #ffffff;
+        --bg-card: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: Arial, "Noto Sans KR", sans-serif;
+        background: var(--bg-page);
+        color: var(--text-primary);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .top-banner {
+        width: 100%;
+        height: 48px;
+        background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 700;
+        position: relative;
+      }
+
+      .top-banner span {
+        margin-right: 8px;
+      }
+
+      .top-banner .close-btn {
+        position: absolute;
+        right: 28px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: white;
+        font-size: 28px;
+        font-weight: 300;
+      }
+
+      .header {
+        border-bottom: 1px solid #eeeeee;
+        background: white;
+      }
+
+      .header-inner {
+        width: 1180px;
+        margin: 0 auto;
+        padding: 18px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo-img {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .logo-text-wrap {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+      }
+
+      .logo-main {
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .logo-sub {
+        margin-top: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+      }
+
+      .search-form {
+        width: 520px;
+        height: 42px;
+        background: #f5f5f5;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px 0 18px;
+        gap: 10px;
+      }
+
+      .search-icon {
+        font-size: 18px;
+        color: #999999;
+      }
+
+      .search-form input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 14px;
+      }
+
+      .search-submit-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .login-btn {
+        border: 1px solid var(--primary);
+        padding: 13px 25px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 800;
+        background: var(--primary);
+        color: white;
+        transition: 0.18s;
+      }
+
+      .login-btn:hover {
+        background: var(--primary-dark);
+      }
+
+      .nav {
+        width: 1180px;
+        height: 70px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 34px;
+      }
+
+      .nav-left a {
+        font-size: 17px;
+        font-weight: 800;
+        transition: 0.18s;
+      }
+
+      .nav-left a:hover {
+        color: var(--primary);
+      }
+
+      .main {
+        width: 1180px;
+        margin: 22px auto 80px;
+        position: relative;
+      }
+
+      .hero {
+        width: 100%;
+        min-height: 290px;
+        background:
+          radial-gradient(circle at 84% 22%, rgba(217, 48, 37, 0.16), transparent 28%),
+          linear-gradient(135deg, #ffffff 0%, var(--primary-light) 100%);
+        border: 1px solid rgba(217, 48, 37, 0.13);
+        border-radius: 24px;
+        padding: 48px 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 8px 28px rgba(217, 48, 37, 0.08);
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        right: -80px;
+        top: -90px;
+        background: rgba(217, 48, 37, 0.08);
+        border-radius: 50%;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 250px;
+        bottom: -90px;
+        background: rgba(217, 48, 37, 0.06);
+        border-radius: 50%;
+      }
+
+      .hero-text {
+        position: relative;
+        z-index: 2;
+      }
+
+      .hero-label {
+        display: inline-block;
+        margin-bottom: 14px;
+        padding: 6px 13px;
+        border-radius: 999px;
+        background: white;
+        color: var(--primary);
+        border: 1px solid rgba(217, 48, 37, 0.18);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+
+      .hero-text h1 {
+        font-size: 42px;
+        line-height: 1.28;
+        letter-spacing: -1.5px;
+        margin-bottom: 18px;
+      }
+
+      .hero-text h1 strong {
+        color: var(--primary);
+      }
+
+      .hero-desc {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 30px;
+      }
+
+      .hero-desc .red {
+        color: var(--primary);
+        font-weight: 900;
+      }
+
+      .hero-btn {
+        min-width: 170px;
+        height: 54px;
+        padding: 0 28px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: white;
+        font-size: 17px;
+        font-weight: 800;
+        box-shadow: 0 8px 18px rgba(217, 48, 37, 0.25);
+        transition: 0.18s;
+      }
+
+      .hero-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      .hero-btn span {
+        margin-left: 8px;
+        font-size: 22px;
+      }
+
+      .hero-logo-box {
+        width: 260px;
+        height: 260px;
+        border-radius: 42px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 12px 30px rgba(217, 48, 37, 0.18);
+      }
+
+      .hero-logo-img {
+        width: 190px;
+        height: 190px;
+        object-fit: contain;
+      }
+
+      .quick-menu {
+        margin: 46px auto 58px;
+        display: flex;
+        justify-content: center;
+        gap: 34px;
+      }
+
+      .quick-item {
+        width: 110px;
+        text-align: center;
+      }
+
+      .quick-link {
+        display: block;
+      }
+
+      .quick-icon {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 12px;
+        background: #f8f8f8;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+        transition: 0.2s;
+      }
+
+      .quick-link:hover .quick-icon {
+        transform: translateY(-4px);
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+
+      .quick-item p {
+        font-size: 14px;
+        font-weight: 800;
+        color: #333333;
+      }
+
+      .product-section {
+        margin-top: 58px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: -1px;
+      }
+
+      .more-btn {
+        padding: 11px 20px;
+        border: 1px solid #bbbbbb;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 800;
+        color: #333333;
+        background: white;
+        transition: 0.18s;
+      }
+
+      .more-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 18px;
+      }
+
+      .product-card {
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+        border: 1px solid #eeeeee;
+        transition: 0.2s;
+        position: relative;
+      }
+
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      .product-img {
+        height: 190px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 64px;
+        background: #f1f1f1;
+      }
+
+      .product-img.blue {
+        background: linear-gradient(135deg, #d8ecff, #ffffff);
+      }
+
+      .product-img.gray {
+        background: linear-gradient(135deg, #dddddd, #f9f9f9);
+      }
+
+      .product-img.beige {
+        background: linear-gradient(135deg, #d8c7a7, #f5f0e5);
+      }
+
+      .product-img.red {
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+      }
+
+      .product-img.green {
+        background: linear-gradient(135deg, #e6f8df, #ffffff);
+      }
+
+      .product-img.pink {
+        background: linear-gradient(135deg, #fff0f3, #ffffff);
+      }
+
+      .product-real-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .heart {
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        color: white;
+        font-size: 27px;
+        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+        z-index: 5;
+      }
+
+      .care {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        background: var(--primary);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 900;
+        z-index: 5;
+      }
+
+      .product-info {
+        padding: 13px;
+      }
+
+      .product-name {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 9px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .product-price {
+        font-size: 18px;
+        font-weight: 900;
+        margin-bottom: 8px;
+      }
+
+      .product-meta {
+        font-size: 12px;
+        color: #777777;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .empty-message {
+        grid-column: 1 / -1;
+        padding: 50px 20px;
+        text-align: center;
+        border: 1px dashed #dddddd;
+        border-radius: 12px;
+        color: #777777;
+        font-size: 15px;
+        font-weight: 700;
+        background: #fafafa;
+      }
+
+      @media (max-width: 1280px) {
+        .header-inner,
+        .nav,
+        .main {
+          width: 95%;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .header-inner {
+          flex-wrap: wrap;
+          gap: 15px;
+        }
+
+        .search-form {
+          order: 3;
+          width: 100%;
+        }
+
+        .nav {
+          height: auto;
+          padding: 18px 0;
+          overflow-x: auto;
+        }
+
+        .nav-left {
+          gap: 22px;
+          white-space: nowrap;
+        }
+
+        .hero {
+          padding: 38px 28px;
+          flex-direction: column;
+          text-align: center;
+          gap: 30px;
+        }
+
+        .hero-text h1 {
+          font-size: 32px;
+        }
+
+        .hero-desc {
+          font-size: 16px;
+        }
+
+        .hero-logo-box {
+          width: 200px;
+          height: 200px;
+        }
+
+        .hero-logo-img {
+          width: 145px;
+          height: 145px;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .quick-menu {
+          flex-wrap: wrap;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .product-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-text h1 {
+          font-size: 26px;
+        }
+
+        .hero {
+          padding: 32px 22px;
+        }
+
+        .section-title {
+          font-size: 25px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="top-banner">
+      <span>🏫</span>
+      세종대학교 학생들을 위한 안전한 중고거래 플랫폼, 세종마켓!
+      <button class="close-btn" onclick="closeBanner()">×</button>
+    </div>
+
+    <header class="header">
+      <div class="header-inner">
+        <a href="index.html" class="logo">
+          <img src="../login_front/logo.png" alt="세종마켓 로고" class="logo-img" />
+          <div class="logo-text-wrap">
+            <span class="logo-main">세종마켓</span>
+            <span class="logo-sub">세종대학교 중고거래</span>
+          </div>
+        </a>
+
+        <form class="search-form" id="searchForm">
+          <span class="search-icon">⌕</span>
+          <input id="searchInput" type="text" placeholder="상품명을 검색해주세요" />
+          <button type="submit" class="search-submit-btn">›</button>
+        </form>
+
+        <button class="login-btn" onclick="location.href='../login_front/login.html'">
+          로그인/회원가입
+        </button>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="product-list.html">전체</a>
+          <a href="product-list.html?category=전자기기">전자기기</a>
+          <a href="product-list.html?category=도서">도서</a>
+          <a href="product-list.html?category=의류">의류</a>
+          <a href="product-list.html?category=생활용품">생활용품</a>
+          <a href="product-list.html?category=기타">기타</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section class="hero">
+        <div class="hero-text">
+          <p class="hero-label">SEJONG MARKET</p>
+          <h1>
+            세종대 중고거래 사이트에<br />
+            <strong>오신 것을 환영합니다</strong>
+          </h1>
+          <p class="hero-desc">
+            학생들을 위한 <span class="red">안전하고 편리한</span> 교내 중고거래
+          </p>
+          <button class="hero-btn" onclick="location.href='../product_create_ui/product-create-ui.html'">
+            상품 등록하기 <span>›</span>
+          </button>
+        </div>
+
+        <div class="hero-logo-box">
+          <img src="../login_front/logo.png" alt="세종마켓 로고" class="hero-logo-img" />
+        </div>
+      </section>
+
+      <section class="quick-menu">
+        <div class="quick-item">
+          <a href="#" class="quick-link">
+            <div class="quick-icon">♥</div>
+            <p>찜</p>
+          </a>
+        </div>
+
+        <div class="quick-item">
+          <a href="#" class="quick-link">
+            <div class="quick-icon">👤</div>
+            <p>마이페이지</p>
+          </a>
+        </div>
+
+        <div class="quick-item">
+          <a href="product-list.html?mode=latest" class="quick-link">
+            <div class="quick-icon">🛍️</div>
+            <p>최신상품</p>
+          </a>
+        </div>
+
+        <div class="quick-item">
+          <a href="../product_create_ui/product-create-ui.html" class="quick-link">
+            <div class="quick-icon">＋</div>
+            <p>상품등록</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="product-section">
+        <div class="section-head">
+          <h2 class="section-title">오늘의 추천 아이템</h2>
+          <a href="product-list.html?mode=recommend" class="more-btn">더 보기</a>
+        </div>
+
+        <div class="product-grid" id="recommendGrid">
+          <div class="empty-message">추천 상품을 불러오는 중입니다.</div>
+        </div>
+      </section>
+
+      <section class="product-section" id="latestProducts">
+        <div class="section-head">
+          <h2 class="section-title">최신상품</h2>
+          <a href="product-list.html?mode=latest" class="more-btn">더 보기</a>
+        </div>
+
+        <div class="product-grid" id="latestGrid">
+          <div class="empty-message">최신 상품을 불러오는 중입니다.</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const API_URLS = {
+        recommendProducts: "/api/products/recommendations?limit=5",
+        latestProducts: "/api/products/latest?limit=5",
+        imageBaseUrl: ""
+      };
+
+      const fallbackProducts = [
+        {
+          id: 1,
+          name: "맥북 노트북 판매합니다",
+          price: 650000,
+          category: "전자기기",
+          locationName: "세종대 학생회관",
+          createdAtText: "방금 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        },
+        {
+          id: 2,
+          name: "초록색 후리스 상태 좋아요",
+          price: 35000,
+          category: "의류",
+          locationName: "군자역 근처",
+          createdAtText: "3분 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        },
+        {
+          id: 3,
+          name: "에어팟 거의 새상품",
+          price: 85000,
+          category: "전자기기",
+          locationName: "대양AI센터",
+          createdAtText: "10분 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        },
+        {
+          id: 4,
+          name: "프로그래밍 입문 책",
+          price: 12000,
+          category: "도서",
+          locationName: "광개토관",
+          createdAtText: "20분 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        },
+        {
+          id: 5,
+          name: "세종대 후드티 판매",
+          price: 28000,
+          category: "의류",
+          locationName: "집현관",
+          createdAtText: "1시간 전",
+          imageUrl: "",
+          badgeText: "SEJONG",
+          liked: false
+        },
+        {
+          id: 6,
+          name: "데이터베이스 전공책",
+          price: 18000,
+          category: "도서",
+          locationName: "학술정보원",
+          createdAtText: "방금 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        },
+        {
+          id: 7,
+          name: "무선 키보드 상태 좋음",
+          price: 25000,
+          category: "전자기기",
+          locationName: "대양AI센터",
+          createdAtText: "5분 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        },
+        {
+          id: 8,
+          name: "스타벅스 텀블러",
+          price: 15000,
+          category: "생활용품",
+          locationName: "광개토관",
+          createdAtText: "20분 전",
+          imageUrl: "",
+          badgeText: "",
+          liked: false
+        }
+      ];
+
+      const searchForm = document.getElementById("searchForm");
+      const searchInput = document.getElementById("searchInput");
+      const recommendGrid = document.getElementById("recommendGrid");
+      const latestGrid = document.getElementById("latestGrid");
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadMainProducts();
+      });
+
+      searchForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const keyword = searchInput.value.trim();
+
+        if (keyword === "") {
+          location.href = "product-list.html";
+          return;
+        }
+
+        location.href = `product-list.html?keyword=${encodeURIComponent(keyword)}`;
+      });
+
+      async function loadMainProducts() {
+        const recommendProducts = await fetchProducts(
+          API_URLS.recommendProducts,
+          getRandomProducts(fallbackProducts, 5)
+        );
+
+        const latestProducts = await fetchProducts(
+          API_URLS.latestProducts,
+          getLatestFallbackProducts(fallbackProducts, 5)
+        );
+
+        renderProductCards(recommendGrid, recommendProducts);
+        renderProductCards(latestGrid, latestProducts);
+      }
+
+      async function fetchProducts(url, fallbackData) {
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              Accept: "application/json"
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error("상품 목록을 불러오지 못했습니다.");
+          }
+
+          const data = await response.json();
+
+          if (Array.isArray(data)) {
+            return data;
+          }
+
+          if (Array.isArray(data.products)) {
+            return data.products;
+          }
+
+          return fallbackData;
+        } catch (error) {
+          console.warn("백엔드 연결 전이거나 API 오류가 있어 임시 데이터를 표시합니다.", error);
+          return fallbackData;
+        }
+      }
+
+      function renderProductCards(container, products) {
+        container.innerHTML = "";
+
+        if (!products || products.length === 0) {
+          container.innerHTML = `
+            <div class="empty-message">
+              표시할 상품이 없습니다.
+            </div>
+          `;
+          return;
+        }
+
+        products.forEach(product => {
+          const card = document.createElement("article");
+          const imageHtml = createProductImageHtml(product);
+          const badgeHtml = product.badgeText
+            ? `<span class="care">${escapeHtml(product.badgeText)}</span>`
+            : "";
+
+          card.className = "product-card";
+
+          card.addEventListener("click", () => {
+            console.log("선택한 상품 ID:", product.id);
+          });
+
+          card.innerHTML = `
+            <div class="product-img ${getCategoryColorClass(product.category)}">
+              ${badgeHtml}
+              ${imageHtml}
+              <button class="heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+            </div>
+
+            <div class="product-info">
+              <p class="product-name">${escapeHtml(product.name || "상품명 없음")}</p>
+              <p class="product-price">${formatPrice(product.price)}</p>
+              <div class="product-meta">
+                <span>${escapeHtml(product.locationName || "위치 미정")}</span>
+                <span>${escapeHtml(product.createdAtText || "")}</span>
+              </div>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+      }
+
+      function createProductImageHtml(product) {
+        if (product.imageUrl) {
+          const fullImageUrl = getFullImageUrl(product.imageUrl);
+
+          return `
+            <img
+              src="${escapeHtml(fullImageUrl)}"
+              alt="${escapeHtml(product.name || "상품 이미지")}" 
+              class="product-real-img"
+            />
+          `;
+        }
+
+        return getCategoryEmoji(product.category);
+      }
+
+      function getFullImageUrl(imageUrl) {
+        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+          return imageUrl;
+        }
+
+        return API_URLS.imageBaseUrl + imageUrl;
+      }
+
+      function getCategoryEmoji(category) {
+        if (category === "전자기기") return "💻";
+        if (category === "도서") return "📘";
+        if (category === "의류") return "👕";
+        if (category === "생활용품") return "🥤";
+        return "📦";
+      }
+
+      function getCategoryColorClass(category) {
+        if (category === "전자기기") return "blue";
+        if (category === "도서") return "green";
+        if (category === "의류") return "red";
+        if (category === "생활용품") return "pink";
+        return "gray";
+      }
+
+      function formatPrice(price) {
+        const numberPrice = Number(price);
+
+        if (Number.isNaN(numberPrice)) {
+          return "가격 미정";
+        }
+
+        return numberPrice.toLocaleString("ko-KR") + "원";
+      }
+
+      function toggleHeart(button) {
+        if (button.textContent === "♡") {
+          button.textContent = "♥";
+          button.style.color = "#d93025";
+        } else {
+          button.textContent = "♡";
+          button.style.color = "white";
+        }
+      }
+
+      function closeBanner() {
+        document.querySelector(".top-banner").style.display = "none";
+      }
+
+      function getRandomProducts(products, count) {
+        return [...products].sort(() => Math.random() - 0.5).slice(0, count);
+      }
+
+      function getLatestFallbackProducts(products, count) {
+        return [...products].slice(-count).reverse();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    </script>
+  </body>
+</html>
