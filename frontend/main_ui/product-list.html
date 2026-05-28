@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    세종마켓 상품 목록
+  </title>
+  <style>
+    :root {
+      --primary: #D93025;
+      --primary-dark: #B71C1C;
+      --primary-light: #FDECEC;
+      --text-primary: #1a1a1a;
+      --text-secondary: #555;
+      --text-muted: #999;
+      --border: #e0e0e0;
+      --bg-page: #ffffff;
+      --bg-soft: #f7f8fa;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .top-banner {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      position: relative;
+    }
+
+    .top-banner span {
+      margin-right: 8px;
+    }
+
+    .top-banner .close-btn {
+      position: absolute;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 28px;
+      font-weight: 300;
+    }
+
+    .header {
+      border-bottom: 1px solid #eee;
+      background: white;
+    }
+
+    .header-inner {
+      width: 1180px;
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .logo-text-wrap {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .logo-main {
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .logo-sub {
+      margin-top: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .search-form {
+      width: 520px;
+      height: 42px;
+      background: #f5f5f5;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px 0 18px;
+      gap: 10px;
+    }
+
+    .search-icon {
+      font-size: 18px;
+      color: #999;
+    }
+
+    .search-form input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 14px;
+    }
+
+    .search-submit-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .login-btn {
+      border: 1px solid var(--primary);
+      padding: 13px 25px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      background: var(--primary);
+      color: white;
+      transition: 0.18s;
+    }
+
+    .login-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .nav {
+      width: 1180px;
+      height: 70px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+    }
+
+    .nav-left a {
+      font-size: 17px;
+      font-weight: 800;
+      transition: 0.18s;
+    }
+
+    .nav-left a:hover,
+    .nav-left a.active {
+      color: var(--primary);
+    }
+
+    .main {
+      width: 1180px;
+      margin: 34px auto 80px;
+    }
+
+    .list-title {
+      font-size: 31px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 30px;
+    }
+
+    .list-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 36px;
+      align-items: flex-start;
+    }
+
+    .filter-sidebar {
+      position: sticky;
+      top: 20px;
+      padding-right: 20px;
+    }
+
+    .filter-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .filter-title {
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .filter-reset {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .filter-group {
+      padding: 24px 0;
+      border-top: 1px solid #eee;
+    }
+
+    .filter-group-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin-bottom: 15px;
+    }
+
+    .filter-option {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #444;
+      cursor: pointer;
+    }
+
+    .filter-option input {
+      display: none;
+    }
+
+    .custom-radio {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #d8dde2;
+      border-radius: 50%;
+      background: white;
+      position: relative;
+    }
+
+    .filter-option input:checked+.custom-radio {
+      border-color: var(--primary);
+    }
+
+    .filter-option input:checked+.custom-radio::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .result-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .result-count {
+      font-size: 14px;
+      font-weight: 800;
+      color: #666;
+    }
+
+    .result-sort {
+      font-size: 14px;
+      font-weight: 800;
+      color: #666;
+      border: 1px solid #ddd;
+      border-radius: 999px;
+      padding: 8px 13px;
+      background: white;
+      outline: none;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px 18px;
+    }
+
+    .product-card {
+      border-radius: 10px;
+      overflow: hidden;
+      background: white;
+      border: 1px solid #eee;
+      transition: 0.2s;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .product-img {
+      height: 190px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      background: #f1f1f1;
+    }
+
+    .product-img.blue {
+      background: linear-gradient(135deg, #d8ecff, #ffffff);
+    }
+
+    .product-img.gray {
+      background: linear-gradient(135deg, #ddd, #f9f9f9);
+    }
+
+    .product-img.beige {
+      background: linear-gradient(135deg, #d8c7a7, #f5f0e5);
+    }
+
+    .product-img.red {
+      background: linear-gradient(135deg, var(--primary-light), #ffffff);
+    }
+
+    .product-img.green {
+      background: linear-gradient(135deg, #e6f8df, #ffffff);
+    }
+
+    .product-img.pink {
+      background: linear-gradient(135deg, #fff0f3, #ffffff);
+    }
+
+    .product-real-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .heart {
+      position: absolute;
+      right: 12px;
+      top: 10px;
+      color: white;
+      font-size: 27px;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+      z-index: 5;
+    }
+
+    .care {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      background: var(--primary);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 900;
+      z-index: 5;
+    }
+
+    .product-info {
+      padding: 13px;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 9px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .product-price {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: #777;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .empty-message {
+      grid-column: 1 / -1;
+      padding: 55px 20px;
+      text-align: center;
+      border: 1px dashed #ddd;
+      border-radius: 12px;
+      color: #777;
+      font-size: 15px;
+      font-weight: 700;
+      background: #fafafa;
+    }
+
+    @media (max-width: 1280px) {
+
+      .header-inner,
+      .nav,
+      .main {
+        width: 95%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .header-inner {
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .search-form {
+        order: 3;
+        width: 100%;
+      }
+
+      .nav {
+        height: auto;
+        padding: 18px 0;
+        overflow-x: auto;
+      }
+
+      .nav-left {
+        gap: 22px;
+        white-space: nowrap;
+      }
+
+      .list-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-sidebar {
+        position: static;
+        padding-right: 0;
+      }
+
+      .filter-group {
+        padding: 18px 0;
+      }
+
+      .result-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .list-title {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-banner">
+    <span>
+      🏫
+    </span>
+    세종대학교 학생들을 위한 안전한 중고거래 플랫폼, 세종마켓!
+    <button class="close-btn" onclick="closeBanner()">
+      ×
+    </button>
+  </div>
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <img src="../login_front/logo.png" alt="세종마켓 로고" class="logo-img" />
+        <div class="logo-text-wrap">
+          <span class="logo-main">
+            세종마켓
+          </span>
+          <span class="logo-sub">
+            세종대학교 중고거래
+          </span>
+        </div>
+      </a>
+      <form class="search-form" id="searchForm">
+        <span class="search-icon">
+          ⌕
+        </span>
+        <input id="searchInput" type="text" placeholder="상품명을 검색해주세요" />
+        <button type="submit" class="search-submit-btn">
+          ›
+        </button>
+      </form>
+      <button class="login-btn" onclick="location.href='../login_front/login.html'">
+        로그인/회원가입
+      </button>
+    </div>
+    <nav class="nav">
+      <div class="nav-left">
+        <a href="product-list.html" data-category="전체">
+          전체
+        </a>
+        <a href="product-list.html?category=전자기기" data-category="전자기기">
+          전자기기
+        </a>
+        <a href="product-list.html?category=도서" data-category="도서">
+          도서
+        </a>
+        <a href="product-list.html?category=의류" data-category="의류">
+          의류
+        </a>
+        <a href="product-list.html?category=생활용품" data-category="생활용품">
+          생활용품
+        </a>
+        <a href="product-list.html?category=기타" data-category="기타">
+          기타
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="main">
+    <h1 class="list-title" id="listTitle">
+      전체 상품
+    </h1>
+    <div class="list-layout">
+      <aside class="filter-sidebar">
+        <div class="filter-title-row">
+          <h2 class="filter-title">
+            필터
+          </h2>
+          <button class="filter-reset" onclick="resetFilter()">
+            초기화
+          </button>
+        </div>
+        <div class="filter-group">
+          <h3 class="filter-group-title">
+            카테고리
+          </h3>
+          <label class="filter-option">
+            <input type="radio" name="categoryFilter" value="전체" checked />
+            <span class="custom-radio">
+            </span>
+            전체
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="categoryFilter" value="전자기기" />
+            <span class="custom-radio">
+            </span>
+            전자기기
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="categoryFilter" value="도서" />
+            <span class="custom-radio">
+            </span>
+            도서
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="categoryFilter" value="의류" />
+            <span class="custom-radio">
+            </span>
+            의류
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="categoryFilter" value="생활용품" />
+            <span class="custom-radio">
+            </span>
+            생활용품
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="categoryFilter" value="기타" />
+            <span class="custom-radio">
+            </span>
+            기타
+          </label>
+        </div>
+      </aside>
+      <section>
+        <div class="result-top">
+          <p class="result-count" id="resultCount">
+            상품 0개
+          </p>
+          <select class="result-sort" id="sortSelect">
+            <option value="latest">
+              최신순
+            </option>
+            <option value="priceLow">
+              낮은 가격순
+            </option>
+            <option value="priceHigh">
+              높은 가격순
+            </option>
+          </select>
+        </div>
+        <div class="result-grid" id="resultGrid">
+          <div class="empty-message">
+            상품을 불러오는 중입니다.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>
+    /*
+      ========================= 백엔드 개발자는 여기서 연결하세요 =========================
+
+      이 파일(product-list.html)이 실제 검색/카테고리 목록을 처리하는 페이지입니다.
+
+      index.html에서 검색하면 아래처럼 이 페이지로 이동합니다.
+      - product-list.html?keyword=맥북
+
+      카테고리를 누르면 아래처럼 이동합니다.
+      - product-list.html?category=전자기기
+
+      검색어와 카테고리를 같이 쓰면 아래처럼 이동합니다.
+      - product-list.html?keyword=맥북&category=전자기기
+
+      이 페이지는 URL에서 keyword, category 값을 읽고,
+      buildApiUrl() 함수에서 백엔드 요청 주소를 자동으로 만듭니다.
+
+      백엔드에서 처리해야 하는 API 예시:
+      - GET /api/products
+      - GET /api/products?keyword=맥북
+      - GET /api/products?category=전자기기
+      - GET /api/products?keyword=맥북&category=전자기기
+      - GET /api/products?sort=latest
+      - GET /api/products?type=recommend
+
+      백엔드는 위 쿼리 파라미터를 기준으로 필터링된 상품 목록을 JSON으로 보내주면 됩니다.
+
+      응답 형식은 아래 둘 중 하나면 됩니다.
+
+      1) 배열로 바로 응답:
+      [
+        {
+          "id": 1,
+          "name": "맥북 노트북 판매합니다",
+          "price": 650000,
+          "category": "전자기기",
+          "locationName": "세종대 학생회관",
+          "createdAtText": "방금 전",
+          "imageUrl": "/uploads/products/macbook.png",
+          "badgeText": "",
+          "liked": false
+        }
+      ]
+
+      2) products 속성으로 감싸서 응답:
+      {
+        "products": [
+          {
+            "id": 1,
+            "name": "맥북 노트북 판매합니다",
+            "price": 650000,
+            "category": "전자기기",
+            "locationName": "세종대 학생회관",
+            "createdAtText": "방금 전",
+            "imageUrl": "/uploads/products/macbook.png",
+            "badgeText": "",
+            "liked": false
+          }
+        ]
+      }
+
+      백엔드가 따로 배포되어 있으면 아래 API_URLS.productList를 실제 주소로 바꾸면 됩니다.
+      예시:
+      productList: "https://백엔드주소/api/products"
+      imageBaseUrl: "https://백엔드주소"
+
+      GitHub Pages와 백엔드 주소가 다르면 백엔드에서 CORS 허용이 필요합니다.
+    */
+    const API_URLS = {
+      productList: "/api/products",
+      imageBaseUrl: ""
+    }
+      ;
+    const fallbackProducts = [
+      {
+        id: 1,
+        name: "맥북 노트북 판매합니다",
+        price: 650000,
+        category: "전자기기",
+        locationName: "세종대 학생회관",
+        createdAtText: "방금 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 2,
+        name: "초록색 후리스 상태 좋아요",
+        price: 35000,
+        category: "의류",
+        locationName: "군자역 근처",
+        createdAtText: "3분 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 3,
+        name: "에어팟 거의 새상품",
+        price: 85000,
+        category: "전자기기",
+        locationName: "대양AI센터",
+        createdAtText: "10분 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 4,
+        name: "프로그래밍 입문 책",
+        price: 12000,
+        category: "도서",
+        locationName: "광개토관",
+        createdAtText: "20분 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 5,
+        name: "세종대 후드티 판매",
+        price: 28000,
+        category: "의류",
+        locationName: "집현관",
+        createdAtText: "1시간 전",
+        imageUrl: "",
+        badgeText: "SEJONG",
+        liked: false
+      }
+      ,
+      {
+        id: 6,
+        name: "데이터베이스 전공책",
+        price: 18000,
+        category: "도서",
+        locationName: "학술정보원",
+        createdAtText: "방금 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 7,
+        name: "무선 키보드 상태 좋음",
+        price: 25000,
+        category: "전자기기",
+        locationName: "대양AI센터",
+        createdAtText: "5분 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 8,
+        name: "스타벅스 텀블러",
+        price: 15000,
+        category: "생활용품",
+        locationName: "광개토관",
+        createdAtText: "20분 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+      ,
+      {
+        id: 9,
+        name: "캠퍼스 노트 세트",
+        price: 5000,
+        category: "기타",
+        locationName: "군자관",
+        createdAtText: "1시간 전",
+        imageUrl: "",
+        badgeText: "",
+        liked: false
+      }
+    ];
+    const searchForm = document.getElementById("searchForm");
+    const searchInput = document.getElementById("searchInput");
+    const listTitle = document.getElementById("listTitle");
+    const resultGrid = document.getElementById("resultGrid");
+    const resultCount = document.getElementById("resultCount");
+    const sortSelect = document.getElementById("sortSelect");
+    let currentKeyword = "";
+    let currentCategory = "전체";
+    let currentMode = "";
+    let currentProducts = [
+    ];
+    document.addEventListener("DOMContentLoaded",
+      () => {
+        readUrlParams();
+        applyInitialUI();
+        loadProducts();
+        bindEvents();
+      }
+    );
+    function readUrlParams() {
+      const params = new URLSearchParams(location.search);
+      currentKeyword = params.get("keyword") || "";
+      currentCategory = params.get("category") || "전체";
+      currentMode = params.get("mode") || "";
+    }
+    function applyInitialUI() {
+      searchInput.value = currentKeyword;
+      updateCategoryChecked(currentCategory);
+      updateTopCategoryActive(currentCategory);
+      updateListTitle();
+    }
+    function bindEvents() {
+      searchForm.addEventListener("submit",
+        event => {
+          event.preventDefault();
+          const keyword = searchInput.value.trim();
+          const params = new URLSearchParams();
+          if (keyword !== "") {
+            params.set("keyword",
+              keyword);
+          }
+          if (currentCategory !== "전체") {
+            params.set("category",
+              currentCategory);
+          }
+          location.href = `product-list.html?${params.toString()}`;
+        }
+      );
+      const categoryRadios = document.querySelectorAll("input[name='categoryFilter']");
+      categoryRadios.forEach(radio => {
+        radio.addEventListener("change",
+          () => {
+            const selectedCategory = radio.value;
+            const params = new URLSearchParams();
+            if (currentKeyword !== "") {
+              params.set("keyword",
+                currentKeyword);
+            }
+            if (selectedCategory !== "전체") {
+              params.set("category",
+                selectedCategory);
+            }
+            location.href = `product-list.html?${params.toString()}`;
+          }
+        );
+      }
+      );
+      sortSelect.addEventListener("change",
+        () => {
+          renderProducts();
+        }
+      );
+    }
+    async function loadProducts() {
+      resultGrid.innerHTML = `<div class="empty-message">상품을 불러오는 중입니다.</div>`;
+      const url = buildApiUrl();
+      const fallbackData = buildFallbackData();
+      currentProducts = await fetchProducts(url,
+        fallbackData);
+      renderProducts();
+    }
+    /*
+      현재 URL의 keyword/category/mode 값을 백엔드 API 쿼리로 바꾸는 함수입니다.
+      예: product-list.html?keyword=맥북&category=전자기기
+      → /api/products?keyword=맥북&category=전자기기
+    */
+    function buildApiUrl() {
+      const params = new URLSearchParams();
+      if (currentKeyword !== "") {
+        params.set("keyword",
+          currentKeyword);
+      }
+      if (currentCategory !== "전체") {
+        params.set("category",
+          currentCategory);
+      }
+      if (currentMode === "latest") {
+        params.set("sort",
+          "latest");
+      }
+      if (currentMode === "recommend") {
+        params.set("type",
+          "recommend");
+      }
+      const queryString = params.toString();
+      if (queryString === "") {
+        return API_URLS.productList;
+      }
+      return `${API_URLS.productList}?${queryString}`;
+    }
+    async function fetchProducts(url,
+      fallbackData) {
+      try {
+        const response = await fetch(url,
+          {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            }
+          }
+        );
+        if (!response.ok) {
+          throw new Error("상품 목록을 불러오지 못했습니다.");
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          return data;
+        }
+        if (Array.isArray(data.products)) {
+          return data.products;
+        }
+        return fallbackData;
+      }
+      catch (error) {
+        console.warn("백엔드 연결 전이거나 API 오류가 있어 임시 데이터를 표시합니다.",
+          error);
+        return fallbackData;
+      }
+    }
+    function renderProducts() {
+      let products = [
+        ...currentProducts
+      ];
+      if (sortSelect.value === "priceLow") {
+        products.sort((a,
+          b) => Number(a.price) - Number(b.price));
+      }
+      if (sortSelect.value === "priceHigh") {
+        products.sort((a,
+          b) => Number(b.price) - Number(a.price));
+      }
+      resultCount.textContent = `상품 ${products.length}개`;
+      resultGrid.innerHTML = "";
+      if (products.length === 0) {
+        resultGrid.innerHTML = ` <div class="empty-message"> 표시할 상품이 없습니다. </div> `;
+        return;
+      }
+      products.forEach(product => {
+        const card = document.createElement("article");
+        card.className = "product-card";
+        const badgeHtml = product.badgeText
+          ? `<span class="care">${escapeHtml(product.badgeText)}</span>`
+          : "";
+
+        card.innerHTML = `
+  <div class="product-img ${getCategoryColorClass(product.category)}">
+    ${badgeHtml}
+    ${createProductImageHtml(product)}
+    <button class="heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+  </div>
+
+  <div class="product-info">
+    <p class="product-name">${escapeHtml(product.name || "상품명 없음")}</p>
+    <p class="product-price">${formatPrice(product.price)}</p>
+    <div class="product-meta">
+      <span>${escapeHtml(product.locationName || "위치 미정")}</span>
+      <span>${escapeHtml(product.createdAtText || "")}</span>
+    </div>
+        </div>
+      `;
+        resultGrid.appendChild(card);
+      }
+      );
+    }
+    function buildFallbackData() {
+      let result = [
+        ...fallbackProducts
+      ];
+      if (currentKeyword !== "") {
+        const lowerKeyword = currentKeyword.toLowerCase();
+        result = result.filter(product => {
+          return (product.name.toLowerCase().includes(lowerKeyword) || product.category.toLowerCase().includes(lowerKeyword) || product.locationName.toLowerCase().includes(lowerKeyword));
+        }
+        );
+      }
+      if (currentCategory !== "전체") {
+        result = result.filter(product => product.category === currentCategory);
+      }
+      if (currentMode === "latest") {
+        result = result.slice().reverse();
+      }
+      if (currentMode === "recommend") {
+        result = result.sort(() => Math.random() - 0.5);
+      }
+      return result;
+    }
+    function updateListTitle() {
+      if (currentMode === "latest") {
+        listTitle.textContent = "최신상품";
+        return;
+      }
+      if (currentMode === "recommend") {
+        listTitle.textContent = "오늘의 추천 아이템";
+        return;
+      }
+      if (currentKeyword !== "" && currentCategory !== "전체") {
+        listTitle.textContent = `"${currentKeyword}" 검색 결과 · ${currentCategory}`;
+        return;
+      }
+      if (currentKeyword !== "") {
+        listTitle.textContent = `"${currentKeyword}" 검색 결과`;
+        return;
+      }
+      if (currentCategory !== "전체") {
+        listTitle.textContent = `${currentCategory} 상품`;
+        return;
+      }
+      listTitle.textContent = "전체 상품";
+    }
+    function updateCategoryChecked(category) {
+      const targetRadio = document.querySelector(`input[name='categoryFilter'][value='${category}']`);
+      if (targetRadio) {
+        targetRadio.checked = true;
+      }
+    }
+    function updateTopCategoryActive(category) {
+      const links = document.querySelectorAll(".nav-left a");
+      links.forEach(link => {
+        if (link.dataset.category === category) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      }
+      );
+    }
+    function resetFilter() {
+      location.href = "product-list.html";
+    }
+    function createProductImageHtml(product) {
+      if (product.imageUrl) {
+        const fullImageUrl = getFullImageUrl(product.imageUrl);
+        return ` <img src="${escapeHtml(fullImageUrl)}" alt="${escapeHtml(product.name || "상품 이미지")}" class="product-real-img" /> `;
+      }
+      return getCategoryEmoji(product.category);
+    }
+    function getFullImageUrl(imageUrl) {
+      if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+        return imageUrl;
+      }
+      return API_URLS.imageBaseUrl + imageUrl;
+    }
+    function getCategoryEmoji(category) {
+      if (category === "전자기기") return "💻";
+      if (category === "도서") return "📘";
+      if (category === "의류") return "👕";
+      if (category === "생활용품") return "🥤";
+      return "📦";
+    }
+    function getCategoryColorClass(category) {
+      if (category === "전자기기") return "blue";
+      if (category === "도서") return "green";
+      if (category === "의류") return "red";
+      if (category === "생활용품") return "pink";
+      return "gray";
+    }
+    function formatPrice(price) {
+      const numberPrice = Number(price);
+      if (Number.isNaN(numberPrice)) {
+        return "가격 미정";
+      }
+      return numberPrice.toLocaleString("ko-KR") + "원";
+    }
+    function toggleHeart(button) {
+      if (button.textContent === "♡") {
+        button.textContent = "♥";
+        button.style.color = "#D93025";
+        /* 백엔드 개발자는 여기서 연결하세요. 찜 API가 생기면 여기서 POST 요청을 보내면 됩니다. 예시: POST /api/products/{productId}/likes */
+      } else {
+        button.textContent = "♡";
+        button.style.color = "white";
+        /* 백엔드 개발자는 여기서 연결하세요. 찜 취소 API가 생기면 여기서 DELETE 요청을 보내면 됩니다. 예시: DELETE /api/products/{productId}/likes */
+      }
+    }
+    function closeBanner() {
+      document.querySelector(".top-banner").style.display = "none";
+    }
+    function escapeHtml(value) {
+      return String(value).replaceAll("&",
+        "&amp;").replaceAll("<",
+          "&lt;").replaceAll(">",
+            "&gt;").replaceAll('"',
+              "&quot;").replaceAll("'",
+                "&#039;");
+    }
+  </script>
+</body>
+
+</html>
