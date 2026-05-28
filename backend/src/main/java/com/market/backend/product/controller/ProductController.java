@@ -5,8 +5,9 @@ import com.market.backend.product.dto.ProductResponse;
 import com.market.backend.product.service.ProductService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,11 @@ public class ProductController {
     @GetMapping
     public List<ProductListResponse> getProducts() {
         return productService.getProducts();
+    }
+
+    @GetMapping("/{productId}")
+    public ProductResponse getProduct(@PathVariable Long productId) {
+        return productService.getProduct(productId);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

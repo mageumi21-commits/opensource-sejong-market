@@ -30,6 +30,14 @@ public class ProductService {
     @Value("${product.image-upload-dir:uploads/products}")
     private String imageUploadDir;
 
+    @Transactional(readOnly = true)
+    public ProductResponse getProduct(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found."));
+
+        return ProductResponse.from(product);
+    }
+
     @Transactional
     public ProductResponse createProduct(
             String sellerEmail,

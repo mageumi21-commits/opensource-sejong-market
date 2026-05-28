@@ -1,0 +1,4 @@
+USE sejong_market;
+
+ALTER TABLE product
+ADD COLUMN IF NOT EXISTS updated_at datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6);

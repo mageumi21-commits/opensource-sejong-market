@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>상품 상세</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #eef1f4;
+      color: #20242a;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+    }
+
+    .page {
+      width: min(920px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      padding: 0 22px;
+      border-bottom: 1px solid #e8ecef;
+      background: #fff;
+    }
+
+    .back-btn {
+      border: 0;
+      background: transparent;
+      color: #5d6673;
+      font-size: 24px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .hero {
+      aspect-ratio: 16 / 10;
+      background: #edf0f2;
+      overflow: hidden;
+    }
+
+    .hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .placeholder {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #99a2ad;
+      font-weight: 800;
+    }
+
+    .content {
+      padding: 26px 28px 110px;
+    }
+
+    .seller {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid #edf0f2;
+    }
+
+    .seller-name {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .seller-email {
+      margin-top: 4px;
+      color: #7a8491;
+      font-size: 13px;
+    }
+
+    .meta-chip {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #f4f6f8;
+      color: #697382;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .title {
+      margin-top: 26px;
+      font-size: 28px;
+      line-height: 1.25;
+      font-weight: 900;
+    }
+
+    .price {
+      margin-top: 12px;
+      color: #ff5057;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .detail {
+      padding: 8px 11px;
+      border-radius: 8px;
+      background: #f5f7f9;
+      color: #5d6673;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .description {
+      margin-top: 28px;
+      color: #30363d;
+      font-size: 16px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      width: min(920px, 100%);
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      padding: 14px 22px;
+      border-top: 1px solid #e5e9ed;
+      background: #fff;
+    }
+
+    .chat-btn {
+      width: 100%;
+      height: 52px;
+      border: 0;
+      border-radius: 8px;
+      background: #ff5057;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .chat-btn:disabled {
+      background: #c8cdd3;
+      cursor: not-allowed;
+    }
+
+    .status {
+      padding: 44px 28px;
+      color: #697382;
+      font-weight: 800;
+    }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 22px 20px 104px;
+      }
+
+      .title {
+        font-size: 23px;
+      }
+
+      .price {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <button class="back-btn" type="button" id="backBtn" aria-label="뒤로가기">&lt;</button>
+      <h1 class="header-title">상품 상세</h1>
+      <span></span>
+    </header>
+
+    <main id="app">
+      <div class="status">상품 정보를 불러오는 중입니다.</div>
+    </main>
+
+    <div class="bottom-bar">
+      <button class="chat-btn" type="button" id="chatBtn" disabled>채팅하기</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = "http://localhost:8080";
+    const params = new URLSearchParams(location.search);
+    const productId = params.get("id") || localStorage.getItem("lastCreatedProductId");
+    const app = document.getElementById("app");
+    const chatBtn = document.getElementById("chatBtn");
+    let currentProduct = null;
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      history.back();
+    });
+
+    function getLoginEmail() {
+      try {
+        const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+        if (loginUser && loginUser.email) {
+          return loginUser.email;
+        }
+      } catch (error) {
+        return localStorage.getItem("loginEmail") || "";
+      }
+
+      return localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "";
+    }
+
+    function formatPrice(price) {
+      return Number(price || 0).toLocaleString("ko-KR") + "원";
+    }
+
+    function imageUrl(path) {
+      if (!path) {
+        return "";
+      }
+
+      if (path.startsWith("http")) {
+        return path;
+      }
+
+      return API_BASE_URL + path;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderProduct(product) {
+      const mainImage = product.imagePaths && product.imagePaths.length > 0
+        ? imageUrl(product.imagePaths[0])
+        : "";
+
+      const sellerName = escapeHtml(product.sellerNickname || "판매자");
+      const sellerEmail = escapeHtml(product.sellerEmail || "판매자 정보 없음");
+      const location = product.locationName
+        ? product.locationNumber + "번 " + product.locationName
+        : "위치 미선택";
+      const productName = escapeHtml(product.productName);
+      const tradeMethod = escapeHtml(product.tradeMethod || "거래 방식 미정");
+      const category = escapeHtml(product.category || "카테고리 없음");
+      const locationText = escapeHtml(location);
+      const description = escapeHtml(product.description || "");
+
+      app.innerHTML = `
+        <section class="hero">
+          ${mainImage ? `<img src="${mainImage}" alt="상품 이미지" />` : `<div class="placeholder">이미지 없음</div>`}
+        </section>
+        <section class="content">
+          <div class="seller">
+            <div>
+              <div class="seller-name">${sellerName}</div>
+              <div class="seller-email">${sellerEmail}</div>
+            </div>
+            <div class="meta-chip">${tradeMethod}</div>
+          </div>
+          <h2 class="title">${productName}</h2>
+          <div class="price">${formatPrice(product.price)}</div>
+          <div class="details">
+            <span class="detail">${category}</span>
+            <span class="detail">${locationText}</span>
+          </div>
+          <p class="description">${description}</p>
+        </section>
+      `;
+
+      const loginEmail = getLoginEmail();
+      if (!loginEmail) {
+        chatBtn.textContent = "로그인 후 채팅하기";
+        chatBtn.disabled = true;
+      } else if (loginEmail === product.sellerEmail) {
+        chatBtn.textContent = "내 상품입니다";
+        chatBtn.disabled = true;
+      } else if (!product.sellerEmail) {
+        chatBtn.textContent = "판매자 정보 없음";
+        chatBtn.disabled = true;
+      } else {
+        chatBtn.textContent = "판매자와 채팅하기";
+        chatBtn.disabled = false;
+      }
+    }
+
+    async function loadProduct() {
+      if (!productId) {
+        app.innerHTML = `<div class="status">상품 id가 없습니다.</div>`;
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        currentProduct = await response.json();
+        renderProduct(currentProduct);
+      } catch (error) {
+        app.innerHTML = `<div class="status">${error.message || "상품 정보를 불러오지 못했습니다."}</div>`;
+      }
+    }
+
+    chatBtn.addEventListener("click", async () => {
+      if (!currentProduct) {
+        return;
+      }
+
+      const buyerEmail = getLoginEmail();
+      if (!buyerEmail) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      try {
+        chatBtn.disabled = true;
+        chatBtn.textContent = "채팅방 여는 중";
+
+        const response = await fetch(`${API_BASE_URL}/api/chatrooms`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            productId: currentProduct.id,
+            buyerEmail
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        const chatRoom = await response.json();
+        location.href = `../chat_ui/chat.html?roomId=${chatRoom.id}`;
+      } catch (error) {
+        alert(error.message || "채팅방을 만들지 못했습니다.");
+        chatBtn.disabled = false;
+        chatBtn.textContent = "판매자와 채팅하기";
+      }
+    });
+
+    loadProduct();
+  </script>
+</body>
+</html>
