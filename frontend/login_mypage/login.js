@@ -2,6 +2,8 @@
 //  세종마켓 — 로그인 스크립트 (login.js)
 // ===========================
 
+const API_BASE_URL = 'http://localhost:8080';
+
 // ── 탭 전환 ──
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -20,7 +22,7 @@ tabs.forEach(function (tab) {
 });
 
 // ── 로그인 처리 ──
-function handleLogin() {
+async function handleLogin() {
   const id = document.getElementById('loginId').value.trim();
   const pw = document.getElementById('loginPw').value;
 
@@ -35,12 +37,56 @@ function handleLogin() {
     return;
   }
 
-  // 실제 서비스에서는 서버에 로그인 요청을 보내요
-  // 예: fetch('/api/login', { method: 'POST', body: JSON.stringify({ id, pw }) })
+  const email = normalizeEmail(id);
+  const loginBtn = document.querySelector('#tab-id .login-btn');
 
-  // 데모: 성공 메시지 후 메인 페이지로 이동
- window.location.href = 'mypage.html';
-  // window.location.href = 'index.html';
+  try {
+    loginBtn.disabled = true;
+    loginBtn.textContent = '로그인 중...';
+
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email,
+        password: pw
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    localStorage.setItem('loginUser', JSON.stringify({ email }));
+    localStorage.setItem('loginEmail', email);
+
+    alert('로그인 성공!');
+    window.location.href = 'mypage.html';
+  } catch (error) {
+    alert(error.message || '로그인에 실패했습니다.');
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = '로그인';
+  }
+}
+
+function handleStudentLogin() {
+  alert('학번 로그인은 아직 백엔드 API가 없어 이메일 로그인으로 이용해 주세요.');
+}
+
+function normalizeEmail(id) {
+  if (id.includes('@')) {
+    return id;
+  }
+
+  return `${id}@sju.ac.kr`;
+}
+
+async function readErrorMessage(response) {
+  const text = await response.text();
+  return text || '요청 처리 중 오류가 발생했습니다.';
 }
 
 // ── 엔터 키로 로그인 ──
