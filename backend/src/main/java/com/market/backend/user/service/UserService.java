@@ -1,16 +1,22 @@
 package com.market.backend.user.service;
 
+import com.market.backend.product.entity.Product;
+import com.market.backend.product.repository.ProductRepository;
+import com.market.backend.user.dto.FindIdRequest;
+import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
 import com.market.backend.user.dto.MyPageResponse;
+import com.market.backend.user.dto.PasswordFindCodeSendRequest;
+import com.market.backend.user.dto.PasswordFindResponse;
+import com.market.backend.user.dto.PasswordFindVerifyRequest;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.entity.User;
 import com.market.backend.user.repository.UserRepository;
-import com.market.backend.product.entity.Product;
-import com.market.backend.product.repository.ProductRepository;
+import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +56,68 @@ public class UserService {
         List<Product> products = productRepository.findBySellerOrderByCreatedAtDesc(user);
 
         return MyPageResponse.of(user, products);
+    }
+
+    public FindIdResponse findId(FindIdRequest request) {
+        String nickname = requireText(request.getNickname(), "이름을 입력해주세요.");
+
+        if (StringUtils.hasText(request.getStudentId())) {
+            User user = userRepository.findByNicknameAndStudentId(nickname, request.getStudentId().trim())
+                    .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보를 찾을 수 없습니다."));
+            return FindIdResponse.from(user);
+        }
+
+        if (StringUtils.hasText(request.getEmail())) {
+            String email = normalizeSejongEmail(request.getEmail());
+            User user = userRepository.findByNicknameAndEmail(nickname, email)
+                    .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보를 찾을 수 없습니다."));
+            return FindIdResponse.from(user);
+        }
+
+        throw new IllegalArgumentException("학번 또는 이메일을 입력해주세요.");
+    }
+
+    public void sendPasswordFindCode(PasswordFindCodeSendRequest request) {
+        User user = findUserForPassword(request.getId(), request.getNickname(), request.getEmail());
+        emailVerificationService.sendVerificationCode(user.getEmail());
+    }
+
+    public PasswordFindResponse verifyPasswordFindCode(PasswordFindVerifyRequest request) {
+        User user = findUserForPassword(request.getId(), request.getNickname(), request.getEmail());
+        emailVerificationService.verifyCode(user.getEmail(), request.getCode());
+        emailVerificationService.consumeVerifiedEmail(user.getEmail());
+
+        return new PasswordFindResponse(user.getPassword());
+    }
+
+    private User findUserForPassword(String id, String nickname, String email) {
+        String normalizedEmail = normalizeSejongEmail(email);
+        String normalizedId = normalizeSejongEmail(id);
+        String trimmedNickname = requireText(nickname, "이름을 입력해주세요.");
+
+        if (!normalizedEmail.equals(normalizedId)) {
+            throw new IllegalArgumentException("아이디와 이메일이 일치하지 않습니다.");
+        }
+
+        return userRepository.findByNicknameAndEmail(trimmedNickname, normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보를 찾을 수 없습니다."));
+    }
+
+    private String normalizeSejongEmail(String email) {
+        String value = requireText(email, "이메일을 입력해주세요.").toLowerCase(Locale.ROOT);
+        if (!value.contains("@")) {
+            value = value + "@sju.ac.kr";
+        }
+        if (!value.endsWith("@sju.ac.kr")) {
+            throw new IllegalArgumentException("세종대학교 이메일만 사용할 수 있습니다.");
+        }
+        return value;
+    }
+
+    private String requireText(String value, String message) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
     }
 }
