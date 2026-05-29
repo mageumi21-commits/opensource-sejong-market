@@ -2,6 +2,7 @@ package com.market.backend.product.service;
 
 import com.market.backend.product.dto.ProductResponse;
 import com.market.backend.product.dto.ProductListResponse;
+import com.market.backend.product.dto.ProductUpdateRequest;
 import com.market.backend.product.entity.Product;
 import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.entity.User;
@@ -71,6 +72,39 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
         return ProductResponse.from(savedProduct);
+    }
+
+    @Transactional
+    public ProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
+        Product product = findProduct(productId);
+        validateOwner(product, request.getSellerEmail());
+        validateProduct(
+                request.getProductName(),
+                request.getCategory(),
+                request.getPrice(),
+                request.getDescription(),
+                request.getTradeMethod(),
+                request.getLocationNumber()
+        );
+
+        product.update(
+                request.getProductName().trim(),
+                request.getCategory().trim(),
+                request.getPrice(),
+                request.getDescription().trim(),
+                request.getTradeMethod().trim(),
+                request.getLocationNumber(),
+                StringUtils.hasText(request.getLocationName()) ? request.getLocationName().trim() : null
+        );
+
+        return ProductResponse.from(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long productId, String sellerEmail) {
+        Product product = findProduct(productId);
+        validateOwner(product, sellerEmail);
+        productRepository.delete(product);
     }
 
     @Transactional(readOnly = true)
@@ -200,6 +234,69 @@ public class ProductService {
             return parsedPrice;
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("가격은 숫자만 입력해 주세요.");
+        }
+    }
+
+    private void validateProduct(
+            String productName,
+            String category,
+            Integer price,
+            String description,
+            String tradeMethod,
+            Integer locationNumber
+    ) {
+        if (!StringUtils.hasText(productName)) {
+            throw new IllegalArgumentException("상품명을 입력해 주세요.");
+        }
+
+        if (!StringUtils.hasText(category)) {
+            throw new IllegalArgumentException("카테고리를 선택해 주세요.");
+        }
+
+        if (price == null) {
+            throw new IllegalArgumentException("가격을 입력해 주세요.");
+        }
+
+        if (price < 0) {
+            throw new IllegalArgumentException("가격은 0원 이상이어야 합니다.");
+        }
+
+        if (!StringUtils.hasText(description)) {
+            throw new IllegalArgumentException("상품 설명을 입력해 주세요.");
+        }
+
+        if (!StringUtils.hasText(tradeMethod)) {
+            throw new IllegalArgumentException("수령 방식을 선택해 주세요.");
+        }
+
+        if ("직거래".equals(tradeMethod) && locationNumber == null) {
+            throw new IllegalArgumentException("직거래 위치를 선택해 주세요.");
+        }
+    }
+
+    private Product findProduct(Long productId) {
+        if (productId == null) {
+            throw new IllegalArgumentException("상품 ID가 필요합니다.");
+        }
+
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+    }
+
+    private void validateOwner(Product product, String sellerEmail) {
+        if (product.getSeller() == null) {
+            throw new IllegalArgumentException("판매자 정보가 없는 상품입니다.");
+        }
+
+        if (!StringUtils.hasText(sellerEmail)) {
+            throw new IllegalArgumentException("요청 사용자 이메일이 필요합니다.");
+        }
+
+        User requester = userRepository.findByEmail(sellerEmail.trim())
+                .orElseThrow(() -> new IllegalArgumentException("요청 사용자를 찾을 수 없습니다."));
+
+        if (!product.getSeller().getId().equals(requester.getId())) {
+            throw new IllegalArgumentException("상품 판매자만 수정 또는 삭제할 수 있습니다.");
         }
     }
 
