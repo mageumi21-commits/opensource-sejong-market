@@ -83,4 +83,23 @@ public class Product {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
+
+    public void update(
+            String productName,
+            String category,
+            Integer price,
+            String description,
+            String tradeMethod,
+            Integer locationNumber,
+            String locationName
+    ) {
+        this.productName = productName;
+        this.category = category;
+        this.price = price;
+        this.description = description;
+        this.tradeMethod = tradeMethod;
+        this.locationNumber = locationNumber;
+        this.locationName = locationName;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
