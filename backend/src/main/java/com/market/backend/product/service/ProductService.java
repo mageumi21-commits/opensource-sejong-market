@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -73,11 +74,77 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductListResponse> getProducts() {
-        return productRepository.findAllByOrderByCreatedAtDesc()
+    public List<ProductListResponse> getProducts(String keyword, String category, String sort, String type) {
+        List<Product> products = productRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
+                .filter(product -> matchesKeyword(product, keyword))
+                .filter(product -> matchesCategory(product, category))
+                .toList();
+
+        if ("recommend".equals(type)) {
+            List<Product> recommendedProducts = new ArrayList<>(products);
+            Collections.shuffle(recommendedProducts);
+            return recommendedProducts.stream()
+                    .map(ProductListResponse::from)
+                    .toList();
+        }
+
+        return products.stream()
                 .map(ProductListResponse::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductListResponse> getLatestProducts(int limit) {
+        return productRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .limit(normalizeLimit(limit))
+                .map(ProductListResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductListResponse> getRecommendedProducts(int limit) {
+        List<Product> products = new ArrayList<>(productRepository.findAllByOrderByCreatedAtDesc());
+        Collections.shuffle(products);
+
+        return products.stream()
+                .limit(normalizeLimit(limit))
+                .map(ProductListResponse::from)
+                .toList();
+    }
+
+    private boolean matchesKeyword(Product product, String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return true;
+        }
+
+        String lowerKeyword = keyword.trim().toLowerCase();
+
+        return containsIgnoreCase(product.getProductName(), lowerKeyword)
+                || containsIgnoreCase(product.getDescription(), lowerKeyword)
+                || containsIgnoreCase(product.getCategory(), lowerKeyword)
+                || containsIgnoreCase(product.getLocationName(), lowerKeyword);
+    }
+
+    private boolean matchesCategory(Product product, String category) {
+        if (!StringUtils.hasText(category) || "전체".equals(category)) {
+            return true;
+        }
+
+        return category.trim().equals(product.getCategory());
+    }
+
+    private boolean containsIgnoreCase(String value, String lowerKeyword) {
+        return value != null && value.toLowerCase().contains(lowerKeyword);
+    }
+
+    private long normalizeLimit(int limit) {
+        if (limit <= 0) {
+            return 5;
+        }
+
+        return Math.min(limit, 50);
     }
 
     private void validateProduct(

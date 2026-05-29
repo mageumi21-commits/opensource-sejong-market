@@ -22,8 +22,27 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<ProductListResponse> getProducts() {
-        return productService.getProducts();
+    public List<ProductListResponse> getProducts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String type
+    ) {
+        return productService.getProducts(keyword, category, sort, type);
+    }
+
+    @GetMapping("/latest")
+    public List<ProductListResponse> getLatestProducts(
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        return productService.getLatestProducts(limit);
+    }
+
+    @GetMapping("/recommendations")
+    public List<ProductListResponse> getRecommendedProducts(
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        return productService.getRecommendedProducts(limit);
     }
 
     @GetMapping("/{productId}")

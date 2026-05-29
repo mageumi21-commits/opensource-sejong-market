@@ -717,9 +717,9 @@
 
     <script>
       const API_URLS = {
-        recommendProducts: "/api/products/recommendations?limit=5",
-        latestProducts: "/api/products/latest?limit=5",
-        imageBaseUrl: ""
+        recommendProducts: "http://localhost:8080/api/products/recommendations?limit=5",
+        latestProducts: "http://localhost:8080/api/products/latest?limit=5",
+        imageBaseUrl: "http://localhost:8080"
       };
 
       const fallbackProducts = [
@@ -902,7 +902,7 @@
           card.className = "product-card";
 
           card.addEventListener("click", () => {
-            console.log("선택한 상품 ID:", product.id);
+            location.href = `../product_detail_ui/product-detail.html?id=${product.id}`;
           });
 
           card.innerHTML = `
