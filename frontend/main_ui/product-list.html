@@ -702,8 +702,8 @@
       GitHub Pages와 백엔드 주소가 다르면 백엔드에서 CORS 허용이 필요합니다.
     */
     const API_URLS = {
-      productList: "/api/products",
-      imageBaseUrl: ""
+      productList: "http://localhost:8080/api/products",
+      imageBaseUrl: "http://localhost:8080"
     }
       ;
     const fallbackProducts = [
@@ -975,6 +975,9 @@
       products.forEach(product => {
         const card = document.createElement("article");
         card.className = "product-card";
+        card.addEventListener("click", () => {
+          location.href = `../product_detail_ui/product-detail.html?id=${product.id}`;
+        });
         const badgeHtml = product.badgeText
           ? `<span class="care">${escapeHtml(product.badgeText)}</span>`
           : "";
