@@ -1,14 +1,16 @@
 // ===========================
-//  세종마켓 — 아이디/비밀번호 찾기 스크립트 (find.js)
+//  세종마켓 - 아이디/비밀번호 찾기 스크립트
 // ===========================
 
-// ── 현재 페이지 감지 ──
+const API_BASE_URL = 'http://localhost:8080';
+
 const isFindId = !!document.getElementById('tab-student');
 const isFindPw = !!document.getElementById('pw-step1');
 
-// ===========================
-//  공통 — 탭 전환 (아이디 찾기)
-// ===========================
+let pwTimerInterval = null;
+let passwordFindEmail = '';
+let REAL_PW = { value: '' };
+let pwVisible = false;
 
 if (isFindId) {
   const tabs = document.querySelectorAll('.tab');
@@ -28,130 +30,173 @@ if (isFindId) {
   });
 }
 
-// ===========================
-//  아이디 찾기 — 학번으로
-// ===========================
-
-function findIdByStudent() {
-  const name      = document.getElementById('findName1').value.trim();
+async function findIdByStudent() {
+  const name = document.getElementById('findName1').value.trim();
   const studentId = document.getElementById('findStudentId').value.trim();
 
-  if (!name)                        { alert('이름을 입력해 주세요.'); return; }
-  if (!/^\d{8}$/.test(studentId))  { alert('학번 8자리를 올바르게 입력해 주세요.'); return; }
+  if (!name) { alert('이름을 입력해 주세요.'); return; }
+  if (!/^\d{8}$/.test(studentId)) { alert('학번 8자리를 올바르게 입력해 주세요.'); return; }
 
-  // 실제 서비스: fetch('/api/find-id', { method: 'POST', body: JSON.stringify({ name, studentId }) })
-  // 응답 예시: { id: 'hong****', createdAt: '2023-03-01' }
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/find-id`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: name, studentId }),
+    });
 
-  // 데모용 결과
-  showIdResult('hong****', '2023년 03월 01일 가입');
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    const result = await response.json();
+    showIdResult(result.maskedEmail || result.email, '가입된 세종대학교 이메일입니다.');
+  } catch (error) {
+    showFail(error.message || '일치하는 회원 정보를 찾을 수 없습니다.');
+  }
 }
 
-// ===========================
-//  아이디 찾기 — 이메일로
-// ===========================
-
-function findIdByEmail() {
-  const name  = document.getElementById('findName2').value.trim();
+async function findIdByEmail() {
+  const name = document.getElementById('findName2').value.trim();
   const email = document.getElementById('findEmail').value.trim();
 
-  if (!name)  { alert('이름을 입력해 주세요.'); return; }
+  if (!name) { alert('이름을 입력해 주세요.'); return; }
   if (!email) { alert('이메일을 입력해 주세요.'); return; }
 
-  // 실제 서비스: fetch('/api/find-id', { method: 'POST', body: JSON.stringify({ name, email: email + '@sju.ac.kr' }) })
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/find-id`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: name, email: toSejongEmail(email) }),
+    });
 
-  // 데모용 결과
-  showIdResult('hong****', '2023년 03월 01일 가입');
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    const result = await response.json();
+    showIdResult(result.maskedEmail || result.email, '가입된 세종대학교 이메일입니다.');
+  } catch (error) {
+    showFail(error.message || '일치하는 회원 정보를 찾을 수 없습니다.');
+  }
 }
 
-// ── 아이디 결과 표시 ──
 function showIdResult(id, date) {
   hideResults();
   const resultBox = document.getElementById('resultBox');
   if (!resultBox) return;
-  document.getElementById('resultId').textContent   = id;
+
+  document.getElementById('resultId').textContent = id;
   document.getElementById('resultDate').textContent = date;
   resultBox.style.display = 'block';
 }
 
+function showFail(message) {
+  hideResults();
+  const failBox = document.getElementById('failBox');
+  if (!failBox) return;
+
+  failBox.textContent = message;
+  failBox.style.display = 'block';
+}
+
 function hideResults() {
   const resultBox = document.getElementById('resultBox');
-  const failBox   = document.getElementById('failBox');
+  const failBox = document.getElementById('failBox');
   if (resultBox) resultBox.style.display = 'none';
-  if (failBox)   failBox.style.display   = 'none';
+  if (failBox) failBox.style.display = 'none';
 }
 
-// ===========================
-//  비밀번호 찾기 — 단계 이동
-// ===========================
-
-let pwTimerInterval = null;
-
-// STEP 1 → STEP 2: 본인 확인 후 인증 코드 발송
-function pwGoStep2() {
-  const id    = document.getElementById('pwFindId').value.trim();
-  const name  = document.getElementById('pwFindName').value.trim();
+async function pwGoStep2() {
+  const id = document.getElementById('pwFindId').value.trim();
+  const name = document.getElementById('pwFindName').value.trim();
   const email = document.getElementById('pwFindEmail').value.trim();
 
-  if (!id)    { alert('아이디를 입력해 주세요.'); return; }
-  if (!name)  { alert('이름을 입력해 주세요.'); return; }
+  if (!id) { alert('아이디를 입력해 주세요.'); return; }
+  if (!name) { alert('이름을 입력해 주세요.'); return; }
   if (!email) { alert('이메일을 입력해 주세요.'); return; }
 
-  // 실제 서비스: fetch('/api/send-pw-code', { method: 'POST', body: JSON.stringify({ id, name, email: email + '@sju.ac.kr' }) })
+  passwordFindEmail = toSejongEmail(email);
 
-  document.getElementById('sentEmailText').textContent =
-    email + '@sju.ac.kr 으로 인증 코드를 발송했어요.';
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/password/email/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: toSejongEmail(id),
+        nickname: name,
+        email: passwordFindEmail,
+      }),
+    });
 
-  pwChangeStep(2);
-  startPwTimer();
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    document.getElementById('sentEmailText').textContent =
+      `${passwordFindEmail} 으로 인증 코드를 발송했어요.`;
+
+    pwChangeStep(2);
+    startPwTimer();
+  } catch (error) {
+    alert(error.message || '인증 코드 발송에 실패했습니다.');
+  }
 }
 
-// STEP 2 → STEP 3: 인증 코드 확인 후 비밀번호 표시
-function pwGoStep3() {
+async function pwGoStep3() {
   const code = document.getElementById('pwCode').value.trim();
+  const id = document.getElementById('pwFindId').value.trim();
+  const name = document.getElementById('pwFindName').value.trim();
 
   if (code.length !== 6) { alert('6자리 인증 코드를 입력해 주세요.'); return; }
 
-  // 실제 서비스: fetch('/api/verify-pw-code', { method: 'POST', body: JSON.stringify({ code }) })
-  // 응답 예시: { password: 'abc1234!' }
-  // 실제로는 응답받은 비밀번호를 아래 showFoundPw()에 넣어요
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/password/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: toSejongEmail(id),
+        nickname: name,
+        email: passwordFindEmail,
+        code,
+      }),
+    });
 
-  clearInterval(pwTimerInterval);
-  pwChangeStep(3);
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
 
-  // 데모용: 서버에서 받아온 비밀번호라고 가정
-  showFoundPw('abc1234!');
+    const result = await response.json();
+    clearInterval(pwTimerInterval);
+    pwChangeStep(3);
+    showFoundPw(result.password);
+  } catch (error) {
+    alert(error.message || '인증번호 확인에 실패했습니다.');
+  }
 }
-
-// ── 비밀번호 표시 ──
-const REAL_PW   = { value: '' };  // 실제 비밀번호 저장 (토글용)
-let   pwVisible = false;           // 현재 보기 상태
 
 function showFoundPw(password) {
   REAL_PW.value = password;
   pwVisible = false;
 
-  // 처음엔 ●으로 마스킹해서 표시
   document.getElementById('foundPw').textContent = '●'.repeat(password.length);
   document.getElementById('pwToggleIcon').className = 'ti ti-eye';
 }
 
-// 비밀번호 보기/숨기기 토글
 function togglePwVisible() {
-  const pwEl   = document.getElementById('foundPw');
+  const pwEl = document.getElementById('foundPw');
   const iconEl = document.getElementById('pwToggleIcon');
 
   pwVisible = !pwVisible;
 
   if (pwVisible) {
-    pwEl.textContent    = REAL_PW.value;           // 실제 비밀번호 표시
-    iconEl.className    = 'ti ti-eye-off';         // 아이콘 → 숨기기
+    pwEl.textContent = REAL_PW.value;
+    iconEl.className = 'ti ti-eye-off';
   } else {
-    pwEl.textContent    = '●'.repeat(REAL_PW.value.length); // 다시 마스킹
-    iconEl.className    = 'ti ti-eye';             // 아이콘 → 보기
+    pwEl.textContent = '●'.repeat(REAL_PW.value.length);
+    iconEl.className = 'ti ti-eye';
   }
 }
 
-// ── 단계 전환 ──
 function pwChangeStep(n) {
   document.querySelectorAll('.step-content').forEach(function (el) {
     el.classList.remove('active');
@@ -160,7 +205,6 @@ function pwChangeStep(n) {
   if (target) target.classList.add('active');
 }
 
-// ── 3분 타이머 ──
 function startPwTimer() {
   clearInterval(pwTimerInterval);
   let seconds = 180;
@@ -180,13 +224,59 @@ function startPwTimer() {
   }, 1000);
 }
 
-// ── 재발송 ──
-function resendCode() {
-  startPwTimer();
-  alert('인증 코드를 재발송했어요.');
+async function resendCode() {
+  const id = document.getElementById('pwFindId').value.trim();
+  const name = document.getElementById('pwFindName').value.trim();
+
+  if (!passwordFindEmail) {
+    alert('먼저 본인 확인을 진행해 주세요.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/password/email/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: toSejongEmail(id),
+        nickname: name,
+        email: passwordFindEmail,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    startPwTimer();
+    alert('인증 코드를 재발송했어요.');
+  } catch (error) {
+    alert(error.message || '인증 코드 재발송에 실패했습니다.');
+  }
 }
 
-// ── 학번 숫자만 입력 ──
+function toSejongEmail(value) {
+  const trimmed = value.trim().toLowerCase();
+  if (trimmed.includes('@')) {
+    return trimmed;
+  }
+  return `${trimmed}@sju.ac.kr`;
+}
+
+async function readErrorMessage(response) {
+  const text = await response.text();
+  if (!text) {
+    return '요청 처리에 실패했습니다.';
+  }
+
+  try {
+    const data = JSON.parse(text);
+    return data.message || data.error || text;
+  } catch (error) {
+    return text;
+  }
+}
+
 const findStudentIdInput = document.getElementById('findStudentId');
 if (findStudentIdInput) {
   findStudentIdInput.addEventListener('input', function () {

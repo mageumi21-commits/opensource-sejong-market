@@ -2,8 +2,13 @@ package com.market.backend.user.controller;
 
 import com.market.backend.user.dto.EmailCodeVerifyRequest;
 import com.market.backend.user.dto.EmailVerificationRequest;
+import com.market.backend.user.dto.FindIdRequest;
+import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
 import com.market.backend.user.dto.MyPageResponse;
+import com.market.backend.user.dto.PasswordFindCodeSendRequest;
+import com.market.backend.user.dto.PasswordFindResponse;
+import com.market.backend.user.dto.PasswordFindVerifyRequest;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.service.EmailVerificationService;
 import com.market.backend.user.service.UserService;
@@ -53,6 +58,26 @@ public class UserController {
         userService.login(request);
 
         return "\uB85C\uADF8\uC778 \uC131\uACF5";
+    }
+
+    @PostMapping("/find-id")
+    public FindIdResponse findId(@RequestBody FindIdRequest request) {
+
+        return userService.findId(request);
+    }
+
+    @PostMapping("/password/email/send")
+    public String sendPasswordFindCode(@RequestBody PasswordFindCodeSendRequest request) {
+
+        userService.sendPasswordFindCode(request);
+
+        return "비밀번호 찾기 인증번호 발송 완료";
+    }
+
+    @PostMapping("/password/verify")
+    public PasswordFindResponse verifyPasswordFindCode(@RequestBody PasswordFindVerifyRequest request) {
+
+        return userService.verifyPasswordFindCode(request);
     }
 
     @GetMapping("/me")
