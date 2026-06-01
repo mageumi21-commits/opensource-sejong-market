@@ -1,153 +1,219 @@
-// ===========================
-//  세종마켓 — 마이페이지 스크립트 (mypage.js)
-// ===========================
+const API_BASE_URL = 'http://localhost:8080';
+const PRODUCT_DETAIL_URL = '../product_detail_ui/product-detail.html?id=';
+const LOGIN_URL = 'login.html';
 
-// ── 샘플 사용자 데이터 (백엔드 연동 전 임시) ──
-// 실제 서비스: fetch('/api/user/me') 로 받아와요
-const userData = {
-  nickname: '홍길동',
-  email: 'hong1234@sju.ac.kr',
-  studentId: '23011234',
-  college: '소프트웨어융합대학',
-  dept: '컴퓨터공학과'
-};
-
-// ── 샘플 상품 데이터 (백엔드 연동 전 임시) ──
-// 실제 서비스: fetch('/api/products/my') 로 받아와요
-const myProducts = [
-  {
-    id: 1,
-    title: '전공책 자료구조 팝니다',
-    price: 15000,
-    desc: '한 학기 사용했고 상태 양호합니다. 직거래 선호해요.',
-    location: '광개토관',
-    time: '1시간 전',
-    status: 'on-sale',    // 'on-sale' | 'sold-out'
-    image: null           // 이미지 URL (없으면 null)
-  },
-  {
-    id: 2,
-    title: '아이패드 거치대 팝니다',
-    price: 8000,
-    desc: '사용감 거의 없어요. 자취방 정리하면서 내놓습니다.',
-    location: '학생회관',
-    time: '2일 전',
-    status: 'sold-out',
-    image: null
+function getLoginEmail() {
+  try {
+    const loginUser = JSON.parse(localStorage.getItem('loginUser'));
+    if (loginUser && loginUser.email) {
+      return loginUser.email;
+    }
+  } catch (error) {
+    console.warn('loginUser 값을 읽을 수 없습니다.', error);
   }
-];
 
-// ===========================
-//  사용자 정보 렌더링
-// ===========================
-
-function renderUserInfo(user) {
-  document.getElementById('profileNickname').textContent = user.nickname;
-  document.getElementById('profileEmail').textContent    = user.email;
-  document.getElementById('profileStudentId').textContent = user.studentId;
-  document.getElementById('profileDept').textContent    = user.college + ' · ' + user.dept;
+  return localStorage.getItem('loginEmail') || '';
 }
 
-// ===========================
-//  상품 목록 렌더링
-// ===========================
+function renderUserInfo(user) {
+  document.getElementById('profileNickname').textContent = user.nickname || '이름 없음';
+  document.getElementById('profileEmail').textContent = user.email || '-';
+  document.getElementById('profileStudentId').textContent = user.studentId || '-';
+  document.getElementById('profileDept').textContent = '세종대학교 중고거래';
+}
 
 function renderProducts(products) {
-  const list       = document.getElementById('productList');
+  const list = document.getElementById('productList');
   const emptyState = document.getElementById('emptyState');
-  const statEl     = document.getElementById('statProducts');
+  const emptyStateMessage = document.getElementById('emptyStateMessage');
+  const statEl = document.getElementById('statProducts');
 
-  // 통계 업데이트
   statEl.textContent = products.length;
+  list.innerHTML = '';
 
-  // 상품이 없으면 빈 상태 표시
   if (products.length === 0) {
-    list.style.display       = 'none';
+    list.style.display = 'none';
     emptyState.style.display = 'flex';
+    emptyStateMessage.textContent = '아직 등록한 상품이 없습니다.';
     return;
   }
 
-  list.style.display       = 'flex';
+  list.style.display = 'flex';
   emptyState.style.display = 'none';
-  list.innerHTML = '';  // 기존 내용 초기화
 
   products.forEach(function (product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-
-    // 이미지 또는 placeholder
-    const imgContent = product.image
-      ? '<img src="' + product.image + '" alt="상품 이미지">'
-      : '<i class="ti ti-photo"></i>';
-
-    // 상태 뱃지
-    const statusLabel = product.status === 'on-sale' ? '판매중' : '판매완료';
-
-    card.innerHTML = `
-      <div class="product-img-wrap">
-        <div class="product-img-placeholder">${imgContent}</div>
-        <span class="product-status ${product.status}">${statusLabel}</span>
-      </div>
-      <div class="product-info">
-        <p class="product-title">${product.title}</p>
-        <p class="product-price">${product.price.toLocaleString()}원</p>
-        <p class="product-desc">${product.desc}</p>
-        <div class="product-meta">
-          <span><i class="ti ti-map-pin"></i> ${product.location}</span>
-          <span><i class="ti ti-clock"></i> ${product.time}</span>
-        </div>
-      </div>
-      <div class="product-actions">
-        <button class="action-icon-btn" title="수정" onclick="editProduct(${product.id})">
-          <i class="ti ti-pencil"></i>
-        </button>
-        <button class="action-icon-btn danger" title="삭제" onclick="deleteProduct(${product.id})">
-          <i class="ti ti-trash"></i>
-        </button>
-      </div>
-    `;
-
-    list.appendChild(card);
+    list.appendChild(createProductCard(product));
   });
 }
 
-// ===========================
-//  수정 / 삭제 (백엔드 연동 전 임시)
-// ===========================
+function createProductCard(product) {
+  const card = document.createElement('div');
+  const productId = product.id;
+  const status = product.status || 'on-sale';
+
+  card.className = 'product-card';
+  if (productId) {
+    card.tabIndex = 0;
+    card.setAttribute('role', 'link');
+    card.addEventListener('click', function () {
+      window.location.href = PRODUCT_DETAIL_URL + encodeURIComponent(productId);
+    });
+    card.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        window.location.href = PRODUCT_DETAIL_URL + encodeURIComponent(productId);
+      }
+    });
+  }
+
+  card.innerHTML = `
+    <div class="product-img-wrap">
+      <div class="product-img-placeholder">${renderProductImage(product)}</div>
+      <span class="product-status ${escapeAttribute(status)}">${status === 'sold-out' ? '판매완료' : '판매중'}</span>
+    </div>
+    <div class="product-info">
+      <p class="product-title">${escapeHtml(product.title || product.productName || product.name || '제목 없음')}</p>
+      <p class="product-price">${formatPrice(product.price)}</p>
+      <p class="product-desc">${escapeHtml(product.description || '')}</p>
+      <div class="product-meta">
+        <span><i class="ti ti-map-pin"></i> ${escapeHtml(product.locationName || '장소 미정')}</span>
+        <span><i class="ti ti-clock"></i> ${escapeHtml(product.createdAtText || formatCreatedAt(product.createdAt))}</span>
+      </div>
+    </div>
+    <div class="product-actions">
+      <button class="action-icon-btn" type="button" title="수정" data-action="edit">
+        <i class="ti ti-pencil"></i>
+      </button>
+      <button class="action-icon-btn danger" type="button" title="삭제" data-action="delete">
+        <i class="ti ti-trash"></i>
+      </button>
+    </div>
+  `;
+
+  card.querySelector('[data-action="edit"]').addEventListener('click', function (event) {
+    event.stopPropagation();
+    editProduct(productId);
+  });
+
+  card.querySelector('[data-action="delete"]').addEventListener('click', function (event) {
+    event.stopPropagation();
+    deleteProduct(productId);
+  });
+
+  return card;
+}
+
+function renderProductImage(product) {
+  const imageUrl = normalizeImageUrl(product.imageUrl || product.image);
+  if (!imageUrl) {
+    return '<i class="ti ti-photo"></i>';
+  }
+
+  return `<img src="${escapeAttribute(imageUrl)}" alt="상품 이미지">`;
+}
+
+function normalizeImageUrl(path) {
+  if (!path) {
+    return '';
+  }
+
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    return path;
+  }
+
+  return API_BASE_URL + path;
+}
+
+function formatPrice(price) {
+  const value = Number(price);
+  if (!Number.isFinite(value)) {
+    return '가격 미정';
+  }
+
+  return value.toLocaleString('ko-KR') + '원';
+}
+
+function formatCreatedAt(createdAt) {
+  if (!createdAt) {
+    return '등록일 미정';
+  }
+
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) {
+    return '등록일 미정';
+  }
+
+  return date.toLocaleDateString('ko-KR');
+}
+
+function showMessage(message) {
+  const list = document.getElementById('productList');
+  const emptyState = document.getElementById('emptyState');
+  const emptyStateMessage = document.getElementById('emptyStateMessage');
+
+  list.style.display = 'none';
+  emptyState.style.display = 'flex';
+  emptyStateMessage.textContent = message;
+}
 
 function editProduct(id) {
-  // 실제 서비스: 상품 수정 페이지로 이동
-  // window.location.href = 'product-edit.html?id=' + id;
-  alert('상품 수정 기능은 준비 중이에요. (상품 ID: ' + id + ')');
+  if (!id) {
+    alert('상품 정보를 확인할 수 없습니다.');
+    return;
+  }
+
+  alert('상품 수정 기능은 준비 중입니다. (상품 ID: ' + id + ')');
 }
 
 function deleteProduct(id) {
-  if (!confirm('정말 삭제하시겠어요?')) return;
+  if (!id) {
+    alert('상품 정보를 확인할 수 없습니다.');
+    return;
+  }
 
-  // 실제 서비스: fetch('/api/products/' + id, { method: 'DELETE' })
-  // 삭제 후 목록 새로고침
+  alert('상품 삭제 기능은 준비 중입니다. (상품 ID: ' + id + ')');
+}
 
-  // 데모: 목록에서 제거
-  const idx = myProducts.findIndex(function (p) { return p.id === id; });
-  if (idx !== -1) {
-    myProducts.splice(idx, 1);
-    renderProducts(myProducts);
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replaceAll('`', '&#096;');
+}
+
+async function loadMyPage() {
+  const email = getLoginEmail();
+
+  if (!email) {
+    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
+    window.location.href = LOGIN_URL;
+    return;
+  }
+
+  try {
+    showMessage('마이페이지 정보를 불러오는 중입니다.');
+
+    const response = await fetch(`${API_BASE_URL}/users/me?email=${encodeURIComponent(email)}`);
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    const data = await response.json();
+    const products = Array.isArray(data.products) ? data.products : [];
+
+    renderUserInfo(data);
+    renderProducts(products);
+  } catch (error) {
+    console.error(error);
+    renderUserInfo({ email });
+    document.getElementById('statProducts').textContent = '0';
+    showMessage(error.message || '마이페이지 정보를 불러오지 못했습니다.');
   }
 }
 
-// ===========================
-//  초기화
-// ===========================
-
-// 실제 서비스에서는 아래처럼 API 호출 후 렌더링해요
-// fetch('/api/user/me')
-//   .then(res => res.json())
-//   .then(data => renderUserInfo(data));
-//
-// fetch('/api/products/my')
-//   .then(res => res.json())
-//   .then(data => renderProducts(data));
-
-// 지금은 샘플 데이터로 렌더링
-renderUserInfo(userData);
-renderProducts(myProducts);
+loadMyPage();
