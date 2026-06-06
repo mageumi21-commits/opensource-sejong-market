@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>상품 상세</title>
   <style>
+    :root {
+      --primary: #D93025;
+      --primary-dark: #B71C1C;
+      --primary-light: #FDECEC;
+      --text-primary: #1a1a1a;
+      --text-secondary: #555;
+      --text-muted: #999;
+      --border: #e0e0e0;
+      --bg-page: #ffffff;
+      --bg-soft: #f7f8fa;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --shadow-card: 0 14px 38px rgba(0, 0, 0, 0.08);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -13,48 +28,121 @@
 
     body {
       min-height: 100vh;
-      background: #eef1f4;
-      color: #20242a;
+      background: var(--bg-soft);
+      color: var(--text-primary);
       font-family: Arial, "Noto Sans KR", sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .top-banner {
+      width: 100%;
+      height: 44px;
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
     }
 
     .page {
       width: min(920px, 100%);
-      min-height: 100vh;
+      min-height: calc(100vh - 44px);
       margin: 0 auto;
-      background: #fff;
+      background: var(--bg-page);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
     }
 
     .header {
       position: sticky;
       top: 0;
-      z-index: 10;
-      display: flex;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: 48px 1fr 48px;
       align-items: center;
-      justify-content: space-between;
-      height: 60px;
-      padding: 0 22px;
-      border-bottom: 1px solid #e8ecef;
-      background: #fff;
+      gap: 12px;
+      min-height: 74px;
+      padding: 12px 22px;
+      border-bottom: 1px solid #eee;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
     }
 
     .back-btn {
-      border: 0;
-      background: transparent;
-      color: #5d6673;
-      font-size: 24px;
-      font-weight: 800;
-      cursor: pointer;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      font-size: 25px;
+      font-weight: 900;
+      transition: 0.18s;
     }
 
-    .header-title {
-      font-size: 18px;
+    .back-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 6px 14px rgba(217, 48, 37, 0.16);
+    }
+
+    .logo-text-wrap {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .logo-main {
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+    }
+
+    .logo-sub {
+      margin-top: 4px;
+      color: var(--text-secondary);
+      font-size: 11px;
       font-weight: 800;
+    }
+
+    .header-side {
+      width: 42px;
+      height: 42px;
+    }
+
+    .image-area {
+      background: #fff;
     }
 
     .hero {
+      position: relative;
       aspect-ratio: 16 / 10;
-      background: #edf0f2;
+      background: #f1f3f5;
       overflow: hidden;
     }
 
@@ -65,16 +153,67 @@
       display: block;
     }
 
+    .image-count {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(26, 26, 26, 0.72);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
     .placeholder {
+      min-height: 280px;
       height: 100%;
       display: grid;
       place-items: center;
-      color: #99a2ad;
-      font-weight: 800;
+      color: var(--text-muted);
+      font-weight: 900;
+      text-align: center;
+      background: linear-gradient(135deg, #f7f8fa, #f0f1f3);
+    }
+
+    .thumbnail-list {
+      display: flex;
+      gap: 10px;
+      padding: 14px 22px 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .thumbnail-btn {
+      flex: 0 0 auto;
+      width: 74px;
+      height: 74px;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: #f1f3f5;
+      overflow: hidden;
+      transition: 0.16s;
+    }
+
+    .thumbnail-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .thumbnail-btn.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .thumbnail-btn img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
     }
 
     .content {
-      padding: 26px 28px 110px;
+      padding: 28px 28px 112px;
     }
 
     .seller {
@@ -82,42 +221,47 @@
       align-items: center;
       justify-content: space-between;
       gap: 18px;
-      padding-bottom: 22px;
-      border-bottom: 1px solid #edf0f2;
+      padding: 18px;
+      border: 1px solid #eee;
+      border-radius: var(--radius-md);
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
     }
 
     .seller-name {
       font-size: 17px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .seller-email {
-      margin-top: 4px;
-      color: #7a8491;
+      margin-top: 5px;
+      color: var(--text-secondary);
       font-size: 13px;
+      font-weight: 700;
     }
 
     .meta-chip {
       flex: 0 0 auto;
       padding: 8px 12px;
-      border-radius: 8px;
-      background: #f4f6f8;
-      color: #697382;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary);
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .title {
-      margin-top: 26px;
-      font-size: 28px;
+      margin-top: 28px;
+      font-size: 30px;
       line-height: 1.25;
       font-weight: 900;
+      letter-spacing: -0.8px;
     }
 
     .price {
       margin-top: 12px;
-      color: #ff5057;
-      font-size: 25px;
+      color: var(--primary);
+      font-size: 27px;
       font-weight: 900;
     }
 
@@ -129,20 +273,37 @@
     }
 
     .detail {
-      padding: 8px 11px;
-      border-radius: 8px;
-      background: #f5f7f9;
-      color: #5d6673;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--bg-soft);
+      color: var(--text-secondary);
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
+    }
+
+    .description-card {
+      margin-top: 26px;
+      padding: 22px;
+      border: 1px solid #eee;
+      border-radius: var(--radius-md);
+      background: #fff;
+    }
+
+    .section-title {
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 900;
     }
 
     .description {
-      margin-top: 28px;
-      color: #30363d;
+      color: #333;
       font-size: 16px;
-      line-height: 1.7;
+      line-height: 1.75;
       white-space: pre-wrap;
+    }
+
+    .empty-description {
+      color: var(--text-muted);
     }
 
     .bottom-bar {
@@ -154,54 +315,110 @@
       display: flex;
       gap: 12px;
       padding: 14px 22px;
-      border-top: 1px solid #e5e9ed;
-      background: #fff;
+      border-top: 1px solid #eee;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      z-index: 30;
     }
 
     .chat-btn {
       width: 100%;
       height: 52px;
-      border: 0;
-      border-radius: 8px;
-      background: #ff5057;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
       color: #fff;
       font-size: 17px;
       font-weight: 900;
-      cursor: pointer;
+      transition: 0.18s;
+    }
+
+    .chat-btn:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
     }
 
     .chat-btn:disabled {
       background: #c8cdd3;
       cursor: not-allowed;
+      transform: none;
     }
 
     .status {
-      padding: 44px 28px;
-      color: #697382;
-      font-weight: 800;
+      padding: 48px 28px;
+      color: var(--text-secondary);
+      font-weight: 900;
+      line-height: 1.6;
     }
 
     @media (max-width: 640px) {
+      .top-banner {
+        height: 40px;
+        padding: 0 14px;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .header {
+        grid-template-columns: 42px 1fr 42px;
+        min-height: 66px;
+        padding: 10px 14px;
+      }
+
+      .logo-img {
+        width: 36px;
+        height: 36px;
+      }
+
+      .logo-main {
+        font-size: 18px;
+      }
+
+      .logo-sub {
+        font-size: 10px;
+      }
+
       .content {
         padding: 22px 20px 104px;
       }
 
+      .seller {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
       .title {
-        font-size: 23px;
+        font-size: 24px;
       }
 
       .price {
-        font-size: 22px;
+        font-size: 23px;
+      }
+
+      .thumbnail-list {
+        padding: 12px 20px 0;
+      }
+
+      .thumbnail-btn {
+        width: 62px;
+        height: 62px;
       }
     }
   </style>
 </head>
 <body>
+  <div class="top-banner">세종대학교 학생들을 위한 안전한 중고거래 플랫폼, 세종마켓!</div>
+
   <div class="page">
     <header class="header">
       <button class="back-btn" type="button" id="backBtn" aria-label="뒤로가기">&lt;</button>
-      <h1 class="header-title">상품 상세</h1>
-      <span></span>
+      <a class="header-brand" href="../main_ui/index.html" aria-label="세종마켓 메인으로 이동">
+        <img src="../login_mypage/logo.png" alt="세종마켓 로고" class="logo-img" />
+        <div class="logo-text-wrap">
+          <span class="logo-main">세종마켓</span>
+          <span class="logo-sub">상품 상세</span>
+        </div>
+      </a>
+      <span class="header-side"></span>
     </header>
 
     <main id="app">
@@ -215,14 +432,23 @@
 
   <script>
     const API_BASE_URL = "http://localhost:8080";
+    const PRODUCT_LIST_URL = "../main_ui/product-list.html";
+    const CHAT_URL = "../chat_ui/chat.html";
+
     const params = new URLSearchParams(location.search);
     const productId = params.get("id") || localStorage.getItem("lastCreatedProductId");
     const app = document.getElementById("app");
     const chatBtn = document.getElementById("chatBtn");
+
     let currentProduct = null;
 
     document.getElementById("backBtn").addEventListener("click", () => {
-      history.back();
+      if (document.referrer && history.length > 1) {
+        history.back();
+        return;
+      }
+
+      location.href = PRODUCT_LIST_URL;
     });
 
     function getLoginEmail() {
@@ -239,7 +465,8 @@
     }
 
     function formatPrice(price) {
-      return Number(price || 0).toLocaleString("ko-KR") + "원";
+      const numberPrice = Number(price || 0);
+      return numberPrice.toLocaleString("ko-KR") + "원";
     }
 
     function imageUrl(path) {
@@ -263,26 +490,116 @@
         .replaceAll("'", "&#039;");
     }
 
-    function renderProduct(product) {
-      const mainImage = product.imagePaths && product.imagePaths.length > 0
-        ? imageUrl(product.imagePaths[0])
-        : "";
+    function getProductImages(product) {
+      if (!product || !Array.isArray(product.imagePaths)) {
+        return [];
+      }
 
+      return product.imagePaths
+        .map((path) => imageUrl(path))
+        .filter(Boolean)
+        .slice(0, 10);
+    }
+
+    function renderImageArea(product, productName) {
+      const images = getProductImages(product);
+
+      if (images.length === 0) {
+        return `
+          <section class="image-area">
+            <div class="hero">
+              <div class="placeholder">등록된 이미지가 없습니다.</div>
+            </div>
+          </section>
+        `;
+      }
+
+      const thumbnailHtml = images.map((image, index) => `
+        <button
+          class="thumbnail-btn ${index === 0 ? "active" : ""}"
+          type="button"
+          data-index="${index}"
+          data-image="${escapeHtml(image)}"
+          aria-label="${index + 1}번째 상품 이미지 보기"
+        >
+          <img src="${escapeHtml(image)}" alt="${productName} 썸네일 ${index + 1}" />
+        </button>
+      `).join("");
+
+      return `
+        <section class="image-area">
+          <div class="hero">
+            <img id="mainImage" src="${escapeHtml(images[0])}" alt="${productName} 이미지" />
+            <div class="image-count" id="imageCount">1 / ${images.length}</div>
+          </div>
+          ${images.length > 1 ? `<div class="thumbnail-list">${thumbnailHtml}</div>` : ""}
+        </section>
+      `;
+    }
+
+    function bindImageEvents() {
+      const mainImage = document.getElementById("mainImage");
+      const imageCount = document.getElementById("imageCount");
+      const thumbnailButtons = document.querySelectorAll(".thumbnail-btn");
+
+      if (mainImage) {
+        mainImage.addEventListener("error", () => {
+          const hero = mainImage.closest(".hero");
+          if (hero) {
+            hero.innerHTML = `<div class="placeholder">이미지를 불러오지 못했습니다.</div>`;
+          }
+        });
+      }
+
+      thumbnailButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (!mainImage) {
+            return;
+          }
+
+          mainImage.src = button.dataset.image;
+          thumbnailButtons.forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+
+          if (imageCount) {
+            imageCount.textContent = `${Number(button.dataset.index) + 1} / ${thumbnailButtons.length}`;
+          }
+        });
+      });
+    }
+
+    function updateChatButtonState(product) {
+      const loginEmail = getLoginEmail().trim().toLowerCase();
+      const sellerEmail = String(product.sellerEmail || "").trim().toLowerCase();
+
+      if (!loginEmail) {
+        chatBtn.textContent = "로그인 후 채팅하기";
+        chatBtn.disabled = true;
+      } else if (!sellerEmail) {
+        chatBtn.textContent = "판매자 정보 없음";
+        chatBtn.disabled = true;
+      } else if (loginEmail === sellerEmail) {
+        chatBtn.textContent = "내 상품입니다";
+        chatBtn.disabled = true;
+      } else {
+        chatBtn.textContent = "판매자와 채팅하기";
+        chatBtn.disabled = false;
+      }
+    }
+
+    function renderProduct(product) {
+      const productName = escapeHtml(product.productName || "상품명 없음");
       const sellerName = escapeHtml(product.sellerNickname || "판매자");
       const sellerEmail = escapeHtml(product.sellerEmail || "판매자 정보 없음");
-      const location = product.locationName
-        ? product.locationNumber + "번 " + product.locationName
-        : "위치 미선택";
-      const productName = escapeHtml(product.productName);
       const tradeMethod = escapeHtml(product.tradeMethod || "거래 방식 미정");
       const category = escapeHtml(product.category || "카테고리 없음");
-      const locationText = escapeHtml(location);
-      const description = escapeHtml(product.description || "");
+      const locationNumber = product.locationNumber ? `${escapeHtml(product.locationNumber)}번` : "위치 번호 없음";
+      const locationName = escapeHtml(product.locationName || "위치명 없음");
+      const description = escapeHtml(product.description || "등록된 상품 설명이 없습니다.");
+      const descriptionClass = product.description ? "description" : "description empty-description";
 
       app.innerHTML = `
-        <section class="hero">
-          ${mainImage ? `<img src="${mainImage}" alt="상품 이미지" />` : `<div class="placeholder">이미지 없음</div>`}
-        </section>
+        ${renderImageArea(product, productName)}
         <section class="content">
           <div class="seller">
             <div>
@@ -295,31 +612,30 @@
           <div class="price">${formatPrice(product.price)}</div>
           <div class="details">
             <span class="detail">${category}</span>
-            <span class="detail">${locationText}</span>
+            <span class="detail">${tradeMethod}</span>
+            <span class="detail">${locationNumber}</span>
+            <span class="detail">${locationName}</span>
           </div>
-          <p class="description">${description}</p>
+          <section class="description-card">
+            <h3 class="section-title">상품 설명</h3>
+            <p class="${descriptionClass}">${description}</p>
+          </section>
         </section>
       `;
 
-      const loginEmail = getLoginEmail();
-      if (!loginEmail) {
-        chatBtn.textContent = "로그인 후 채팅하기";
-        chatBtn.disabled = true;
-      } else if (loginEmail === product.sellerEmail) {
-        chatBtn.textContent = "내 상품입니다";
-        chatBtn.disabled = true;
-      } else if (!product.sellerEmail) {
-        chatBtn.textContent = "판매자 정보 없음";
-        chatBtn.disabled = true;
-      } else {
-        chatBtn.textContent = "판매자와 채팅하기";
-        chatBtn.disabled = false;
-      }
+      bindImageEvents();
+      updateChatButtonState(product);
+    }
+
+    function renderError(message) {
+      app.innerHTML = `<div class="status">${escapeHtml(message || "상품 정보를 불러오지 못했습니다.")}</div>`;
+      chatBtn.textContent = "채팅하기";
+      chatBtn.disabled = true;
     }
 
     async function loadProduct() {
       if (!productId) {
-        app.innerHTML = `<div class="status">상품 id가 없습니다.</div>`;
+        renderError("상품 id가 없습니다.");
         return;
       }
 
@@ -332,7 +648,7 @@
         currentProduct = await response.json();
         renderProduct(currentProduct);
       } catch (error) {
-        app.innerHTML = `<div class="status">${error.message || "상품 정보를 불러오지 못했습니다."}</div>`;
+        renderError(error.message || "상품 정보를 불러오지 못했습니다.");
       }
     }
 
@@ -357,7 +673,7 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            productId: currentProduct.id,
+            productId: currentProduct.id || currentProduct.productId || productId,
             buyerEmail
           })
         });
@@ -367,11 +683,16 @@
         }
 
         const chatRoom = await response.json();
-        location.href = `../chat_ui/chat.html?roomId=${chatRoom.id}`;
+        const roomId = chatRoom.id || chatRoom.roomId || chatRoom.chatRoomId;
+
+        if (!roomId) {
+          throw new Error("채팅방 정보를 확인할 수 없습니다.");
+        }
+
+        location.href = `${CHAT_URL}?roomId=${encodeURIComponent(roomId)}`;
       } catch (error) {
         alert(error.message || "채팅방을 만들지 못했습니다.");
-        chatBtn.disabled = false;
-        chatBtn.textContent = "판매자와 채팅하기";
+        updateChatButtonState(currentProduct);
       }
     });
 
