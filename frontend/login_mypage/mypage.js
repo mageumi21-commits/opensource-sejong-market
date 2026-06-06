@@ -46,6 +46,10 @@ function renderProducts(products) {
   });
 }
 
+function getProductTitle(product) {
+  return product.title || product.productName || product.name || '';
+}
+
 function createProductCard(product) {
   const card = document.createElement('div');
   const productId = product.id;
@@ -71,7 +75,7 @@ function createProductCard(product) {
       <span class="product-status ${escapeAttribute(status)}">${status === 'sold-out' ? '판매완료' : '판매중'}</span>
     </div>
     <div class="product-info">
-      <p class="product-title">${escapeHtml(product.title || product.productName || product.name || '제목 없음')}</p>
+      <p class="product-title">${escapeHtml(getProductTitle(product) || '제목 없음')}</p>
       <p class="product-price">${formatPrice(product.price)}</p>
       <p class="product-desc">${escapeHtml(product.description || '')}</p>
       <div class="product-meta">
@@ -91,7 +95,7 @@ function createProductCard(product) {
 
   card.querySelector('[data-action="edit"]').addEventListener('click', function (event) {
     event.stopPropagation();
-    editProduct(productId);
+    editProduct(product);
   });
 
   card.querySelector('[data-action="delete"]').addEventListener('click', function (event) {
@@ -155,22 +159,127 @@ function showMessage(message) {
   emptyStateMessage.textContent = message;
 }
 
-function editProduct(id) {
-  if (!id) {
+async function editProduct(product) {
+  if (!product || !product.id) {
     alert('상품 정보를 확인할 수 없습니다.');
     return;
   }
 
-  alert('상품 수정 기능은 준비 중입니다. (상품 ID: ' + id + ')');
+  const sellerEmail = getLoginEmail();
+  if (!sellerEmail) {
+    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
+    window.location.href = LOGIN_URL;
+    return;
+  }
+
+  const productName = prompt('상품명을 입력해 주세요.', getProductTitle(product));
+  if (productName === null) {
+    return;
+  }
+
+  const category = prompt('카테고리를 입력해 주세요.', product.category || '기타');
+  if (category === null) {
+    return;
+  }
+
+  const priceInput = prompt('가격을 입력해 주세요.', product.price || '');
+  if (priceInput === null) {
+    return;
+  }
+
+  const price = Number(priceInput);
+  if (!Number.isInteger(price) || price < 0) {
+    alert('가격은 0 이상의 숫자로 입력해 주세요.');
+    return;
+  }
+
+  const description = prompt('상품 설명을 입력해 주세요.', product.description || '');
+  if (description === null) {
+    return;
+  }
+
+  const tradeMethod = prompt('거래 방식을 입력해 주세요. 예: 직거래, 택배', product.tradeMethod || '직거래');
+  if (tradeMethod === null) {
+    return;
+  }
+
+  const locationNumberInput = prompt('교내 거래 위치 번호를 입력해 주세요. 없으면 비워두세요.', product.locationNumber || '');
+  if (locationNumberInput === null) {
+    return;
+  }
+
+  const locationNumber = locationNumberInput.trim() ? Number(locationNumberInput) : null;
+  if (locationNumber !== null && (!Number.isInteger(locationNumber) || locationNumber < 0)) {
+    alert('거래 위치 번호는 0 이상의 숫자로 입력해 주세요.');
+    return;
+  }
+
+  const locationName = prompt('교내 거래 위치명을 입력해 주세요. 없으면 비워두세요.', product.locationName || '');
+  if (locationName === null) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(product.id)}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sellerEmail,
+        productName: productName.trim(),
+        category: category.trim(),
+        price,
+        description: description.trim(),
+        tradeMethod: tradeMethod.trim(),
+        locationNumber,
+        locationName: locationName.trim(),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    alert('상품 정보가 수정되었습니다.');
+    loadMyPage();
+  } catch (error) {
+    alert(error.message || '상품 수정에 실패했습니다.');
+  }
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   if (!id) {
     alert('상품 정보를 확인할 수 없습니다.');
     return;
   }
 
-  alert('상품 삭제 기능은 준비 중입니다. (상품 ID: ' + id + ')');
+  const sellerEmail = getLoginEmail();
+  if (!sellerEmail) {
+    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
+    window.location.href = LOGIN_URL;
+    return;
+  }
+
+  if (!confirm('정말 이 상품을 삭제하시겠습니까?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/products/${encodeURIComponent(id)}?sellerEmail=${encodeURIComponent(sellerEmail)}`,
+      { method: 'DELETE' }
+    );
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    alert('상품이 삭제되었습니다.');
+    loadMyPage();
+  } catch (error) {
+    alert(error.message || '상품 삭제에 실패했습니다.');
+  }
 }
 
 function escapeHtml(value) {
@@ -184,6 +293,20 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll('`', '&#096;');
+}
+
+async function readErrorMessage(response) {
+  const text = await response.text();
+  if (!text) {
+    return '요청 처리에 실패했습니다.';
+  }
+
+  try {
+    const data = JSON.parse(text);
+    return data.message || data.error || text;
+  } catch (error) {
+    return text;
+  }
 }
 
 async function loadMyPage() {

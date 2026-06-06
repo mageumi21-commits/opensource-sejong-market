@@ -19,6 +19,12 @@ public class MyProductResponse {
 
     private final String description;
 
+    private final String category;
+
+    private final String tradeMethod;
+
+    private final Integer locationNumber;
+
     private final String locationName;
 
     private final LocalDateTime createdAt;
@@ -33,6 +39,9 @@ public class MyProductResponse {
             String imageUrl,
             Integer price,
             String description,
+            String category,
+            String tradeMethod,
+            Integer locationNumber,
             String locationName,
             LocalDateTime createdAt,
             String createdAtText,
@@ -43,6 +52,9 @@ public class MyProductResponse {
         this.imageUrl = imageUrl;
         this.price = price;
         this.description = description;
+        this.category = category;
+        this.tradeMethod = tradeMethod;
+        this.locationNumber = locationNumber;
         this.locationName = locationName;
         this.createdAt = createdAt;
         this.createdAtText = createdAtText;
@@ -56,6 +68,9 @@ public class MyProductResponse {
                 product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0),
                 product.getPrice(),
                 product.getDescription(),
+                product.getCategory(),
+                product.getTradeMethod(),
+                product.getLocationNumber(),
                 product.getLocationName(),
                 product.getCreatedAt(),
                 formatCreatedAtText(product.getCreatedAt()),
