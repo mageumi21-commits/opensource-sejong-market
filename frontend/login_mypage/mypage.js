@@ -1,19 +1,14 @@
-const API_BASE_URL = 'http://localhost:8080';
+const {
+  API_BASE_URL,
+  getLoginEmail,
+  normalizeImageUrl,
+  formatPrice,
+  escapeHtml,
+  escapeAttribute,
+  readErrorMessage,
+} = window.SejongMarketUtils;
 const PRODUCT_DETAIL_URL = '../product_detail_ui/product-detail.html?id=';
 const LOGIN_URL = 'login.html';
-
-function getLoginEmail() {
-  try {
-    const loginUser = JSON.parse(localStorage.getItem('loginUser'));
-    if (loginUser && loginUser.email) {
-      return loginUser.email;
-    }
-  } catch (error) {
-    console.warn('loginUser 값을 읽을 수 없습니다.', error);
-  }
-
-  return localStorage.getItem('loginEmail') || '';
-}
 
 function renderUserInfo(user) {
   document.getElementById('profileNickname').textContent = user.nickname || '이름 없음';
@@ -113,27 +108,6 @@ function renderProductImage(product) {
   }
 
   return `<img src="${escapeAttribute(imageUrl)}" alt="상품 이미지">`;
-}
-
-function normalizeImageUrl(path) {
-  if (!path) {
-    return '';
-  }
-
-  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
-    return path;
-  }
-
-  return API_BASE_URL + path;
-}
-
-function formatPrice(price) {
-  const value = Number(price);
-  if (!Number.isFinite(value)) {
-    return '가격 미정';
-  }
-
-  return value.toLocaleString('ko-KR') + '원';
 }
 
 function formatCreatedAt(createdAt) {
@@ -279,33 +253,6 @@ async function deleteProduct(id) {
     loadMyPage();
   } catch (error) {
     alert(error.message || '상품 삭제에 실패했습니다.');
-  }
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
-function escapeAttribute(value) {
-  return escapeHtml(value).replaceAll('`', '&#096;');
-}
-
-async function readErrorMessage(response) {
-  const text = await response.text();
-  if (!text) {
-    return '요청 처리에 실패했습니다.';
-  }
-
-  try {
-    const data = JSON.parse(text);
-    return data.message || data.error || text;
-  } catch (error) {
-    return text;
   }
 }
 
