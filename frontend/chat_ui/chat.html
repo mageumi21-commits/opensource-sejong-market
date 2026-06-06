@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>채팅</title>
   <style>
+    :root {
+      --primary: #D93025;
+      --primary-dark: #B71C1C;
+      --primary-light: #FDECEC;
+      --disabled: #c8cdd3;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -108,7 +115,7 @@
     }
 
     .mine .bubble {
-      background: #ff5057;
+      background: var(--primary);
       color: #fff;
     }
 
@@ -145,7 +152,7 @@
     }
 
     .message-input:focus {
-      border-color: #ff5057;
+      border-color: var(--primary);
     }
 
     .send-btn {
@@ -153,15 +160,19 @@
       height: 48px;
       border: 0;
       border-radius: 8px;
-      background: #ff5057;
+      background: var(--primary);
       color: #fff;
       font-size: 15px;
       font-weight: 900;
       cursor: pointer;
     }
 
+    .send-btn:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
     .send-btn:disabled {
-      background: #c8cdd3;
+      background: var(--disabled);
       cursor: not-allowed;
     }
 
