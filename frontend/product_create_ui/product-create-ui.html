@@ -6,6 +6,18 @@
   <title>상품 등록</title>
 
   <style>
+    :root {
+      --primary: #D93025;
+      --primary-dark: #B71C1C;
+      --primary-light: #FDECEC;
+      --text-primary: #1a1a1a;
+      --text-secondary: var(--text-secondary);
+      --text-muted: var(--text-muted);
+      --border: #e0e0e0;
+      --bg-page: #ffffff;
+      --bg-soft: #f7f8fa;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,37 +26,123 @@
 
     body {
       font-family: Arial, "Noto Sans KR", sans-serif;
-      background-color: #e9ecef;
+      background-color: var(--bg-soft);
       display: flex;
       justify-content: center;
       min-height: 100vh;
-      color: #222;
+      color: var(--text-primary);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
     }
 
     .phone {
-      width: 900px;
+      width: min(920px, 100%);
       min-height: 100vh;
-      background-color: #fff;
+      background-color: var(--bg-page);
       position: relative;
       overflow: visible;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
     }
 
-    .header {
-      height: 60px;
+    .top-banner {
+      width: 100%;
+      height: 44px;
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-bottom: 1px solid #ff5057;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .header {
       position: sticky;
       top: 0;
       z-index: 20;
-      background-color: #ff5057;
+      display: grid;
+      grid-template-columns: 48px 1fr 48px;
+      align-items: center;
+      gap: 12px;
+      min-height: 74px;
+      padding: 12px 22px;
+      border-bottom: 1px solid #eee;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+    }
+
+    .back-btn {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 25px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+
+    .back-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 6px 14px rgba(217, 48, 37, 0.16);
+    }
+
+    .logo-text-wrap {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .logo-main {
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+    }
+
+    .logo-sub {
+      margin-top: 4px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .header-side {
+      width: 42px;
+      height: 42px;
     }
 
     .header-title {
       font-size: 20px;
       font-weight: 800;
-      color: white;
+      color: var(--text-primary);
     }
 
     .content {
@@ -84,8 +182,8 @@
     }
 
     .photo-row.drag-over {
-      background-color: #fff1f2;
-      outline: 2px dashed #ff5057;
+      background-color: var(--primary-light);
+      outline: 2px dashed var(--primary);
       padding: 8px;
     }
 
@@ -125,7 +223,7 @@
     }
 
     .photo-item.active {
-      border: 2px solid #ff5057;
+      border: 2px solid var(--primary);
     }
 
     .photo-item img {
@@ -156,8 +254,8 @@
     }
 
     .photo-remove:hover {
-      color: #ff5057;
-      border-color: #ff5057;
+      color: var(--primary);
+      border-color: var(--primary);
     }
 
     .upload-help {
@@ -256,7 +354,7 @@
     }
 
     .method-box input {
-      accent-color: #ff5057;
+      accent-color: var(--primary);
     }
 
     .description-top {
@@ -347,7 +445,7 @@
       height: 36px;
       transform: translate(-50%, -50%);
       border-radius: 50%;
-      background-color: #ff5057;
+      background-color: var(--primary);
       color: white;
       font-size: 17px;
       font-weight: 900;
@@ -365,11 +463,11 @@
       border-radius: 8px;
       background-color: #f3f4f5;
       font-size: 15px;
-      color: #555;
+      color: var(--text-secondary);
     }
 
     .selected-location-box strong {
-      color: #ff5057;
+      color: var(--primary);
     }
 
     .bottom-bar {
@@ -384,7 +482,7 @@
       height: 50px;
       border: none;
       border-radius: 8px;
-      background-color: #ff5057;
+      background-color: var(--primary);
       color: white;
       font-size: 17px;
       font-weight: 800;
@@ -392,7 +490,7 @@
     }
 
     .submit-btn:hover {
-      background-color: #f0444b;
+      background-color: var(--primary-dark);
     }
 
     .submit-btn:disabled {
@@ -403,6 +501,32 @@
     @media (max-width: 900px) {
       body {
         background-color: white;
+      }
+
+      .top-banner {
+        height: 40px;
+        padding: 0 14px;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .header {
+        grid-template-columns: 42px 1fr 42px;
+        min-height: 66px;
+        padding: 10px 14px;
+      }
+
+      .logo-img {
+        width: 36px;
+        height: 36px;
+      }
+
+      .logo-main {
+        font-size: 18px;
+      }
+
+      .logo-sub {
+        font-size: 10px;
       }
 
       .phone {
@@ -427,8 +551,18 @@
 
 <body>
   <div class="phone">
+    <div class="top-banner">세종대학교 학생들을 위한 안전한 중고거래 플랫폼, 세종마켓!</div>
+
     <header class="header">
-      <h1 class="header-title">상품 등록</h1>
+      <button class="back-btn" type="button" id="backBtn" aria-label="뒤로가기">&lt;</button>
+      <a class="header-brand" href="../main_ui/index.html" aria-label="세종마켓 메인으로 이동">
+        <img src="../login_mypage/logo.png" alt="세종마켓 로고" class="logo-img" />
+        <div class="logo-text-wrap">
+          <span class="logo-main">세종마켓</span>
+          <span class="logo-sub">상품 등록</span>
+        </div>
+      </a>
+      <span class="header-side"></span>
     </header>
 
     <main class="content">
@@ -581,6 +715,20 @@
   </div>
 
   <script>
+    const PRODUCT_LIST_URL = "../main_ui/product-list.html";
+    const backBtn = document.getElementById("backBtn");
+
+    function goBack() {
+      if (document.referrer && history.length > 1) {
+        history.back();
+        return;
+      }
+
+      location.href = PRODUCT_LIST_URL;
+    }
+
+    backBtn.addEventListener("click", goBack);
+
     /* =========================
        지도 위치 선택
     ========================= */
