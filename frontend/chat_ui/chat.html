@@ -203,11 +203,17 @@
     const messageForm = document.getElementById("messageForm");
     const messageInput = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
+    const PRODUCT_LIST_URL = "../main_ui/product-list.html";
     let pollingId = null;
     let latestRenderedIds = "";
 
     document.getElementById("backBtn").addEventListener("click", () => {
-      history.back();
+      if (history.length > 1) {
+        history.back();
+        return;
+      }
+
+      location.href = PRODUCT_LIST_URL;
     });
 
     function getLoginEmail() {
