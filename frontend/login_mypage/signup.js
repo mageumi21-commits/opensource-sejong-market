@@ -2,7 +2,7 @@
 //  세종마켓 — 회원가입 스크립트 (signup.js)
 // ===========================
 
-const API_BASE_URL = 'http://localhost:8080';
+const { API_BASE_URL, readErrorMessage } = window.SejongMarketUtils;
 
 // ── 단과대학별 학과 목록 ──
 const deptMap = {
@@ -312,9 +312,4 @@ async function handleSignup() {
 
 function getSignupEmail() {
   return `${emailIdInput.value.trim()}@sju.ac.kr`;
-}
-
-async function readErrorMessage(response) {
-  const text = await response.text();
-  return text || '요청 처리 중 오류가 발생했습니다.';
 }

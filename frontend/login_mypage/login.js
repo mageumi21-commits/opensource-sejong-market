@@ -2,7 +2,7 @@
 //  세종마켓 — 로그인 스크립트 (login.js)
 // ===========================
 
-const API_BASE_URL = 'http://localhost:8080';
+const { API_BASE_URL, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
 
 // ── 탭 전환 ──
 const tabs = document.querySelectorAll('.tab');
@@ -37,7 +37,7 @@ async function handleLogin() {
     return;
   }
 
-  const email = normalizeEmail(id);
+  const email = toSejongEmail(id);
   const loginBtn = document.querySelector('#tab-id .login-btn');
 
   try {
@@ -74,19 +74,6 @@ async function handleLogin() {
 
 function handleStudentLogin() {
   alert('학번 로그인은 아직 백엔드 API가 없어 이메일 로그인으로 이용해 주세요.');
-}
-
-function normalizeEmail(id) {
-  if (id.includes('@')) {
-    return id;
-  }
-
-  return `${id}@sju.ac.kr`;
-}
-
-async function readErrorMessage(response) {
-  const text = await response.text();
-  return text || '요청 처리 중 오류가 발생했습니다.';
 }
 
 // ── 엔터 키로 로그인 ──

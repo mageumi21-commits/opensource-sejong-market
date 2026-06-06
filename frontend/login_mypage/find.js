@@ -2,7 +2,7 @@
 //  세종마켓 - 아이디/비밀번호 찾기 스크립트
 // ===========================
 
-const API_BASE_URL = 'http://localhost:8080';
+const { API_BASE_URL, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
 
 const isFindId = !!document.getElementById('tab-student');
 const isFindPw = !!document.getElementById('pw-step1');
@@ -252,28 +252,6 @@ async function resendCode() {
     alert('인증 코드를 재발송했어요.');
   } catch (error) {
     alert(error.message || '인증 코드 재발송에 실패했습니다.');
-  }
-}
-
-function toSejongEmail(value) {
-  const trimmed = value.trim().toLowerCase();
-  if (trimmed.includes('@')) {
-    return trimmed;
-  }
-  return `${trimmed}@sju.ac.kr`;
-}
-
-async function readErrorMessage(response) {
-  const text = await response.text();
-  if (!text) {
-    return '요청 처리에 실패했습니다.';
-  }
-
-  try {
-    const data = JSON.parse(text);
-    return data.message || data.error || text;
-  } catch (error) {
-    return text;
   }
 }
 
