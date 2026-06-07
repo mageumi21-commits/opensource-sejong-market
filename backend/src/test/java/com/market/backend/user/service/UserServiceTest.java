@@ -9,6 +9,7 @@ import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
+import com.market.backend.user.dto.LoginResponse;
 import com.market.backend.user.dto.PasswordFindCodeSendRequest;
 import com.market.backend.user.dto.PasswordFindResponse;
 import com.market.backend.user.dto.PasswordFindVerifyRequest;
@@ -87,9 +88,26 @@ class UserServiceTest {
         when(userRepository.findByEmail("student@sju.ac.kr"))
                 .thenReturn(Optional.of(user("student@sju.ac.kr", "password123", "테스트유저", "23011234")));
 
-        userService.login(request);
+        LoginResponse response = userService.login(request);
 
+        assertThat(response.getEmail()).isEqualTo("student@sju.ac.kr");
+        assertThat(response.getNickname()).isEqualTo("테스트유저");
+        assertThat(response.getStudentId()).isEqualTo("23011234");
         verify(userRepository).findByEmail("student@sju.ac.kr");
+    }
+
+    @Test
+    void login_acceptsStudentIdWithCorrectPassword() {
+        LoginRequest request = studentLoginRequest("23011234", "password123");
+        when(userRepository.findByStudentId("23011234"))
+                .thenReturn(Optional.of(user("student@sju.ac.kr", "password123", "테스트유저", "23011234")));
+
+        LoginResponse response = userService.login(request);
+
+        assertThat(response.getEmail()).isEqualTo("student@sju.ac.kr");
+        assertThat(response.getNickname()).isEqualTo("테스트유저");
+        assertThat(response.getStudentId()).isEqualTo("23011234");
+        verify(userRepository).findByStudentId("23011234");
     }
 
     @Test
@@ -107,6 +125,16 @@ class UserServiceTest {
         LoginRequest request = loginRequest("student@sju.ac.kr", "wrong");
         when(userRepository.findByEmail("student@sju.ac.kr"))
                 .thenReturn(Optional.of(user("student@sju.ac.kr", "password123", "테스트유저", "23011234")));
+
+        assertThatThrownBy(() -> userService.login(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
+    }
+
+    @Test
+    void login_rejectsUnknownStudentId() {
+        LoginRequest request = studentLoginRequest("99999999", "password123");
+        when(userRepository.findByStudentId("99999999")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.login(request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -204,6 +232,13 @@ class UserServiceTest {
     private LoginRequest loginRequest(String email, String password) {
         LoginRequest request = new LoginRequest();
         ReflectionTestUtils.setField(request, "email", email);
+        ReflectionTestUtils.setField(request, "password", password);
+        return request;
+    }
+
+    private LoginRequest studentLoginRequest(String studentId, String password) {
+        LoginRequest request = new LoginRequest();
+        ReflectionTestUtils.setField(request, "studentId", studentId);
         ReflectionTestUtils.setField(request, "password", password);
         return request;
     }

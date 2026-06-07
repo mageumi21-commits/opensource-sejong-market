@@ -5,6 +5,7 @@ import com.market.backend.user.dto.EmailVerificationRequest;
 import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
+import com.market.backend.user.dto.LoginResponse;
 import com.market.backend.user.dto.MyPageResponse;
 import com.market.backend.user.dto.PasswordFindCodeSendRequest;
 import com.market.backend.user.dto.PasswordFindResponse;
@@ -53,11 +54,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public LoginResponse login(@RequestBody LoginRequest request) {
 
-        userService.login(request);
-
-        return "\uB85C\uADF8\uC778 \uC131\uACF5";
+        return userService.login(request);
     }
 
     @PostMapping("/find-id")
