@@ -62,9 +62,16 @@ window.SejongMarketUtils = (function () {
       return queryApiBaseUrl.replace(/\/$/, '');
     }
 
+    let storedApiBaseUrl = '';
+    try {
+      storedApiBaseUrl = localStorage.getItem(API_BASE_URL_STORAGE_KEY) || '';
+    } catch (error) {
+      console.warn('API_BASE_URL 저장값을 읽을 수 없습니다.', error);
+    }
+
     const configuredApiBaseUrl =
+      storedApiBaseUrl ||
       window.SEJONG_MARKET_API_BASE_URL ||
-      localStorage.getItem(API_BASE_URL_STORAGE_KEY) ||
       DEFAULT_API_BASE_URL;
 
     return configuredApiBaseUrl.replace(/\/$/, '');
