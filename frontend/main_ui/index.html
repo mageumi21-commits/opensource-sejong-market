@@ -491,6 +491,21 @@
         text-overflow: ellipsis;
       }
 
+      .sale-status-badge {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
+        padding: 0 7px;
+        margin-right: 6px;
+        border: 1px solid #bdbdbd;
+        border-radius: 4px;
+        background: #e5e5e5;
+        color: #111111;
+        font-size: 12px;
+        font-weight: 900;
+        vertical-align: 1px;
+      }
+
       .product-price {
         font-size: 18px;
         font-weight: 900;
@@ -895,8 +910,11 @@
         products.forEach(product => {
           const card = document.createElement("article");
           const imageHtml = createProductImageHtml(product);
-          const badgeHtml = product.badgeText
-            ? `<span class="care">${escapeHtml(product.badgeText)}</span>`
+          const productName = product.productName || product.name || "상품명 없음";
+          const saleStatusText = getSaleStatusText(product);
+          const imageBadgeText = getImageBadgeText(product);
+          const badgeHtml = imageBadgeText
+            ? `<span class="care">${escapeHtml(imageBadgeText)}</span>`
             : "";
 
           card.className = "product-card";
@@ -913,7 +931,9 @@
             </div>
 
             <div class="product-info">
-              <p class="product-name">${escapeHtml(product.name || "상품명 없음")}</p>
+              <p class="product-name">
+                <span class="sale-status-badge">${escapeHtml(saleStatusText)}</span>${escapeHtml(productName)}
+              </p>
               <p class="product-price">${formatPrice(product.price)}</p>
               <div class="product-meta">
                 <span>${escapeHtml(product.locationName || "위치 미정")}</span>
@@ -996,6 +1016,27 @@
 
       function getLatestFallbackProducts(products, count) {
         return [...products].slice(-count).reverse();
+      }
+
+      function getSaleStatusText(product) {
+        if (product.saleStatusText) {
+          return product.saleStatusText;
+        }
+
+        if (product.status === "sold-out" || product.saleStatus === "SOLD_OUT") {
+          return "판매완료";
+        }
+
+        return "판매중";
+      }
+
+      function getImageBadgeText(product) {
+        const badgeText = product.badgeText || "";
+        if (badgeText === "판매중" || badgeText === "판매완료") {
+          return "";
+        }
+
+        return badgeText;
       }
 
       function escapeHtml(value) {
