@@ -494,10 +494,22 @@
         position: absolute;
         right: 12px;
         top: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.86);
         color: white;
         font-size: 27px;
         text-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
         z-index: 5;
+        display: grid;
+        place-items: center;
+        line-height: 1;
+      }
+
+      .heart.liked {
+        color: var(--primary);
+        text-shadow: none;
       }
 
       .care {
@@ -783,7 +795,7 @@
         afterLogoutUrl: "index.html"
       });
 
-      const { API_BASE_URL } = window.SejongMarketUtils;
+      const { API_BASE_URL, getLoginEmail, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
       const API_URLS = {
         recommendProducts: `${API_BASE_URL}/api/products/recommendations?limit=5`,
         latestProducts: `${API_BASE_URL}/api/products/latest?limit=5`,
@@ -905,12 +917,12 @@
 
       async function loadMainProducts() {
         const recommendProducts = await fetchProducts(
-          API_URLS.recommendProducts,
+          withLoginEmail(API_URLS.recommendProducts),
           getRandomProducts(fallbackProducts, 5)
         );
 
         const latestProducts = await fetchProducts(
-          API_URLS.latestProducts,
+          withLoginEmail(API_URLS.latestProducts),
           getLatestFallbackProducts(fallbackProducts, 5)
         );
 
@@ -982,7 +994,7 @@
               ${badgeHtml}
               ${imageHtml}
               <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
-              <button class="heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+              <button class="heart ${product.liked ? "liked" : ""}" type="button" aria-label="찜하기" onclick="event.stopPropagation(); toggleProductLike(this, ${Number(product.id)})">${product.liked ? "♥" : "♡"}</button>
             </div>
 
             <div class="product-info">
@@ -1049,13 +1061,50 @@
         return numberPrice.toLocaleString("ko-KR") + "원";
       }
 
-      function toggleHeart(button) {
-        if (button.textContent === "♡") {
-          button.textContent = "♥";
-          button.style.color = "#d93025";
-        } else {
-          button.textContent = "♡";
-          button.style.color = "white";
+      function withLoginEmail(url) {
+        const userEmail = getNormalizedLoginEmail();
+        if (!userEmail) {
+          return url;
+        }
+
+        const separator = url.includes("?") ? "&" : "?";
+        return `${url}${separator}userEmail=${encodeURIComponent(userEmail)}`;
+      }
+
+      function getNormalizedLoginEmail() {
+        const loginEmail = getLoginEmail();
+        return loginEmail ? toSejongEmail(loginEmail) : "";
+      }
+
+      async function toggleProductLike(button, productId) {
+        const userEmail = getNormalizedLoginEmail();
+        if (!userEmail) {
+          alert("로그인이 필요합니다.");
+          location.href = "../login_mypage/login.html";
+          return;
+        }
+
+        const currentlyLiked = button.classList.contains("liked");
+        button.disabled = true;
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/products/${encodeURIComponent(productId)}/likes?userEmail=${encodeURIComponent(userEmail)}`,
+            { method: currentlyLiked ? "DELETE" : "POST" }
+          );
+
+          if (!response.ok) {
+            throw new Error(await readErrorMessage(response));
+          }
+
+          const result = await response.json();
+          const nextLiked = Boolean(result.liked);
+          button.classList.toggle("liked", nextLiked);
+          button.textContent = nextLiked ? "♥" : "♡";
+        } catch (error) {
+          alert(error.message || "찜하기 처리에 실패했습니다.");
+        } finally {
+          button.disabled = false;
         }
       }
 

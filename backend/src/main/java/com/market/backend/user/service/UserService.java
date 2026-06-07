@@ -1,6 +1,8 @@
 package com.market.backend.user.service;
 
 import com.market.backend.product.entity.Product;
+import com.market.backend.product.entity.ProductLike;
+import com.market.backend.product.repository.ProductLikeRepository;
 import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final EmailVerificationService emailVerificationService;
     private final ProductRepository productRepository;
+    private final ProductLikeRepository productLikeRepository;
 
     public void signup(SignupRequest request) {
         String email = emailVerificationService.requireVerifiedEmail(request.getEmail());
@@ -65,8 +68,12 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("\uC874\uC7AC\uD558\uC9C0 \uC54A\uB294 \uC0AC\uC6A9\uC790\uC785\uB2C8\uB2E4."));
 
         List<Product> products = productRepository.findBySellerOrderByCreatedAtDesc(user);
+        List<Product> likedProducts = productLikeRepository.findByUserEmailOrderByIdDesc(user.getEmail())
+                .stream()
+                .map(ProductLike::getProduct)
+                .toList();
 
-        return MyPageResponse.of(user, products);
+        return MyPageResponse.of(user, products, likedProducts);
     }
 
     public FindIdResponse findId(FindIdRequest request) {

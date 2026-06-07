@@ -144,6 +144,14 @@
 }
 
 /* ── 오른쪽 상품 패널 ── */
+.mypage-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .products-panel {
   flex: 1;
   min-width: 0;
@@ -203,6 +211,10 @@
 
 .product-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.product-card.readonly .product-actions {
+  display: none;
 }
 
 .product-card:focus-visible {

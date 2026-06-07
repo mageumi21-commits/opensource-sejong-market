@@ -199,6 +199,29 @@
       font-weight: 900;
     }
 
+    .like-btn {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      line-height: 1;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+      z-index: 8;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+    }
+
+    .like-btn.liked {
+      color: var(--primary);
+      text-shadow: none;
+    }
+
     .placeholder {
       min-height: 280px;
       height: 100%;
@@ -549,7 +572,7 @@
       afterLogoutUrl: "../main_ui/product-list.html"
     });
 
-    const { API_BASE_URL, pageUrl, chatRoomUrl } = window.SejongMarketUtils;
+    const { API_BASE_URL, pageUrl, chatRoomUrl, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
     const PRODUCT_LIST_URL = pageUrl("products");
 
     const params = new URLSearchParams(location.search);
@@ -582,6 +605,11 @@
       }
 
       return localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "";
+    }
+
+    function getNormalizedLoginEmail() {
+      const loginEmail = getLoginEmail();
+      return loginEmail ? toSejongEmail(loginEmail) : "";
     }
 
     function formatPrice(price) {
@@ -623,11 +651,13 @@
 
     function renderImageArea(product, productName) {
       const images = getProductImages(product);
+      const likeButtonHtml = renderLikeButton(product);
 
       if (images.length === 0) {
         return `
           <section class="image-area">
             <div class="hero">
+              ${likeButtonHtml}
               <div class="placeholder">등록된 이미지가 없습니다.</div>
             </div>
           </section>
@@ -650,10 +680,23 @@
         <section class="image-area">
           <div class="hero">
             <img id="mainImage" src="${escapeHtml(images[0])}" alt="${productName} 이미지" />
+            ${likeButtonHtml}
             <div class="image-count" id="imageCount">1 / ${images.length}</div>
           </div>
           ${images.length > 1 ? `<div class="thumbnail-list">${thumbnailHtml}</div>` : ""}
         </section>
+      `;
+    }
+
+    function renderLikeButton(product) {
+      const liked = Boolean(product && product.liked);
+      return `
+        <button
+          class="like-btn ${liked ? "liked" : ""}"
+          type="button"
+          id="likeBtn"
+          aria-label="찜하기"
+        >${liked ? "♥" : "♡"}</button>
       `;
     }
 
@@ -685,6 +728,45 @@
             imageCount.textContent = `${Number(button.dataset.index) + 1} / ${thumbnailButtons.length}`;
           }
         });
+      });
+    }
+
+    function bindLikeEvent() {
+      const likeBtn = document.getElementById("likeBtn");
+      if (!likeBtn || !currentProduct) {
+        return;
+      }
+
+      likeBtn.addEventListener("click", async () => {
+        const userEmail = getNormalizedLoginEmail();
+        if (!userEmail) {
+          alert("로그인이 필요합니다.");
+          location.href = "../login_mypage/login.html";
+          return;
+        }
+
+        const currentlyLiked = likeBtn.classList.contains("liked");
+        likeBtn.disabled = true;
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/products/${encodeURIComponent(currentProduct.id || productId)}/likes?userEmail=${encodeURIComponent(userEmail)}`,
+            { method: currentlyLiked ? "DELETE" : "POST" }
+          );
+
+          if (!response.ok) {
+            throw new Error(await readErrorMessage(response));
+          }
+
+          const result = await response.json();
+          currentProduct = { ...currentProduct, liked: Boolean(result.liked) };
+          likeBtn.classList.toggle("liked", currentProduct.liked);
+          likeBtn.textContent = currentProduct.liked ? "♥" : "♡";
+        } catch (error) {
+          alert(error.message || "찜하기 처리에 실패했습니다.");
+        } finally {
+          likeBtn.disabled = false;
+        }
       });
     }
 
@@ -803,6 +885,7 @@
       `;
 
       bindImageEvents();
+      bindLikeEvent();
       updateChatButtonState(product);
       updateSoldOutButtonState(product);
     }
@@ -826,7 +909,9 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+        const loginEmail = getNormalizedLoginEmail();
+        const query = loginEmail ? `?userEmail=${encodeURIComponent(loginEmail)}` : "";
+        const response = await fetch(`${API_BASE_URL}/api/products/${productId}${query}`);
         if (!response.ok) {
           throw new Error(await response.text());
         }

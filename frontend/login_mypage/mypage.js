@@ -38,7 +38,29 @@ function renderProducts(products) {
   emptyState.style.display = 'none';
 
   products.forEach(function (product) {
-    list.appendChild(createProductCard(product));
+    list.appendChild(createProductCard(product, { showActions: true }));
+  });
+}
+
+function renderLikedProducts(products) {
+  const list = document.getElementById('likedProductList');
+  const emptyState = document.getElementById('likedEmptyState');
+  const statEl = document.getElementById('statWishlist');
+
+  statEl.textContent = products.length;
+  list.innerHTML = '';
+
+  if (products.length === 0) {
+    list.style.display = 'none';
+    emptyState.style.display = 'flex';
+    return;
+  }
+
+  list.style.display = 'flex';
+  emptyState.style.display = 'none';
+
+  products.forEach(function (product) {
+    list.appendChild(createProductCard(product, { showActions: false }));
   });
 }
 
@@ -46,13 +68,14 @@ function getProductTitle(product) {
   return product.title || product.productName || product.name || '';
 }
 
-function createProductCard(product) {
+function createProductCard(product, options = {}) {
   const card = document.createElement('div');
   const productId = product.id;
   const status = getProductStatus(product);
   const statusText = getProductStatusText(product);
+  const showActions = options.showActions !== false;
 
-  card.className = 'product-card';
+  card.className = `product-card${showActions ? '' : ' readonly'}`;
   if (productId) {
     card.tabIndex = 0;
     card.setAttribute('role', 'link');
@@ -82,25 +105,29 @@ function createProductCard(product) {
         <span><i class="ti ti-clock"></i> ${escapeHtml(product.createdAtText || formatCreatedAt(product.createdAt))}</span>
       </div>
     </div>
-    <div class="product-actions">
-      <button class="action-icon-btn" type="button" title="수정" data-action="edit">
-        <i class="ti ti-pencil"></i>
-      </button>
-      <button class="action-icon-btn danger" type="button" title="삭제" data-action="delete">
-        <i class="ti ti-trash"></i>
-      </button>
-    </div>
+    ${showActions ? `
+      <div class="product-actions">
+        <button class="action-icon-btn" type="button" title="수정" data-action="edit">
+          <i class="ti ti-pencil"></i>
+        </button>
+        <button class="action-icon-btn danger" type="button" title="삭제" data-action="delete">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>
+    ` : ''}
   `;
 
-  card.querySelector('[data-action="edit"]').addEventListener('click', function (event) {
-    event.stopPropagation();
-    editProduct(product);
-  });
+  if (showActions) {
+    card.querySelector('[data-action="edit"]').addEventListener('click', function (event) {
+      event.stopPropagation();
+      editProduct(product);
+    });
 
-  card.querySelector('[data-action="delete"]').addEventListener('click', function (event) {
-    event.stopPropagation();
-    deleteProduct(productId);
-  });
+    card.querySelector('[data-action="delete"]').addEventListener('click', function (event) {
+      event.stopPropagation();
+      deleteProduct(productId);
+    });
+  }
 
   return card;
 }
@@ -299,13 +326,16 @@ async function loadMyPage() {
 
     const data = await response.json();
     const products = Array.isArray(data.products) ? data.products : [];
+    const likedProducts = Array.isArray(data.likedProducts) ? data.likedProducts : [];
 
     renderUserInfo(data);
     renderProducts(products);
+    renderLikedProducts(likedProducts);
   } catch (error) {
     console.error(error);
     renderUserInfo({ email });
     document.getElementById('statProducts').textContent = '0';
+    document.getElementById('statWishlist').textContent = '0';
     showMessage(error.message || '마이페이지 정보를 불러오지 못했습니다.');
   }
 }
