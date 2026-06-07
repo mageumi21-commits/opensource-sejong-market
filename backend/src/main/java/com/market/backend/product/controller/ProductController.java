@@ -2,6 +2,7 @@ package com.market.backend.product.controller;
 
 import com.market.backend.product.dto.ProductListResponse;
 import com.market.backend.product.dto.ProductResponse;
+import com.market.backend.product.dto.ProductSaleStatusRequest;
 import com.market.backend.product.dto.ProductUpdateRequest;
 import com.market.backend.product.service.ProductService;
 import java.util.List;
@@ -69,6 +70,14 @@ public class ProductController {
     ) {
         productService.deleteProduct(productId, sellerEmail);
         return "상품 삭제 성공";
+    }
+
+    @PatchMapping("/{productId}/sold-out")
+    public ProductResponse markSoldOut(
+            @PathVariable Long productId,
+            @RequestBody ProductSaleStatusRequest request
+    ) {
+        return productService.markSoldOut(productId, request.getSellerEmail());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
