@@ -5,12 +5,15 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +48,10 @@ public class Product {
     @Column(nullable = false)
     private String tradeMethod;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(20) default 'ON_SALE'")
+    private ProductSaleStatus saleStatus = ProductSaleStatus.ON_SALE;
+
     private Integer locationNumber;
 
     private String locationName;
@@ -77,6 +84,7 @@ public class Product {
         this.price = price;
         this.description = description;
         this.tradeMethod = tradeMethod;
+        this.saleStatus = ProductSaleStatus.ON_SALE;
         this.locationNumber = locationNumber;
         this.locationName = locationName;
         this.imagePaths = imagePaths;
@@ -101,5 +109,21 @@ public class Product {
         this.locationNumber = locationNumber;
         this.locationName = locationName;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void markSoldOut() {
+        this.saleStatus = ProductSaleStatus.SOLD_OUT;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public ProductSaleStatus getSaleStatus() {
+        return saleStatus == null ? ProductSaleStatus.ON_SALE : saleStatus;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (saleStatus == null) {
+            saleStatus = ProductSaleStatus.ON_SALE;
+        }
     }
 }

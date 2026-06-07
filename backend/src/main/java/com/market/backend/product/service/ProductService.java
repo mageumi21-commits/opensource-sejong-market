@@ -107,6 +107,15 @@ public class ProductService {
         productRepository.delete(product);
     }
 
+    @Transactional
+    public ProductResponse markSoldOut(Long productId, String sellerEmail) {
+        Product product = findProduct(productId);
+        validateOwner(product, sellerEmail);
+        product.markSoldOut();
+
+        return ProductResponse.from(product);
+    }
+
     @Transactional(readOnly = true)
     public List<ProductListResponse> getProducts(String keyword, String category, String sort, String type) {
         List<Product> products = productRepository.findAllByOrderByCreatedAtDesc()
