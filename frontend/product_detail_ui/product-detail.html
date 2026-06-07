@@ -70,7 +70,7 @@
       top: 0;
       z-index: 20;
       display: grid;
-      grid-template-columns: 48px 1fr 48px;
+      grid-template-columns: 48px 1fr auto;
       align-items: center;
       gap: 12px;
       min-height: 74px;
@@ -131,8 +131,42 @@
     }
 
     .header-side {
-      width: 42px;
-      height: 42px;
+      width: auto;
+      min-width: 42px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .auth-user-name {
+      max-width: 96px;
+      overflow: hidden;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .auth-login-btn,
+    .auth-action-btn {
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .auth-logout-btn {
+      border-color: #ddd;
+      background: #fff;
+      color: var(--text-primary);
     }
 
     .image-area {
@@ -395,9 +429,25 @@
       }
 
       .header {
-        grid-template-columns: 42px 1fr 42px;
+        grid-template-columns: 42px 1fr auto;
         min-height: 66px;
         padding: 10px 14px;
+      }
+
+      .header-side {
+        gap: 4px;
+      }
+
+      .auth-user-name {
+        max-width: 60px;
+        font-size: 11px;
+      }
+
+      .auth-login-btn,
+      .auth-action-btn {
+        height: 30px;
+        padding: 0 7px;
+        font-size: 11px;
       }
 
       .logo-img {
@@ -454,7 +504,7 @@
           <span class="logo-sub">상품 상세</span>
         </div>
       </a>
-      <span class="header-side"></span>
+      <div class="header-side auth-area" id="authArea"></div>
     </header>
 
     <main id="app">
@@ -467,7 +517,15 @@
     </div>
   </div>
 
+  <script src="../common/app-utils.js"></script>
   <script>
+    window.SejongMarketUtils.renderAuthArea("authArea", {
+      loginUrl: "../login_mypage/login.html",
+      signupUrl: "../login_mypage/login.html",
+      mypageUrl: "../login_mypage/mypage.html",
+      afterLogoutUrl: "../main_ui/product-list.html"
+    });
+
     const API_BASE_URL = "http://localhost:8080";
     const PRODUCT_LIST_URL = "../main_ui/product-list.html";
     const CHAT_URL = "../chat_ui/chat.html";

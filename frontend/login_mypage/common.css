@@ -92,6 +92,39 @@ body {
   opacity: 1;
 }
 
+.nav-auth-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-auth-item .auth-user-name {
+  max-width: 110px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-auth-item .auth-login-btn,
+.nav-auth-item .auth-action-btn {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nav-auth-item .auth-login-btn:hover,
+.nav-auth-item .auth-action-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
 /* ── 페이지 레이아웃 ── */
 .page {
   min-height: calc(100vh - 48px);
