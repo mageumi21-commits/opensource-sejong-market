@@ -2,8 +2,11 @@ package com.market.backend.product.service;
 
 import com.market.backend.product.dto.ProductResponse;
 import com.market.backend.product.dto.ProductListResponse;
+import com.market.backend.product.dto.ProductLikeResponse;
 import com.market.backend.product.dto.ProductUpdateRequest;
 import com.market.backend.product.entity.Product;
+import com.market.backend.product.entity.ProductLike;
+import com.market.backend.product.repository.ProductLikeRepository;
 import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.entity.User;
 import com.market.backend.user.repository.UserRepository;
@@ -14,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,16 +32,22 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ProductLikeRepository productLikeRepository;
 
     @Value("${product.image-upload-dir:uploads/products}")
     private String imageUploadDir;
 
     @Transactional(readOnly = true)
     public ProductResponse getProduct(Long productId) {
+        return getProduct(productId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponse getProduct(Long productId, String userEmail) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found."));
 
-        return ProductResponse.from(product);
+        return ProductResponse.from(product, isLikedByEmail(product, userEmail));
     }
 
     @Transactional
@@ -104,6 +114,7 @@ public class ProductService {
     public void deleteProduct(Long productId, String sellerEmail) {
         Product product = findProduct(productId);
         validateOwner(product, sellerEmail);
+        productLikeRepository.deleteByProduct(product);
         productRepository.delete(product);
     }
 
@@ -118,6 +129,11 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductListResponse> getProducts(String keyword, String category, String sort, String type) {
+        return getProducts(keyword, category, sort, type, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductListResponse> getProducts(String keyword, String category, String sort, String type, String userEmail) {
         List<Product> products = productRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .filter(product -> matchesKeyword(product, keyword))
@@ -128,33 +144,73 @@ public class ProductService {
             List<Product> recommendedProducts = new ArrayList<>(products);
             Collections.shuffle(recommendedProducts);
             return recommendedProducts.stream()
-                    .map(ProductListResponse::from)
+                    .map(product -> ProductListResponse.from(product, isLikedByEmail(product, userEmail)))
                     .toList();
         }
 
         return products.stream()
-                .map(ProductListResponse::from)
+                .map(product -> ProductListResponse.from(product, isLikedByEmail(product, userEmail)))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ProductListResponse> getLatestProducts(int limit) {
+        return getLatestProducts(limit, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductListResponse> getLatestProducts(int limit, String userEmail) {
         return productRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .limit(normalizeLimit(limit))
-                .map(ProductListResponse::from)
+                .map(product -> ProductListResponse.from(product, isLikedByEmail(product, userEmail)))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ProductListResponse> getRecommendedProducts(int limit) {
+        return getRecommendedProducts(limit, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductListResponse> getRecommendedProducts(int limit, String userEmail) {
         List<Product> products = new ArrayList<>(productRepository.findAllByOrderByCreatedAtDesc());
         Collections.shuffle(products);
 
         return products.stream()
                 .limit(normalizeLimit(limit))
-                .map(ProductListResponse::from)
+                .map(product -> ProductListResponse.from(product, isLikedByEmail(product, userEmail)))
                 .toList();
+    }
+
+    @Transactional
+    public ProductLikeResponse likeProduct(Long productId, String userEmail) {
+        String normalizedEmail = findUser(userEmail).getEmail();
+        Product product = findProduct(productId);
+
+        if (!productLikeRepository.existsByUserEmailAndProduct(normalizedEmail, product)) {
+            productLikeRepository.save(new ProductLike(normalizedEmail, product));
+        }
+
+        return ProductLikeResponse.of(productId, true);
+    }
+
+    @Transactional
+    public ProductLikeResponse unlikeProduct(Long productId, String userEmail) {
+        String normalizedEmail = findUser(userEmail).getEmail();
+        Product product = findProduct(productId);
+
+        productLikeRepository.findByUserEmailAndProduct(normalizedEmail, product)
+                .ifPresent(productLikeRepository::delete);
+
+        return ProductLikeResponse.of(productId, false);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductLikeResponse getLikeStatus(Long productId, String userEmail) {
+        String normalizedEmail = findUser(userEmail).getEmail();
+        Product product = findProduct(productId);
+        return ProductLikeResponse.of(productId, productLikeRepository.existsByUserEmailAndProduct(normalizedEmail, product));
     }
 
     private boolean matchesKeyword(Product product, String keyword) {
@@ -180,6 +236,16 @@ public class ProductService {
 
     private boolean containsIgnoreCase(String value, String lowerKeyword) {
         return value != null && value.toLowerCase().contains(lowerKeyword);
+    }
+
+    private boolean isLikedByEmail(Product product, String userEmail) {
+        if (!StringUtils.hasText(userEmail)) {
+            return false;
+        }
+
+        return userRepository.findByEmail(normalizeSejongEmail(userEmail))
+                .map(user -> productLikeRepository.existsByUserEmailAndProduct(user.getEmail(), product))
+                .orElse(false);
     }
 
     private long normalizeLimit(int limit) {
@@ -230,6 +296,23 @@ public class ProductService {
 
         return userRepository.findByEmail(sellerEmail.trim())
                 .orElseThrow(() -> new IllegalArgumentException("판매자 정보를 찾을 수 없습니다."));
+    }
+
+    private User findUser(String email) {
+        if (!StringUtils.hasText(email)) {
+            throw new IllegalArgumentException("User email is required.");
+        }
+
+        return userRepository.findByEmail(normalizeSejongEmail(email))
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+    }
+
+    private String normalizeSejongEmail(String email) {
+        String value = email.trim().toLowerCase(Locale.ROOT);
+        if (!value.contains("@")) {
+            value = value + "@sju.ac.kr";
+        }
+        return value;
     }
 
     private Integer parsePrice(String price) {

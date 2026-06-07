@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.market.backend.product.repository.ProductLikeRepository;
 import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
@@ -37,6 +38,9 @@ class UserServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private ProductLikeRepository productLikeRepository;
 
     @InjectMocks
     private UserService userService;
@@ -224,6 +228,7 @@ class UserServiceTest {
         User user = user("student@sju.ac.kr", "password123", "테스트유저", "23011234");
         when(userRepository.findByEmail("student@sju.ac.kr")).thenReturn(Optional.of(user));
         when(productRepository.findBySellerOrderByCreatedAtDesc(user)).thenReturn(List.of());
+        when(productLikeRepository.findByUserEmailOrderByIdDesc("student@sju.ac.kr")).thenReturn(List.of());
 
         var response = userService.getMyPage("student@sju.ac.kr");
 
@@ -231,6 +236,7 @@ class UserServiceTest {
         assertThat(response.getNickname()).isEqualTo("테스트유저");
         assertThat(response.getStudentId()).isEqualTo("23011234");
         assertThat(response.getProducts()).isEmpty();
+        assertThat(response.getLikedProducts()).isEmpty();
     }
 
     private SignupRequest signupRequest(String email, String password, String nickname, String studentId) {

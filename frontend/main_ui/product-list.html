@@ -408,10 +408,22 @@
       position: absolute;
       right: 12px;
       top: 10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.86);
       color: white;
       font-size: 27px;
       text-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
       z-index: 5;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+    }
+
+    .heart.liked {
+      color: var(--primary);
+      text-shadow: none;
     }
 
     .care {
@@ -764,7 +776,7 @@
       백엔드가 따로 배포되어 있으면 URL에 ?apiBaseUrl=https://백엔드주소 를 붙이거나
       localStorage의 SEJONG_MARKET_API_BASE_URL 값을 바꾸면 됩니다.
     */
-    const { API_BASE_URL } = window.SejongMarketUtils;
+    const { API_BASE_URL, getLoginEmail, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
     const API_URLS = {
       productList: `${API_BASE_URL}/api/products`,
       imageBaseUrl: API_BASE_URL
@@ -983,6 +995,11 @@
         params.set("type",
           "recommend");
       }
+      const loginEmail = getNormalizedLoginEmail();
+      if (loginEmail) {
+        params.set("userEmail",
+          loginEmail);
+      }
       const queryString = params.toString();
       if (queryString === "") {
         return API_URLS.productList;
@@ -1055,7 +1072,7 @@
     ${badgeHtml}
     ${createProductImageHtml(product)}
     <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
-    <button class="heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+    <button class="heart ${product.liked ? "liked" : ""}" type="button" aria-label="찜하기" onclick="event.stopPropagation(); toggleProductLike(this, ${Number(product.id)}, ${product.liked ? "true" : "false"})">${product.liked ? "♥" : "♡"}</button>
   </div>
 
   <div class="product-info">
@@ -1200,16 +1217,43 @@
       }
       return numberPrice.toLocaleString("ko-KR") + "원";
     }
-    function toggleHeart(button) {
-      if (button.textContent === "♡") {
-        button.textContent = "♥";
-        button.style.color = "#D93025";
-        /* 백엔드 개발자는 여기서 연결하세요. 찜 API가 생기면 여기서 POST 요청을 보내면 됩니다. 예시: POST /api/products/{productId}/likes */
-      } else {
-        button.textContent = "♡";
-        button.style.color = "white";
-        /* 백엔드 개발자는 여기서 연결하세요. 찜 취소 API가 생기면 여기서 DELETE 요청을 보내면 됩니다. 예시: DELETE /api/products/{productId}/likes */
+    async function toggleProductLike(button, productId, initiallyLiked) {
+      const userEmail = getNormalizedLoginEmail();
+      if (!userEmail) {
+        alert("로그인이 필요합니다.");
+        location.href = "../login_mypage/login.html";
+        return;
       }
+
+      const currentlyLiked = button.classList.contains("liked");
+      button.disabled = true;
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/products/${encodeURIComponent(productId)}/likes?userEmail=${encodeURIComponent(userEmail)}`,
+          { method: currentlyLiked ? "DELETE" : "POST" }
+        );
+
+        if (!response.ok) {
+          throw new Error(await readErrorMessage(response));
+        }
+
+        const result = await response.json();
+        const nextLiked = Boolean(result.liked);
+        button.classList.toggle("liked", nextLiked);
+        button.textContent = nextLiked ? "♥" : "♡";
+        currentProducts = currentProducts.map(product =>
+          Number(product.id) === Number(productId) ? { ...product, liked: nextLiked } : product
+        );
+      } catch (error) {
+        alert(error.message || "찜하기 처리에 실패했습니다.");
+      } finally {
+        button.disabled = false;
+      }
+    }
+    function getNormalizedLoginEmail() {
+      const loginEmail = getLoginEmail();
+      return loginEmail ? toSejongEmail(loginEmail) : "";
     }
     function closeBanner() {
       document.querySelector(".top-banner").style.display = "none";

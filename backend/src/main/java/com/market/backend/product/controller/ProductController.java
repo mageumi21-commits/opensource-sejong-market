@@ -1,5 +1,6 @@
 package com.market.backend.product.controller;
 
+import com.market.backend.product.dto.ProductLikeResponse;
 import com.market.backend.product.dto.ProductListResponse;
 import com.market.backend.product.dto.ProductResponse;
 import com.market.backend.product.dto.ProductSaleStatusRequest;
@@ -31,28 +32,34 @@ public class ProductController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String sort,
-            @RequestParam(required = false) String type
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String userEmail
     ) {
-        return productService.getProducts(keyword, category, sort, type);
+        return productService.getProducts(keyword, category, sort, type, userEmail);
     }
 
     @GetMapping("/latest")
     public List<ProductListResponse> getLatestProducts(
-            @RequestParam(defaultValue = "5") int limit
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(required = false) String userEmail
     ) {
-        return productService.getLatestProducts(limit);
+        return productService.getLatestProducts(limit, userEmail);
     }
 
     @GetMapping("/recommendations")
     public List<ProductListResponse> getRecommendedProducts(
-            @RequestParam(defaultValue = "5") int limit
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(required = false) String userEmail
     ) {
-        return productService.getRecommendedProducts(limit);
+        return productService.getRecommendedProducts(limit, userEmail);
     }
 
     @GetMapping("/{productId}")
-    public ProductResponse getProduct(@PathVariable Long productId) {
-        return productService.getProduct(productId);
+    public ProductResponse getProduct(
+            @PathVariable Long productId,
+            @RequestParam(required = false) String userEmail
+    ) {
+        return productService.getProduct(productId, userEmail);
     }
 
     @PatchMapping("/{productId}")
@@ -103,5 +110,29 @@ public class ProductController {
                 locationName,
                 images
         );
+    }
+
+    @PostMapping("/{productId}/likes")
+    public ProductLikeResponse likeProduct(
+            @PathVariable Long productId,
+            @RequestParam String userEmail
+    ) {
+        return productService.likeProduct(productId, userEmail);
+    }
+
+    @DeleteMapping("/{productId}/likes")
+    public ProductLikeResponse unlikeProduct(
+            @PathVariable Long productId,
+            @RequestParam String userEmail
+    ) {
+        return productService.unlikeProduct(productId, userEmail);
+    }
+
+    @GetMapping("/{productId}/likes")
+    public ProductLikeResponse getLikeStatus(
+            @PathVariable Long productId,
+            @RequestParam String userEmail
+    ) {
+        return productService.getLikeStatus(productId, userEmail);
     }
 }

@@ -10,6 +10,7 @@ import com.market.backend.product.dto.ProductListResponse;
 import com.market.backend.product.dto.ProductResponse;
 import com.market.backend.product.dto.ProductUpdateRequest;
 import com.market.backend.product.entity.Product;
+import com.market.backend.product.repository.ProductLikeRepository;
 import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.entity.User;
 import com.market.backend.user.repository.UserRepository;
@@ -31,6 +32,9 @@ class ProductServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ProductLikeRepository productLikeRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -170,6 +174,7 @@ class ProductServiceTest {
 
         productService.deleteProduct(1L, "seller@sju.ac.kr");
 
+        verify(productLikeRepository).deleteByProduct(product);
         verify(productRepository).delete(product);
     }
 

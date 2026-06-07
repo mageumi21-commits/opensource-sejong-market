@@ -29,7 +29,7 @@ public class ProductListResponse {
     private final String status;
     private final boolean liked;
 
-    private ProductListResponse(Product product) {
+    private ProductListResponse(Product product, boolean liked) {
         User seller = product.getSeller();
         List<String> imagePaths = product.getImagePaths();
 
@@ -50,11 +50,15 @@ public class ProductListResponse {
         this.saleStatus = product.getSaleStatus().name();
         this.saleStatusText = product.getSaleStatus().getText();
         this.status = product.getSaleStatus().getClientValue();
-        this.liked = false;
+        this.liked = liked;
     }
 
     public static ProductListResponse from(Product product) {
-        return new ProductListResponse(product);
+        return new ProductListResponse(product, false);
+    }
+
+    public static ProductListResponse from(Product product, boolean liked) {
+        return new ProductListResponse(product, liked);
     }
 
     private String formatCreatedAtText(LocalDateTime createdAt) {

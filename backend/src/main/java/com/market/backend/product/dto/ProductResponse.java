@@ -26,8 +26,9 @@ public class ProductResponse {
     private final List<String> imagePaths;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
+    private final boolean liked;
 
-    private ProductResponse(Product product) {
+    private ProductResponse(Product product, boolean liked) {
         User seller = product.getSeller();
 
         this.id = product.getId();
@@ -47,9 +48,14 @@ public class ProductResponse {
         this.imagePaths = product.getImagePaths();
         this.createdAt = product.getCreatedAt();
         this.updatedAt = product.getUpdatedAt();
+        this.liked = liked;
     }
 
     public static ProductResponse from(Product product) {
-        return new ProductResponse(product);
+        return new ProductResponse(product, false);
+    }
+
+    public static ProductResponse from(Product product, boolean liked) {
+        return new ProductResponse(product, liked);
     }
 }
