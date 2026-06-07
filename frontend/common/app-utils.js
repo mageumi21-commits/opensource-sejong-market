@@ -1,6 +1,57 @@
 window.SejongMarketUtils = (function () {
   const DEFAULT_API_BASE_URL = 'http://localhost:8080';
   const API_BASE_URL_STORAGE_KEY = 'SEJONG_MARKET_API_BASE_URL';
+  const SERVICE_BASE_URL = 'https://sejong-market';
+  const PAGE_FILES = {
+    home: 'main_ui/index.html',
+    products: 'main_ui/product-list.html',
+    productNew: 'product_create_ui/product-create-ui.html',
+    productDetail: 'product_detail_ui/product-detail.html',
+    login: 'login_mypage/login.html',
+    signup: 'login_mypage/signup.html',
+    findId: 'login_mypage/find-id.html',
+    findPassword: 'login_mypage/find-pw.html',
+    terms: 'login_mypage/terms.html',
+    privacy: 'login_mypage/privacy.html',
+    mypage: 'login_mypage/mypage.html',
+    chatRoom: 'chat_ui/chat.html',
+  };
+  const SERVICE_PATHS = {
+    home: '/',
+    products: '/products',
+    productNew: '/products/new',
+    productDetail: '/products/{id}',
+    login: '/login',
+    signup: '/signup',
+    findId: '/find-id',
+    findPassword: '/find-password',
+    terms: '/terms',
+    privacy: '/privacy',
+    mypage: '/mypage',
+    chatRoom: '/chatrooms/{roomId}',
+  };
+  const LEGACY_ROUTE_MAP = {
+    'index.html': 'home',
+    '../main_ui/index.html': 'home',
+    'product-list.html': 'products',
+    '../main_ui/product-list.html': 'products',
+    '../product_create_ui/product-create-ui.html': 'productNew',
+    'login.html': 'login',
+    '../login_mypage/login.html': 'login',
+    'signup.html': 'signup',
+    '../login_mypage/signup.html': 'signup',
+    'find-id.html': 'findId',
+    '../login_mypage/find-id.html': 'findId',
+    'find-pw.html': 'findPassword',
+    '../login_mypage/find-pw.html': 'findPassword',
+    'terms.html': 'terms',
+    '../login_mypage/terms.html': 'terms',
+    'privacy.html': 'privacy',
+    '../login_mypage/privacy.html': 'privacy',
+    'mypage.html': 'mypage',
+    '../login_mypage/mypage.html': 'mypage',
+    '../chat_ui/chat.html': 'chatRoom',
+  };
 
   function resolveApiBaseUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -20,6 +71,74 @@ window.SejongMarketUtils = (function () {
   }
 
   const API_BASE_URL = resolveApiBaseUrl();
+
+  function frontendRootPrefix() {
+    const path = window.location.pathname.replaceAll('\\', '/');
+    if (
+      path.includes('/frontend/') ||
+      /\/(main_ui|login_mypage|product_create_ui|product_detail_ui|chat_ui)\//.test(path)
+    ) {
+      return '../';
+    }
+
+    return '';
+  }
+
+  function appendQueryString(url, params = {}) {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(function ([key, value]) {
+      if (value !== undefined && value !== null && value !== '') {
+        query.set(key, value);
+      }
+    });
+
+    const queryString = query.toString();
+    return queryString ? `${url}?${queryString}` : url;
+  }
+
+  function pageUrl(routeName, params = {}) {
+    const file = PAGE_FILES[routeName];
+    if (!file) {
+      return '#';
+    }
+
+    return appendQueryString(frontendRootPrefix() + file, params);
+  }
+
+  function serviceUrl(routeName, params = {}) {
+    let path = SERVICE_PATHS[routeName] || '/';
+    Object.entries(params).forEach(function ([key, value]) {
+      path = path.replace(`{${key}}`, encodeURIComponent(value));
+    });
+
+    return SERVICE_BASE_URL + path;
+  }
+
+  function productDetailUrl(productId) {
+    return pageUrl('productDetail', { id: productId });
+  }
+
+  function chatRoomUrl(roomId) {
+    return pageUrl('chatRoom', { roomId });
+  }
+
+  function normalizeInternalLinks() {
+    document.querySelectorAll('a[href]').forEach(function (link) {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:')) {
+        return;
+      }
+
+      const [path, queryString] = href.split('?');
+      const routeName = LEGACY_ROUTE_MAP[path];
+      if (!routeName) {
+        return;
+      }
+
+      const nextHref = queryString ? `${pageUrl(routeName)}?${queryString}` : pageUrl(routeName);
+      link.setAttribute('href', nextHref);
+    });
+  }
 
   function toSejongEmail(value) {
     const trimmed = String(value || '').trim().toLowerCase();
@@ -78,9 +197,9 @@ window.SejongMarketUtils = (function () {
       return;
     }
 
-    const loginUrl = options.loginUrl || '../login_mypage/login.html';
+    const loginUrl = options.loginUrl || pageUrl('login');
     const signupUrl = options.signupUrl || loginUrl;
-    const mypageUrl = options.mypageUrl || '../login_mypage/mypage.html';
+    const mypageUrl = options.mypageUrl || pageUrl('mypage');
     const afterLogoutUrl = options.afterLogoutUrl || loginUrl;
     const displayName = getLoginDisplayName();
 
@@ -108,6 +227,12 @@ window.SejongMarketUtils = (function () {
     element.querySelector('[data-auth-action="login"]').addEventListener('click', function () {
       window.location.href = signupUrl || loginUrl;
     });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', normalizeInternalLinks);
+  } else {
+    normalizeInternalLinks();
   }
 
   async function readErrorMessage(response) {
@@ -160,7 +285,15 @@ window.SejongMarketUtils = (function () {
 
   return {
     API_BASE_URL,
+    SERVICE_BASE_URL,
+    PAGE_FILES,
+    SERVICE_PATHS,
     toSejongEmail,
+    pageUrl,
+    serviceUrl,
+    productDetailUrl,
+    chatRoomUrl,
+    normalizeInternalLinks,
     getLoginUser,
     getLoginEmail,
     getLoginDisplayName,

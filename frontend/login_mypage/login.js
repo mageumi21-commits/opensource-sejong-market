@@ -63,7 +63,7 @@ async function handleLogin() {
     saveLoginUser(loginUser, email);
 
     alert('로그인 성공!');
-    window.location.href = 'mypage.html';
+    window.location.href = window.SejongMarketUtils.pageUrl('mypage');
   } catch (error) {
     alert(error.message || '로그인에 실패했습니다.');
   } finally {
@@ -112,7 +112,7 @@ async function handleStudentLogin() {
     saveLoginUser(loginUser, loginUser.email);
 
     alert('로그인 성공!');
-    window.location.href = 'mypage.html';
+    window.location.href = window.SejongMarketUtils.pageUrl('mypage');
   } catch (error) {
     alert(error.message || '로그인에 실패했습니다.');
   } finally {

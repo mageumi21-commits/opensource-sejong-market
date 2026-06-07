@@ -1,14 +1,15 @@
 const {
   API_BASE_URL,
   getLoginEmail,
+  pageUrl,
+  productDetailUrl,
   normalizeImageUrl,
   formatPrice,
   escapeHtml,
   escapeAttribute,
   readErrorMessage,
 } = window.SejongMarketUtils;
-const PRODUCT_DETAIL_URL = '../product_detail_ui/product-detail.html?id=';
-const LOGIN_URL = 'login.html';
+const LOGIN_URL = pageUrl('login');
 
 function renderUserInfo(user) {
   document.getElementById('profileNickname').textContent = user.nickname || '이름 없음';
@@ -57,12 +58,12 @@ function createProductCard(product) {
     card.setAttribute('role', 'link');
     card.setAttribute('aria-label', `${getProductTitle(product) || '상품'} 상세 페이지로 이동`);
     card.addEventListener('click', function () {
-      window.location.href = PRODUCT_DETAIL_URL + encodeURIComponent(productId);
+      window.location.href = productDetailUrl(productId);
     });
     card.addEventListener('keydown', function (event) {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        window.location.href = PRODUCT_DETAIL_URL + encodeURIComponent(productId);
+        window.location.href = productDetailUrl(productId);
       }
     });
   }
