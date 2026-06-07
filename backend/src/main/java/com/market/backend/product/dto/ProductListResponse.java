@@ -24,6 +24,9 @@ public class ProductListResponse {
     private final LocalDateTime createdAt;
     private final String createdAtText;
     private final String badgeText;
+    private final String saleStatus;
+    private final String saleStatusText;
+    private final String status;
     private final boolean liked;
 
     private ProductListResponse(Product product) {
@@ -43,7 +46,10 @@ public class ProductListResponse {
         this.locationName = product.getLocationName();
         this.createdAt = product.getCreatedAt();
         this.createdAtText = formatCreatedAtText(product.getCreatedAt());
-        this.badgeText = "";
+        this.badgeText = product.getSaleStatus().getText();
+        this.saleStatus = product.getSaleStatus().name();
+        this.saleStatusText = product.getSaleStatus().getText();
+        this.status = product.getSaleStatus().getClientValue();
         this.liked = false;
     }
 

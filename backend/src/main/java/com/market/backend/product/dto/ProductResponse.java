@@ -18,6 +18,9 @@ public class ProductResponse {
     private final Integer price;
     private final String description;
     private final String tradeMethod;
+    private final String saleStatus;
+    private final String saleStatusText;
+    private final String status;
     private final Integer locationNumber;
     private final String locationName;
     private final List<String> imagePaths;
@@ -36,6 +39,9 @@ public class ProductResponse {
         this.price = product.getPrice();
         this.description = product.getDescription();
         this.tradeMethod = product.getTradeMethod();
+        this.saleStatus = product.getSaleStatus().name();
+        this.saleStatusText = product.getSaleStatus().getText();
+        this.status = product.getSaleStatus().getClientValue();
         this.locationNumber = product.getLocationNumber();
         this.locationName = product.getLocationName();
         this.imagePaths = product.getImagePaths();

@@ -33,6 +33,10 @@ public class MyProductResponse {
 
     private final String status;
 
+    private final String saleStatus;
+
+    private final String saleStatusText;
+
     private MyProductResponse(
             Long id,
             String title,
@@ -45,7 +49,9 @@ public class MyProductResponse {
             String locationName,
             LocalDateTime createdAt,
             String createdAtText,
-            String status
+            String status,
+            String saleStatus,
+            String saleStatusText
     ) {
         this.id = id;
         this.title = title;
@@ -59,6 +65,8 @@ public class MyProductResponse {
         this.createdAt = createdAt;
         this.createdAtText = createdAtText;
         this.status = status;
+        this.saleStatus = saleStatus;
+        this.saleStatusText = saleStatusText;
     }
 
     public static MyProductResponse from(Product product) {
@@ -74,7 +82,9 @@ public class MyProductResponse {
                 product.getLocationName(),
                 product.getCreatedAt(),
                 formatCreatedAtText(product.getCreatedAt()),
-                "on-sale"
+                product.getSaleStatus().getClientValue(),
+                product.getSaleStatus().name(),
+                product.getSaleStatus().getText()
         );
     }
 
