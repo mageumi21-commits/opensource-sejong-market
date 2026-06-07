@@ -264,15 +264,19 @@
       height: 26px;
       padding: 0 9px;
       margin-right: 8px;
-      border: 1px solid #bdbdbd;
       border-radius: 4px;
-      background: #e5e5e5;
-      color: #111;
+      background: var(--primary);
+      color: #fff;
       font-size: 13px;
       font-weight: 900;
       letter-spacing: 0;
       vertical-align: 4px;
       white-space: nowrap;
+    }
+
+    .sale-status-badge.sold-out {
+      background: #888;
+      color: #fff;
     }
 
     .price {
@@ -654,12 +658,25 @@
       return "판매중";
     }
 
+    function getSaleStatus(product) {
+      if (product.status) {
+        return product.status;
+      }
+
+      if (product.saleStatus === "SOLD_OUT") {
+        return "sold-out";
+      }
+
+      return "on-sale";
+    }
+
     function isProductSoldOut(product) {
       return product.status === "sold-out" || product.saleStatus === "SOLD_OUT";
     }
 
     function renderProduct(product) {
       const productName = escapeHtml(product.productName || "상품명 없음");
+      const saleStatus = escapeHtml(getSaleStatus(product));
       const saleStatusText = escapeHtml(getSaleStatusText(product));
       const sellerName = escapeHtml(product.sellerNickname || "판매자");
       const sellerEmail = escapeHtml(product.sellerEmail || "판매자 정보 없음");
@@ -680,7 +697,7 @@
             </div>
             <div class="meta-chip">${tradeMethod}</div>
           </div>
-          <h2 class="title"><span class="sale-status-badge">${saleStatusText}</span>${productName}</h2>
+          <h2 class="title"><span class="sale-status-badge ${saleStatus}">${saleStatusText}</span>${productName}</h2>
           <div class="price">${formatPrice(product.price)}</div>
           <div class="details">
             <span class="detail">${category}</span>

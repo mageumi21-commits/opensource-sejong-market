@@ -491,19 +491,25 @@
         text-overflow: ellipsis;
       }
 
-      .sale-status-badge {
-        display: inline-flex;
-        align-items: center;
-        height: 22px;
-        padding: 0 7px;
-        margin-right: 6px;
-        border: 1px solid #bdbdbd;
-        border-radius: 4px;
-        background: #e5e5e5;
-        color: #111111;
+      .product-status {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        z-index: 6;
+        padding: 5px 8px;
+        border-radius: 6px;
         font-size: 12px;
         font-weight: 900;
-        vertical-align: 1px;
+      }
+
+      .product-status.on-sale {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .product-status.sold-out {
+        background: #888;
+        color: #fff;
       }
 
       .product-price {
@@ -911,6 +917,7 @@
           const card = document.createElement("article");
           const imageHtml = createProductImageHtml(product);
           const productName = product.productName || product.name || "상품명 없음";
+          const saleStatus = getSaleStatus(product);
           const saleStatusText = getSaleStatusText(product);
           const imageBadgeText = getImageBadgeText(product);
           const badgeHtml = imageBadgeText
@@ -927,13 +934,12 @@
             <div class="product-img ${getCategoryColorClass(product.category)}">
               ${badgeHtml}
               ${imageHtml}
+              <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
               <button class="heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
             </div>
 
             <div class="product-info">
-              <p class="product-name">
-                <span class="sale-status-badge">${escapeHtml(saleStatusText)}</span>${escapeHtml(productName)}
-              </p>
+              <p class="product-name">${escapeHtml(productName)}</p>
               <p class="product-price">${formatPrice(product.price)}</p>
               <div class="product-meta">
                 <span>${escapeHtml(product.locationName || "위치 미정")}</span>
@@ -1028,6 +1034,18 @@
         }
 
         return "판매중";
+      }
+
+      function getSaleStatus(product) {
+        if (product.status) {
+          return product.status;
+        }
+
+        if (product.saleStatus === "SOLD_OUT") {
+          return "sold-out";
+        }
+
+        return "on-sale";
       }
 
       function getImageBadgeText(product) {
