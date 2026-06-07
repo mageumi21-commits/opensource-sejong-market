@@ -207,7 +207,7 @@
   <script src="../common/api-config.js"></script>
   <script src="../common/app-utils.js"></script>
   <script>
-    const { API_BASE_URL } = window.SejongMarketUtils;
+    const { API_BASE_URL, pageUrl } = window.SejongMarketUtils;
     const params = new URLSearchParams(location.search);
     const roomId = params.get("roomId");
     const messagesEl = document.getElementById("messages");
@@ -216,7 +216,7 @@
     const messageForm = document.getElementById("messageForm");
     const messageInput = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
-    const PRODUCT_LIST_URL = "../main_ui/product-list.html";
+    const PRODUCT_LIST_URL = pageUrl("products");
     let pollingId = null;
     let latestRenderedIds = "";
 

@@ -301,7 +301,7 @@ async function handleSignup() {
     }
 
     alert('회원가입이 완료됐어요! 환영합니다 :)');
-    window.location.href = 'login.html';
+    window.location.href = window.SejongMarketUtils.pageUrl('login');
   } catch (error) {
     alert(error.message || '회원가입에 실패했습니다.');
   } finally {

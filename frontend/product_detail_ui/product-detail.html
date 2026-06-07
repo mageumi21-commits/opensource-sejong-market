@@ -549,9 +549,8 @@
       afterLogoutUrl: "../main_ui/product-list.html"
     });
 
-    const { API_BASE_URL } = window.SejongMarketUtils;
-    const PRODUCT_LIST_URL = "../main_ui/product-list.html";
-    const CHAT_URL = "../chat_ui/chat.html";
+    const { API_BASE_URL, pageUrl, chatRoomUrl } = window.SejongMarketUtils;
+    const PRODUCT_LIST_URL = pageUrl("products");
 
     const params = new URLSearchParams(location.search);
     const productId = params.get("id") || localStorage.getItem("lastCreatedProductId");
@@ -876,7 +875,7 @@
           throw new Error("채팅방 정보를 확인할 수 없습니다.");
         }
 
-        location.href = `${CHAT_URL}?roomId=${encodeURIComponent(roomId)}`;
+        location.href = chatRoomUrl(roomId);
       } catch (error) {
         alert(error.message || "채팅방을 만들지 못했습니다.");
         updateChatButtonState(currentProduct);

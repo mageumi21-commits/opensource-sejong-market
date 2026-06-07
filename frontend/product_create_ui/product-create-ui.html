@@ -779,7 +779,7 @@
       window.location.href = "../login_mypage/login.html";
     }
 
-    const PRODUCT_LIST_URL = "../main_ui/product-list.html";
+    const PRODUCT_LIST_URL = window.SejongMarketUtils.pageUrl("products");
     const backBtn = document.getElementById("backBtn");
 
     function goBack() {
@@ -993,8 +993,6 @@
        백엔드 개발자분은 이 부분을 보면 됩니다.
     ========================= */
     const submitBtn = document.getElementById("submitBtn");
-    const PRODUCT_CREATE_SUCCESS_REDIRECT_URL = "../product_detail_ui/product-detail.html?id={id}";
-
     function resetProductCreateForm() {
       document.getElementById("productName").value = "";
       document.getElementById("productCategory").value = "";
@@ -1015,12 +1013,8 @@
     }
 
     function moveAfterProductCreate(result) {
-      if (!PRODUCT_CREATE_SUCCESS_REDIRECT_URL) {
-        return;
-      }
-
       const productId = result.id || result.productId;
-      location.href = PRODUCT_CREATE_SUCCESS_REDIRECT_URL.replace("{id}", productId || "");
+      location.href = window.SejongMarketUtils.productDetailUrl(productId || "");
     }
 
     submitBtn.addEventListener("click", async () => {
