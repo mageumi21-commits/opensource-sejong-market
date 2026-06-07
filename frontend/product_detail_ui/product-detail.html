@@ -70,7 +70,7 @@
       top: 0;
       z-index: 20;
       display: grid;
-      grid-template-columns: 48px 1fr 48px;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
       align-items: center;
       gap: 12px;
       min-height: 74px;
@@ -131,8 +131,57 @@
     }
 
     .header-side {
-      width: 42px;
-      height: 42px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .auth-name {
+      max-width: 92px;
+      overflow: hidden;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+    }
+
+    .auth-login-btn,
+    .auth-link-btn,
+    .auth-logout-btn {
+      height: 34px;
+      padding: 0 11px;
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      transition: 0.18s;
+    }
+
+    .auth-link-btn,
+    .auth-logout-btn {
+      background: #fff;
+      color: var(--primary);
+    }
+
+    .auth-logout-btn {
+      border-color: #d7d7d7;
+      color: var(--text-secondary);
+    }
+
+    .auth-login-btn:hover,
+    .auth-link-btn:hover {
+      background: var(--primary-dark);
+      color: #fff;
+    }
+
+    .auth-logout-btn:hover {
+      background: #f5f5f5;
+      border-color: #aaa;
     }
 
     .image-area {
@@ -415,7 +464,7 @@
       }
 
       .header {
-        grid-template-columns: 42px 1fr 42px;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
         min-height: 66px;
         padding: 10px 14px;
       }
@@ -431,6 +480,19 @@
 
       .logo-sub {
         font-size: 10px;
+      }
+
+      .header-side {
+        gap: 5px;
+      }
+
+      .auth-name {
+        display: none;
+      }
+
+      .auth-link-btn,
+      .auth-logout-btn {
+        padding: 0 8px;
       }
 
       .content {
@@ -474,7 +536,7 @@
           <span class="logo-sub">상품 상세</span>
         </div>
       </a>
-      <span class="header-side"></span>
+      <div class="header-side" id="authArea"></div>
     </header>
 
     <main id="app">
@@ -501,6 +563,7 @@
     const deleteBtn = document.getElementById("deleteBtn");
     const chatBtn = document.getElementById("chatBtn");
     const soldOutBtn = document.getElementById("soldOutBtn");
+    const authArea = document.getElementById("authArea");
 
     let currentProduct = null;
 
@@ -524,6 +587,70 @@
       }
 
       return localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "";
+    }
+
+    function getLoginUser() {
+      try {
+        const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+        if (loginUser && (loginUser.email || loginUser.nickname)) {
+          return loginUser;
+        }
+      } catch (error) {
+        console.warn("loginUser 값을 읽을 수 없습니다.", error);
+      }
+
+      const email = localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "";
+      return email ? { email } : null;
+    }
+
+    function getDisplayName(user) {
+      if (!user) {
+        return "";
+      }
+
+      if (user.nickname) {
+        return user.nickname;
+      }
+
+      const email = user.email || "";
+      return email.includes("@") ? email.split("@")[0] : email;
+    }
+
+    function renderAuthArea() {
+      const loginUser = getLoginUser();
+
+      if (!loginUser) {
+        authArea.innerHTML = `
+          <button class="auth-login-btn" type="button" onclick="location.href='../login_mypage/login.html'">
+            로그인
+          </button>
+        `;
+        return;
+      }
+
+      authArea.innerHTML = `
+        <span class="auth-name" title="${escapeHtml(getDisplayName(loginUser))}">
+          ${escapeHtml(getDisplayName(loginUser))}
+        </span>
+        <button class="auth-link-btn" type="button" onclick="location.href='../login_mypage/mypage.html'">
+          마이페이지
+        </button>
+        <button class="auth-logout-btn" type="button" onclick="logoutUser()">
+          로그아웃
+        </button>
+      `;
+    }
+
+    function logoutUser() {
+      localStorage.removeItem("loginUser");
+      localStorage.removeItem("loginEmail");
+      localStorage.removeItem("userEmail");
+      renderAuthArea();
+
+      if (currentProduct) {
+        updateChatButtonState(currentProduct);
+        updateSoldOutButtonState(currentProduct);
+      }
     }
 
     function formatPrice(price) {
@@ -994,6 +1121,7 @@
       }
     });
 
+    renderAuthArea();
     loadProduct();
   </script>
 </body>
