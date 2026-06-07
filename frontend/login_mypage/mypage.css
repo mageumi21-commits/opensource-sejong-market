@@ -198,10 +198,16 @@
   box-shadow: 0 1px 6px rgba(0,0,0,0.04);
   transition: box-shadow 0.15s;
   position: relative;
+  cursor: pointer;
 }
 
 .product-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.product-card:focus-visible {
+  outline: 3px solid rgba(217, 48, 37, 0.28);
+  outline-offset: 3px;
 }
 
 /* ── 상품 이미지 ── */

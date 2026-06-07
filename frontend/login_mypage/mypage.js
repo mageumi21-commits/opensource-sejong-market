@@ -55,11 +55,13 @@ function createProductCard(product) {
   if (productId) {
     card.tabIndex = 0;
     card.setAttribute('role', 'link');
+    card.setAttribute('aria-label', `${getProductTitle(product) || '상품'} 상세 페이지로 이동`);
     card.addEventListener('click', function () {
       window.location.href = PRODUCT_DETAIL_URL + encodeURIComponent(productId);
     });
     card.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
         window.location.href = PRODUCT_DETAIL_URL + encodeURIComponent(productId);
       }
     });
