@@ -34,11 +34,16 @@ public class UserService {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
 
+        String studentId = requireText(request.getStudentId(), "학번을 입력해주세요.");
+        if (userRepository.findByStudentId(studentId).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 학번입니다.");
+        }
+
         User user = new User(
                 email,
                 request.getPassword(),
                 request.getNickname(),
-                request.getStudentId()
+                studentId
         );
 
         userRepository.save(user);
