@@ -258,6 +258,23 @@
       letter-spacing: -0.8px;
     }
 
+    .sale-status-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 9px;
+      margin-right: 8px;
+      border: 1px solid #bdbdbd;
+      border-radius: 4px;
+      background: #e5e5e5;
+      color: #111;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0;
+      vertical-align: 4px;
+      white-space: nowrap;
+    }
+
     .price {
       margin-top: 12px;
       color: var(--primary);
@@ -321,15 +338,24 @@
       z-index: 30;
     }
 
-    .chat-btn {
+    .chat-btn,
+    .sold-out-btn {
       width: 100%;
       height: 52px;
       border-radius: var(--radius-sm);
-      background: var(--primary);
       color: #fff;
       font-size: 17px;
       font-weight: 900;
       transition: 0.18s;
+    }
+
+    .chat-btn {
+      background: var(--primary);
+    }
+
+    .sold-out-btn {
+      display: none;
+      background: #333;
     }
 
     .chat-btn:hover:not(:disabled) {
@@ -337,7 +363,13 @@
       transform: translateY(-1px);
     }
 
-    .chat-btn:disabled {
+    .sold-out-btn:hover:not(:disabled) {
+      background: #111;
+      transform: translateY(-1px);
+    }
+
+    .chat-btn:disabled,
+    .sold-out-btn:disabled {
       background: #c8cdd3;
       cursor: not-allowed;
       transform: none;
@@ -426,6 +458,7 @@
     </main>
 
     <div class="bottom-bar">
+      <button class="sold-out-btn" type="button" id="soldOutBtn">판매완료 처리</button>
       <button class="chat-btn" type="button" id="chatBtn" disabled>채팅하기</button>
     </div>
   </div>
@@ -439,6 +472,7 @@
     const productId = params.get("id") || localStorage.getItem("lastCreatedProductId");
     const app = document.getElementById("app");
     const chatBtn = document.getElementById("chatBtn");
+    const soldOutBtn = document.getElementById("soldOutBtn");
 
     let currentProduct = null;
 
@@ -571,12 +605,16 @@
     function updateChatButtonState(product) {
       const loginEmail = getLoginEmail().trim().toLowerCase();
       const sellerEmail = String(product.sellerEmail || "").trim().toLowerCase();
+      const isSoldOut = isProductSoldOut(product);
 
       if (!loginEmail) {
         chatBtn.textContent = "로그인 후 채팅하기";
         chatBtn.disabled = true;
       } else if (!sellerEmail) {
         chatBtn.textContent = "판매자 정보 없음";
+        chatBtn.disabled = true;
+      } else if (isSoldOut) {
+        chatBtn.textContent = "판매완료 상품";
         chatBtn.disabled = true;
       } else if (loginEmail === sellerEmail) {
         chatBtn.textContent = "내 상품입니다";
@@ -587,8 +625,42 @@
       }
     }
 
+    function updateSoldOutButtonState(product) {
+      const loginEmail = getLoginEmail().trim().toLowerCase();
+      const sellerEmail = String(product.sellerEmail || "").trim().toLowerCase();
+      const isOwner = loginEmail && sellerEmail && loginEmail === sellerEmail;
+      const isSoldOut = isProductSoldOut(product);
+
+      if (!isOwner) {
+        soldOutBtn.style.display = "none";
+        soldOutBtn.disabled = true;
+        return;
+      }
+
+      soldOutBtn.style.display = "block";
+      soldOutBtn.disabled = isSoldOut;
+      soldOutBtn.textContent = isSoldOut ? "판매완료됨" : "판매완료 처리";
+    }
+
+    function getSaleStatusText(product) {
+      if (product.saleStatusText) {
+        return product.saleStatusText;
+      }
+
+      if (isProductSoldOut(product)) {
+        return "판매완료";
+      }
+
+      return "판매중";
+    }
+
+    function isProductSoldOut(product) {
+      return product.status === "sold-out" || product.saleStatus === "SOLD_OUT";
+    }
+
     function renderProduct(product) {
       const productName = escapeHtml(product.productName || "상품명 없음");
+      const saleStatusText = escapeHtml(getSaleStatusText(product));
       const sellerName = escapeHtml(product.sellerNickname || "판매자");
       const sellerEmail = escapeHtml(product.sellerEmail || "판매자 정보 없음");
       const tradeMethod = escapeHtml(product.tradeMethod || "거래 방식 미정");
@@ -608,7 +680,7 @@
             </div>
             <div class="meta-chip">${tradeMethod}</div>
           </div>
-          <h2 class="title">${productName}</h2>
+          <h2 class="title"><span class="sale-status-badge">${saleStatusText}</span>${productName}</h2>
           <div class="price">${formatPrice(product.price)}</div>
           <div class="details">
             <span class="detail">${category}</span>
@@ -625,12 +697,15 @@
 
       bindImageEvents();
       updateChatButtonState(product);
+      updateSoldOutButtonState(product);
     }
 
     function renderError(message) {
       app.innerHTML = `<div class="status">${escapeHtml(message || "상품 정보를 불러오지 못했습니다.")}</div>`;
       chatBtn.textContent = "채팅하기";
       chatBtn.disabled = true;
+      soldOutBtn.style.display = "none";
+      soldOutBtn.disabled = true;
     }
 
     async function loadProduct() {
@@ -693,6 +768,46 @@
       } catch (error) {
         alert(error.message || "채팅방을 만들지 못했습니다.");
         updateChatButtonState(currentProduct);
+      }
+    });
+
+    soldOutBtn.addEventListener("click", async () => {
+      if (!currentProduct) {
+        return;
+      }
+
+      const sellerEmail = getLoginEmail();
+      if (!sellerEmail) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      if (!confirm("이 상품을 판매완료로 변경할까요?")) {
+        return;
+      }
+
+      try {
+        soldOutBtn.disabled = true;
+        soldOutBtn.textContent = "처리 중";
+
+        const response = await fetch(`${API_BASE_URL}/api/products/${currentProduct.id || productId}/sold-out`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ sellerEmail })
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        currentProduct = await response.json();
+        renderProduct(currentProduct);
+        alert("판매완료 처리되었습니다.");
+      } catch (error) {
+        alert(error.message || "판매완료 처리에 실패했습니다.");
+        updateSoldOutButtonState(currentProduct);
       }
     });
 
