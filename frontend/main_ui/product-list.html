@@ -690,6 +690,7 @@
       </section>
     </div>
   </main>
+  <script src="../common/api-config.js"></script>
   <script src="../common/app-utils.js"></script>
   <script>
     window.SejongMarketUtils.renderAuthArea("authArea", {
@@ -760,16 +761,13 @@
         ]
       }
 
-      백엔드가 따로 배포되어 있으면 아래 API_URLS.productList를 실제 주소로 바꾸면 됩니다.
-      예시:
-      productList: "https://백엔드주소/api/products"
-      imageBaseUrl: "https://백엔드주소"
-
-      GitHub Pages와 백엔드 주소가 다르면 백엔드에서 CORS 허용이 필요합니다.
+      백엔드가 따로 배포되어 있으면 URL에 ?apiBaseUrl=https://백엔드주소 를 붙이거나
+      localStorage의 SEJONG_MARKET_API_BASE_URL 값을 바꾸면 됩니다.
     */
+    const { API_BASE_URL } = window.SejongMarketUtils;
     const API_URLS = {
-      productList: "http://localhost:8080/api/products",
-      imageBaseUrl: "http://localhost:8080"
+      productList: `${API_BASE_URL}/api/products`,
+      imageBaseUrl: API_BASE_URL
     }
       ;
     const fallbackProducts = [

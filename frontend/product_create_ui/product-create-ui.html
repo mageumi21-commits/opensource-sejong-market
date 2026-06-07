@@ -764,6 +764,7 @@
     </div>
   </div>
 
+  <script src="../common/api-config.js"></script>
   <script src="../common/app-utils.js"></script>
   <script>
     window.SejongMarketUtils.renderAuthArea("authArea", {
@@ -1125,18 +1126,15 @@
       /*
         TODO 4. 백엔드 API 주소 연결
 
-        아래 "/api/products" 부분을 실제 백엔드 주소로 바꾸면 됩니다.
-
-        예시:
-        fetch("http://localhost:8080/api/products", { ... })
-        fetch("/products", { ... })
+        원격 테스트 시 frontend/common/app-utils.js의 API_BASE_URL 설정 또는
+        URL의 apiBaseUrl 파라미터를 사용하면 됩니다.
       */
 
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = "등록 중...";
 
-        const response = await fetch("http://localhost:8080/api/products", {
+        const response = await fetch(`${window.SejongMarketUtils.API_BASE_URL}/api/products`, {
           method: "POST",
           body: formData
         });

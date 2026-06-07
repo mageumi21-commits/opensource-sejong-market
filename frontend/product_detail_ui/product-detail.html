@@ -539,6 +539,7 @@
     </div>
   </div>
 
+  <script src="../common/api-config.js"></script>
   <script src="../common/app-utils.js"></script>
   <script>
     window.SejongMarketUtils.renderAuthArea("authArea", {
@@ -548,7 +549,7 @@
       afterLogoutUrl: "../main_ui/product-list.html"
     });
 
-    const API_BASE_URL = "http://localhost:8080";
+    const { API_BASE_URL } = window.SejongMarketUtils;
     const PRODUCT_LIST_URL = "../main_ui/product-list.html";
     const CHAT_URL = "../chat_ui/chat.html";
 

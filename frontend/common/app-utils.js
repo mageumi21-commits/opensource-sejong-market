@@ -1,5 +1,25 @@
 window.SejongMarketUtils = (function () {
-  const API_BASE_URL = 'http://localhost:8080';
+  const DEFAULT_API_BASE_URL = 'http://localhost:8080';
+  const API_BASE_URL_STORAGE_KEY = 'SEJONG_MARKET_API_BASE_URL';
+
+  function resolveApiBaseUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const queryApiBaseUrl = params.get('apiBaseUrl');
+
+    if (queryApiBaseUrl) {
+      localStorage.setItem(API_BASE_URL_STORAGE_KEY, queryApiBaseUrl);
+      return queryApiBaseUrl.replace(/\/$/, '');
+    }
+
+    const configuredApiBaseUrl =
+      window.SEJONG_MARKET_API_BASE_URL ||
+      localStorage.getItem(API_BASE_URL_STORAGE_KEY) ||
+      DEFAULT_API_BASE_URL;
+
+    return configuredApiBaseUrl.replace(/\/$/, '');
+  }
+
+  const API_BASE_URL = resolveApiBaseUrl();
 
   function toSejongEmail(value) {
     const trimmed = String(value || '').trim().toLowerCase();
