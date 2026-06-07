@@ -48,7 +48,8 @@ function getProductTitle(product) {
 function createProductCard(product) {
   const card = document.createElement('div');
   const productId = product.id;
-  const status = product.status || 'on-sale';
+  const status = getProductStatus(product);
+  const statusText = getProductStatusText(product);
 
   card.className = 'product-card';
   if (productId) {
@@ -67,7 +68,7 @@ function createProductCard(product) {
   card.innerHTML = `
     <div class="product-img-wrap">
       <div class="product-img-placeholder">${renderProductImage(product)}</div>
-      <span class="product-status ${escapeAttribute(status)}">${status === 'sold-out' ? '판매완료' : '판매중'}</span>
+      <span class="product-status ${escapeAttribute(status)}">${escapeHtml(statusText)}</span>
     </div>
     <div class="product-info">
       <p class="product-title">${escapeHtml(getProductTitle(product) || '제목 없음')}</p>
@@ -99,6 +100,26 @@ function createProductCard(product) {
   });
 
   return card;
+}
+
+function getProductStatus(product) {
+  if (product.status) {
+    return product.status;
+  }
+
+  if (product.saleStatus === 'SOLD_OUT') {
+    return 'sold-out';
+  }
+
+  return 'on-sale';
+}
+
+function getProductStatusText(product) {
+  if (product.saleStatusText) {
+    return product.saleStatusText;
+  }
+
+  return getProductStatus(product) === 'sold-out' ? '판매완료' : '판매중';
 }
 
 function renderProductImage(product) {
