@@ -76,9 +76,29 @@ https://abcd-1234.ngrok-free.app
 
 이 주소가 원격 테스트용 백엔드 주소가 된다.
 
+백엔드가 외부에서 접근 가능한지 다음 주소로 확인한다.
+
+```text
+https://abcd-1234.ngrok-free.app/health
+```
+
+정상 응답은 다음과 같다.
+
+```json
+{
+  "status": "ok"
+}
+```
+
 ## 프론트엔드 API 주소 변경
 
-프론트엔드는 `frontend/common/app-utils.js`의 `API_BASE_URL`을 기준으로 백엔드 API를 호출한다.
+프론트엔드는 `frontend/common/api-config.js`와 `frontend/common/app-utils.js`의 `API_BASE_URL`을 기준으로 백엔드 API를 호출한다.
+
+실제 배포 시에는 `frontend/common/api-config.js`의 값을 배포된 백엔드 주소로 변경한다.
+
+```js
+window.SEJONG_MARKET_API_BASE_URL = 'https://abcd-1234.ngrok-free.app';
+```
 
 원격 테스트 주소는 두 가지 방법으로 설정할 수 있다.
 
@@ -138,3 +158,5 @@ localStorage.removeItem("SEJONG_MARKET_API_BASE_URL");
 - ngrok 주소가 바뀌면 프론트엔드의 `SEJONG_MARKET_API_BASE_URL`도 다시 설정해야 한다.
 - 같은 브라우저 일반 탭 여러 개는 `localStorage`를 공유하므로 서로 다른 사용자 테스트는 일반 창과 시크릿 창, 또는 Chrome과 Edge를 나눠 사용하는 것이 좋다.
 - ngrok 무료 주소는 실행할 때마다 바뀔 수 있다.
+
+실제 배포 환경에서 사용할 환경변수와 공용 DB 조건은 `docs/deployment-config.md`를 참고한다.
