@@ -59,8 +59,8 @@ async function handleLogin() {
       throw new Error(await readErrorMessage(response));
     }
 
-    localStorage.setItem('loginUser', JSON.stringify({ email }));
-    localStorage.setItem('loginEmail', email);
+    const loginUser = await response.json();
+    saveLoginUser(loginUser, email);
 
     alert('로그인 성공!');
     window.location.href = 'mypage.html';
@@ -72,8 +72,65 @@ async function handleLogin() {
   }
 }
 
-function handleStudentLogin() {
-  alert('학번 로그인은 아직 백엔드 API가 없어 이메일 로그인으로 이용해 주세요.');
+async function handleStudentLogin() {
+  const studentId = document.getElementById('studentLoginId').value.trim();
+  const pw = document.getElementById('studentLoginPw').value;
+
+  if (!studentId) {
+    alert('학번을 입력해 주세요.');
+    document.getElementById('studentLoginId').focus();
+    return;
+  }
+  if (!pw) {
+    alert('비밀번호를 입력해 주세요.');
+    document.getElementById('studentLoginPw').focus();
+    return;
+  }
+
+  const loginBtn = document.querySelector('#tab-student .login-btn');
+
+  try {
+    loginBtn.disabled = true;
+    loginBtn.textContent = '로그인 중...';
+
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        studentId,
+        password: pw
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    const loginUser = await response.json();
+    saveLoginUser(loginUser, loginUser.email);
+
+    alert('로그인 성공!');
+    window.location.href = 'mypage.html';
+  } catch (error) {
+    alert(error.message || '로그인에 실패했습니다.');
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = '로그인';
+  }
+}
+
+function saveLoginUser(loginUser, fallbackEmail) {
+  const email = loginUser && loginUser.email ? loginUser.email : fallbackEmail;
+  const user = {
+    email,
+    nickname: loginUser && loginUser.nickname ? loginUser.nickname : '',
+    studentId: loginUser && loginUser.studentId ? loginUser.studentId : ''
+  };
+
+  localStorage.setItem('loginUser', JSON.stringify(user));
+  localStorage.setItem('loginEmail', email);
 }
 
 // ── 엔터 키로 로그인 ──

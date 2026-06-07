@@ -5,6 +5,7 @@ import com.market.backend.product.repository.ProductRepository;
 import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
+import com.market.backend.user.dto.LoginResponse;
 import com.market.backend.user.dto.MyPageResponse;
 import com.market.backend.user.dto.PasswordFindCodeSendRequest;
 import com.market.backend.user.dto.PasswordFindResponse;
@@ -44,13 +45,14 @@ public class UserService {
         emailVerificationService.consumeVerifiedEmail(email);
     }
 
-    public void login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("\uC774\uBA54\uC77C \uB610\uB294 \uBE44\uBC00\uBC88\uD638\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
+    public LoginResponse login(LoginRequest request) {
+        User user = findUserForLogin(request);
 
         if (!user.getPassword().equals(request.getPassword())) {
             throw new IllegalArgumentException("\uC774\uBA54\uC77C \uB610\uB294 \uBE44\uBC00\uBC88\uD638\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
         }
+
+        return LoginResponse.from(user);
     }
 
     public MyPageResponse getMyPage(String email) {
@@ -105,6 +107,17 @@ public class UserService {
 
         return userRepository.findByNicknameAndEmail(trimmedNickname, normalizedEmail)
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보를 찾을 수 없습니다."));
+    }
+
+    private User findUserForLogin(LoginRequest request) {
+        if (StringUtils.hasText(request.getStudentId())) {
+            return userRepository.findByStudentId(request.getStudentId().trim())
+                    .orElseThrow(() -> new IllegalArgumentException("\uC774\uBA54\uC77C \uB610\uB294 \uBE44\uBC00\uBC88\uD638\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
+        }
+
+        String email = normalizeSejongEmail(request.getEmail());
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("\uC774\uBA54\uC77C \uB610\uB294 \uBE44\uBC00\uBC88\uD638\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
     }
 
     private String normalizeSejongEmail(String email) {
