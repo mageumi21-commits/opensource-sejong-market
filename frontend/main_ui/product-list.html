@@ -150,7 +150,24 @@
       font-weight: 900;
     }
 
-    .login-btn {
+    .auth-area {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .auth-user-name {
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .login-btn,
+    .auth-login-btn,
+    .auth-action-btn {
       border: 1px solid var(--primary);
       padding: 13px 25px;
       border-radius: 8px;
@@ -161,8 +178,26 @@
       transition: 0.18s;
     }
 
-    .login-btn:hover {
+    .auth-action-btn {
+      padding: 12px 16px;
+    }
+
+    .auth-logout-btn {
+      border-color: #d5d5d5;
+      background: #ffffff;
+      color: var(--text-primary);
+    }
+
+    .login-btn:hover,
+    .auth-login-btn:hover,
+    .auth-action-btn:hover {
       background: var(--primary-dark);
+    }
+
+    .auth-logout-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
     }
 
     .nav {
@@ -545,9 +580,11 @@
           ›
         </button>
       </form>
-      <button class="login-btn" onclick="location.href='../login_mypage/login.html'">
-        로그인/회원가입
-      </button>
+      <div class="auth-area" id="authArea">
+        <button class="login-btn" type="button" onclick="location.href='../login_mypage/login.html'">
+          로그인/회원가입
+        </button>
+      </div>
     </div>
     <nav class="nav">
       <div class="nav-left">
@@ -653,7 +690,15 @@
       </section>
     </div>
   </main>
+  <script src="../common/app-utils.js"></script>
   <script>
+    window.SejongMarketUtils.renderAuthArea("authArea", {
+      loginUrl: "../login_mypage/login.html",
+      signupUrl: "../login_mypage/login.html",
+      mypageUrl: "../login_mypage/mypage.html",
+      afterLogoutUrl: "product-list.html"
+    });
+
     /*
       ========================= 백엔드 개발자는 여기서 연결하세요 =========================
 

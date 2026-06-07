@@ -22,6 +22,7 @@
         <li><a href="../main_ui/product-list.html">중고거래</a></li>
         <li><a href="../product_create_ui/product-create-ui.html">상품등록</a></li>
         <li><a href="mypage.html" class="nav-active">마이페이지</a></li>
+        <li class="nav-auth-item" id="authArea"></li>
       </ul>
     </div>
   </nav>
@@ -84,6 +85,14 @@
   </main>
 
   <script src="../common/app-utils.js"></script>
+  <script>
+    window.SejongMarketUtils.renderAuthArea("authArea", {
+      loginUrl: "login.html",
+      signupUrl: "login.html",
+      mypageUrl: "mypage.html",
+      afterLogoutUrl: "../main_ui/index.html"
+    });
+  </script>
   <script src="mypage.js"></script>
 </body>
 </html>
