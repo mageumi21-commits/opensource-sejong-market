@@ -342,6 +342,7 @@
       z-index: 30;
     }
 
+    .owner-action-btn,
     .chat-btn,
     .sold-out-btn {
       width: 100%;
@@ -353,6 +354,15 @@
       transition: 0.18s;
     }
 
+    .owner-action-btn {
+      display: none;
+      background: #555;
+    }
+
+    .owner-action-btn.danger {
+      background: #8b1e1e;
+    }
+
     .chat-btn {
       background: var(--primary);
     }
@@ -360,6 +370,15 @@
     .sold-out-btn {
       display: none;
       background: #333;
+    }
+
+    .owner-action-btn:hover:not(:disabled) {
+      background: #333;
+      transform: translateY(-1px);
+    }
+
+    .owner-action-btn.danger:hover:not(:disabled) {
+      background: #681414;
     }
 
     .chat-btn:hover:not(:disabled) {
@@ -372,6 +391,7 @@
       transform: translateY(-1px);
     }
 
+    .owner-action-btn:disabled,
     .chat-btn:disabled,
     .sold-out-btn:disabled {
       background: #c8cdd3;
@@ -462,6 +482,8 @@
     </main>
 
     <div class="bottom-bar">
+      <button class="owner-action-btn" type="button" id="editBtn">수정</button>
+      <button class="owner-action-btn danger" type="button" id="deleteBtn">삭제</button>
       <button class="sold-out-btn" type="button" id="soldOutBtn">판매완료 처리</button>
       <button class="chat-btn" type="button" id="chatBtn" disabled>채팅하기</button>
     </div>
@@ -475,6 +497,8 @@
     const params = new URLSearchParams(location.search);
     const productId = params.get("id") || localStorage.getItem("lastCreatedProductId");
     const app = document.getElementById("app");
+    const editBtn = document.getElementById("editBtn");
+    const deleteBtn = document.getElementById("deleteBtn");
     const chatBtn = document.getElementById("chatBtn");
     const soldOutBtn = document.getElementById("soldOutBtn");
 
@@ -636,11 +660,19 @@
       const isSoldOut = isProductSoldOut(product);
 
       if (!isOwner) {
+        editBtn.style.display = "none";
+        deleteBtn.style.display = "none";
+        editBtn.disabled = true;
+        deleteBtn.disabled = true;
         soldOutBtn.style.display = "none";
         soldOutBtn.disabled = true;
         return;
       }
 
+      editBtn.style.display = "block";
+      deleteBtn.style.display = "block";
+      editBtn.disabled = false;
+      deleteBtn.disabled = false;
       soldOutBtn.style.display = "block";
       soldOutBtn.disabled = isSoldOut;
       soldOutBtn.textContent = isSoldOut ? "판매완료됨" : "판매완료 처리";
@@ -721,6 +753,10 @@
       app.innerHTML = `<div class="status">${escapeHtml(message || "상품 정보를 불러오지 못했습니다.")}</div>`;
       chatBtn.textContent = "채팅하기";
       chatBtn.disabled = true;
+      editBtn.style.display = "none";
+      deleteBtn.style.display = "none";
+      editBtn.disabled = true;
+      deleteBtn.disabled = true;
       soldOutBtn.style.display = "none";
       soldOutBtn.disabled = true;
     }
@@ -785,6 +821,136 @@
       } catch (error) {
         alert(error.message || "채팅방을 만들지 못했습니다.");
         updateChatButtonState(currentProduct);
+      }
+    });
+
+    editBtn.addEventListener("click", async () => {
+      if (!currentProduct) {
+        return;
+      }
+
+      const sellerEmail = getLoginEmail();
+      if (!sellerEmail) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      const productName = prompt("상품명을 입력해 주세요.", currentProduct.productName || "");
+      if (productName === null) {
+        return;
+      }
+
+      const category = prompt("카테고리를 입력해 주세요.", currentProduct.category || "기타");
+      if (category === null) {
+        return;
+      }
+
+      const priceInput = prompt("가격을 입력해 주세요.", currentProduct.price || "");
+      if (priceInput === null) {
+        return;
+      }
+
+      const price = Number(priceInput);
+      if (!Number.isInteger(price) || price < 0) {
+        alert("가격은 0 이상의 숫자로 입력해 주세요.");
+        return;
+      }
+
+      const description = prompt("상품 설명을 입력해 주세요.", currentProduct.description || "");
+      if (description === null) {
+        return;
+      }
+
+      const tradeMethod = prompt("거래 방식을 입력해 주세요. 예: 직거래, 택배", currentProduct.tradeMethod || "직거래");
+      if (tradeMethod === null) {
+        return;
+      }
+
+      const locationNumberInput = prompt("교내 거래 위치 번호를 입력해 주세요. 없으면 비워두세요.", currentProduct.locationNumber || "");
+      if (locationNumberInput === null) {
+        return;
+      }
+
+      const locationNumber = locationNumberInput.trim() ? Number(locationNumberInput) : null;
+      if (locationNumber !== null && (!Number.isInteger(locationNumber) || locationNumber < 0)) {
+        alert("거래 위치 번호는 0 이상의 숫자로 입력해 주세요.");
+        return;
+      }
+
+      const locationName = prompt("교내 거래 위치명을 입력해 주세요. 없으면 비워두세요.", currentProduct.locationName || "");
+      if (locationName === null) {
+        return;
+      }
+
+      try {
+        editBtn.disabled = true;
+        editBtn.textContent = "수정 중";
+
+        const response = await fetch(`${API_BASE_URL}/api/products/${currentProduct.id || productId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            sellerEmail,
+            productName: productName.trim(),
+            category: category.trim(),
+            price,
+            description: description.trim(),
+            tradeMethod: tradeMethod.trim(),
+            locationNumber,
+            locationName: locationName.trim()
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        currentProduct = await response.json();
+        renderProduct(currentProduct);
+        alert("상품 정보가 수정되었습니다.");
+      } catch (error) {
+        alert(error.message || "상품 수정에 실패했습니다.");
+        editBtn.disabled = false;
+        editBtn.textContent = "수정";
+      }
+    });
+
+    deleteBtn.addEventListener("click", async () => {
+      if (!currentProduct) {
+        return;
+      }
+
+      const sellerEmail = getLoginEmail();
+      if (!sellerEmail) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      if (!confirm("정말 이 상품을 삭제하시겠습니까?")) {
+        return;
+      }
+
+      try {
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = "삭제 중";
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/products/${encodeURIComponent(currentProduct.id || productId)}?sellerEmail=${encodeURIComponent(sellerEmail)}`,
+          { method: "DELETE" }
+        );
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        alert("상품이 삭제되었습니다.");
+        location.href = PRODUCT_LIST_URL;
+      } catch (error) {
+        alert(error.message || "상품 삭제에 실패했습니다.");
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = "삭제";
       }
     });
 
