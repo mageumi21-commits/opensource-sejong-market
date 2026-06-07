@@ -45,6 +45,7 @@ class UserServiceTest {
     void signup_savesVerifiedUser() {
         SignupRequest request = signupRequest("student@sju.ac.kr", "password123", "테스트유저", "23011234");
         when(emailVerificationService.requireVerifiedEmail("student@sju.ac.kr")).thenReturn("student@sju.ac.kr");
+        when(userRepository.findByStudentId("23011234")).thenReturn(Optional.empty());
 
         userService.signup(request);
 
@@ -80,6 +81,18 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.signup(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 가입된 이메일입니다.");
+    }
+
+    @Test
+    void signup_rejectsDuplicateStudentId() {
+        SignupRequest request = signupRequest("student@sju.ac.kr", "password123", "테스트유저", "23011234");
+        User user = user("other@sju.ac.kr", "password123", "다른유저", "23011234");
+        when(emailVerificationService.requireVerifiedEmail("student@sju.ac.kr")).thenReturn("student@sju.ac.kr");
+        when(userRepository.findByStudentId("23011234")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> userService.signup(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이미 가입된 학번입니다.");
     }
 
     @Test
