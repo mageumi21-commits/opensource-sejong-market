@@ -1,7 +1,8 @@
 window.SejongMarketUtils = (function () {
   const DEFAULT_API_BASE_URL = 'http://localhost:8080';
   const API_BASE_URL_STORAGE_KEY = 'SEJONG_MARKET_API_BASE_URL';
-  const SERVICE_BASE_URL = 'https://sejong-market';
+  // 배포 환경에서는 빈 문자열(절대경로)을 사용합니다.
+  const SERVICE_BASE_URL = '';
   const PAGE_FILES = {
     home: 'main_ui/index.html',
     products: 'main_ui/product-list.html',
@@ -82,6 +83,40 @@ window.SejongMarketUtils = (function () {
 
   const API_BASE_URL = resolveApiBaseUrl();
 
+  /**
+   * 현재 실행 환경이 배포 환경인지 여부를 반환합니다.
+   *
+   * 배포 환경 판단 기준:
+   * - file: 프로토콜 → 로컬 파일 실행 → false
+   * - localhost 또는 127.0.0.1 → 로컬 개발 서버 → false
+   * - 그 외 호스트명(Netlify, 실제 도메인 등) → true
+   *
+   * 강제 오버라이드:
+   * - window.SEJONG_MARKET_DEPLOY_MODE = true  → 항상 배포 모드
+   * - window.SEJONG_MARKET_DEPLOY_MODE = false → 항상 로컬 모드
+   */
+  function isDeployedEnv() {
+    // 전역 플래그로 강제 지정 가능
+    if (typeof window.SEJONG_MARKET_DEPLOY_MODE === 'boolean') {
+      return window.SEJONG_MARKET_DEPLOY_MODE;
+    }
+
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+
+    // file:// 프로토콜은 항상 로컬
+    if (protocol === 'file:') {
+      return false;
+    }
+
+    // localhost / 127.0.0.1 은 로컬 개발 서버
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
+      return false;
+    }
+
+    return true;
+  }
+
   function frontendRootPrefix() {
     const path = window.location.pathname.replaceAll('\\', '/');
     if (
@@ -106,7 +141,43 @@ window.SejongMarketUtils = (function () {
     return queryString ? `${url}?${queryString}` : url;
   }
 
+  /**
+   * 페이지 URL을 반환합니다.
+   *
+   * - 로컬 환경(file://, localhost): HTML 파일 상대 경로 반환
+   *   예) '../product_detail_ui/product-detail.html'
+   * - 배포 환경(Netlify 등): 서비스 절대 경로 반환
+   *   예) '/products'
+   *
+   * @param {string} routeName - PAGE_FILES/SERVICE_PATHS 키
+   * @param {object} [params={}] - 쿼리 파라미터 (로컬) 또는 경로 파라미터 (배포)
+   */
   function pageUrl(routeName, params = {}) {
+    if (isDeployedEnv()) {
+      // 배포 환경: 서비스 경로 사용
+      let path = SERVICE_PATHS[routeName];
+      if (!path) {
+        return '#';
+      }
+
+      // 경로 파라미터 치환 (예: {id} → 1)
+      Object.entries(params).forEach(function ([key, value]) {
+        path = path.replace(`{${key}}`, encodeURIComponent(value));
+      });
+
+      // 남아있는 경로 파라미터가 없으면 그대로 반환
+      // (쿼리스트링이 필요한 파라미터는 별도 처리)
+      const remainingParams = {};
+      Object.entries(params).forEach(function ([key, value]) {
+        if (path.includes(`{${key}}`)) {
+          remainingParams[key] = value;
+        }
+      });
+
+      return appendQueryString(SERVICE_BASE_URL + path, remainingParams);
+    }
+
+    // 로컬 환경: HTML 파일 상대 경로 사용
     const file = PAGE_FILES[routeName];
     if (!file) {
       return '#';
@@ -124,11 +195,31 @@ window.SejongMarketUtils = (function () {
     return SERVICE_BASE_URL + path;
   }
 
+  /**
+   * 상품 상세 페이지 URL을 반환합니다.
+   *
+   * - 로컬: product-detail.html?id=1
+   * - 배포: /products/1
+   */
   function productDetailUrl(productId) {
+    if (isDeployedEnv()) {
+      return SERVICE_BASE_URL + '/products/' + encodeURIComponent(productId);
+    }
+
     return pageUrl('productDetail', { id: productId });
   }
 
+  /**
+   * 채팅방 페이지 URL을 반환합니다.
+   *
+   * - 로컬: chat.html?roomId=1
+   * - 배포: /chatrooms/1
+   */
   function chatRoomUrl(roomId) {
+    if (isDeployedEnv()) {
+      return SERVICE_BASE_URL + '/chatrooms/' + encodeURIComponent(roomId);
+    }
+
     return pageUrl('chatRoom', { roomId });
   }
 
@@ -428,6 +519,7 @@ window.SejongMarketUtils = (function () {
     SERVICE_BASE_URL,
     PAGE_FILES,
     SERVICE_PATHS,
+    isDeployedEnv,
     toSejongEmail,
     pageUrl,
     serviceUrl,

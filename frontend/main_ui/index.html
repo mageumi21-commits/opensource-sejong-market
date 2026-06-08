@@ -711,7 +711,7 @@
       </div>
 
       <nav class="nav">
-        <div class="nav-left">
+        <div class="nav-left" id="navLinks">
           <a href="product-list.html">전체</a>
           <a href="product-list.html?category=전자기기">전자기기</a>
           <a href="product-list.html?category=도서">도서</a>
@@ -743,30 +743,30 @@
         </div>
       </section>
 
-      <section class="quick-menu">
+      <section class="quick-menu" id="quickMenu">
         <div class="quick-item">
-          <a href="product-list.html?mode=recommend" class="quick-link">
+          <a href="product-list.html?mode=recommend" class="quick-link" id="quickRecommendLink">
             <div class="quick-icon">♥</div>
             <p>찜</p>
           </a>
         </div>
 
         <div class="quick-item">
-          <a href="../login_mypage/mypage.html" class="quick-link">
+          <a href="../login_mypage/mypage.html" class="quick-link" id="quickMypageLink">
             <div class="quick-icon">👤</div>
             <p>마이페이지</p>
           </a>
         </div>
 
         <div class="quick-item">
-          <a href="product-list.html?mode=latest" class="quick-link">
+          <a href="product-list.html?mode=latest" class="quick-link" id="quickLatestLink">
             <div class="quick-icon">🛍️</div>
             <p>최신상품</p>
           </a>
         </div>
 
         <div class="quick-item">
-          <a href="../product_create_ui/product-create-ui.html" class="quick-link" onclick="return goProductCreate(event)">
+<a href="../product_create_ui/product-create-ui.html" class="quick-link" id="quickRegisterLink" onclick="return goProductCreate(event)">
             <div class="quick-icon">＋</div>
             <p>상품등록</p>
           </a>
@@ -800,10 +800,10 @@
     <script src="../common/app-utils.js"></script>
     <script>
       window.SejongMarketUtils.renderAuthArea("authArea", {
-        loginUrl: "../login_mypage/login.html",
-        signupUrl: "../login_mypage/login.html",
-        mypageUrl: "../login_mypage/mypage.html",
-        afterLogoutUrl: "index.html"
+        loginUrl: window.SejongMarketUtils.pageUrl('login'),
+        signupUrl: window.SejongMarketUtils.pageUrl('login'),
+        mypageUrl: window.SejongMarketUtils.pageUrl('mypage'),
+        afterLogoutUrl: window.SejongMarketUtils.pageUrl('home')
       });
 
       const {
@@ -812,8 +812,48 @@
         toSejongEmail,
         readErrorMessage,
         imageSourceAttributes,
-        hydrateRemoteImages
+        hydrateRemoteImages,
+        pageUrl,
+        productDetailUrl
       } = window.SejongMarketUtils;
+
+      // 배포/로컬 환경에 맞게 링크 동적 설정
+      (function initLinks() {
+        const heroBtn = document.querySelector('.hero-btn');
+        if (heroBtn) heroBtn.onclick = () => { location.href = pageUrl('productNew'); };
+
+        const quickRecommend = document.getElementById('quickRecommendLink');
+        if (quickRecommend) quickRecommend.href = pageUrl('products', { mode: 'recommend' });
+
+        const quickMypage = document.getElementById('quickMypageLink');
+        if (quickMypage) quickMypage.href = pageUrl('mypage');
+
+        const quickLatest = document.getElementById('quickLatestLink');
+        if (quickLatest) quickLatest.href = pageUrl('products', { mode: 'latest' });
+
+        const quickRegister = document.getElementById('quickRegisterLink');
+        if (quickRegister) quickRegister.href = pageUrl('productNew');
+
+        const moreRecommendBtn = document.querySelector('a.more-btn[href*="mode=recommend"]');
+        if (moreRecommendBtn) moreRecommendBtn.href = pageUrl('products', { mode: 'recommend' });
+
+        const moreLatestBtn = document.querySelector('a.more-btn[href*="mode=latest"]');
+        if (moreLatestBtn) moreLatestBtn.href = pageUrl('products', { mode: 'latest' });
+
+        // 네비게이션 카테고리 링크
+        const navLinks = document.getElementById('navLinks');
+        if (navLinks) {
+          const categories = ['전체', '전자기기', '도서', '의류', '생활용품', '기타'];
+          const links = navLinks.querySelectorAll('a');
+          links.forEach((link, i) => {
+            const cat = categories[i];
+            if (!cat) return;
+            link.href = cat === '전체'
+              ? pageUrl('products')
+              : pageUrl('products', { category: cat });
+          });
+        }
+      })();
       const API_URLS = {
         recommendProducts: `${API_BASE_URL}/api/products/recommendations?limit=5`,
         latestProducts: `${API_BASE_URL}/api/products/latest?limit=5`,
@@ -835,11 +875,11 @@
         const keyword = searchInput.value.trim();
 
         if (keyword === "") {
-          location.href = "product-list.html";
+          location.href = pageUrl('products');
           return;
         }
 
-        location.href = `product-list.html?keyword=${encodeURIComponent(keyword)}`;
+        location.href = pageUrl('products', { keyword });
       });
 
       async function loadMainProducts() {
@@ -931,12 +971,11 @@
           card.className = "product-card";
 
           card.addEventListener("click", () => {
-            if (!productId) {
-              alert("상품 정보를 확인할 수 없습니다.");
-              return;
-            }
-
-            location.href = `../product_detail_ui/product-detail.html?id=${encodeURIComponent(productId)}`;
+if (!productId) {
+  alert("상품 정보를 확인할 수 없습니다.");
+  return;
+}
+location.href = productDetailUrl(productId);
           });
 
           card.innerHTML = `
@@ -1043,7 +1082,7 @@
         const userEmail = getNormalizedLoginEmail();
         if (!userEmail) {
           alert("로그인이 필요합니다.");
-          location.href = "../login_mypage/login.html";
+          location.href = pageUrl('login');
           return;
         }
 

@@ -14,15 +14,15 @@
 
   <nav class="navbar">
     <div class="nav-inner">
-      <a class="nav-logo" href="../main_ui/index.html">
+      <a class="nav-logo" href="../main_ui/index.html" id="mypageLogoLink">
         <img src="logo.png" alt="세종마켓 로고" class="nav-logo-img" onerror="this.style.display='none'">
         <span class="nav-logo-text">세종마켓 중고거래</span>
       </a>
       <ul class="nav-links">
-        <li><a href="../main_ui/index.html">홈</a></li>
-        <li><a href="../main_ui/product-list.html">중고거래</a></li>
-        <li><a href="../product_create_ui/product-create-ui.html">상품등록</a></li>
-        <li><a href="mypage.html" class="nav-active">마이페이지</a></li>
+        <li><a href="../main_ui/index.html" id="mypageNavHome">홈</a></li>
+        <li><a href="../main_ui/product-list.html" id="mypageNavProducts">중고거래</a></li>
+        <li><a href="../product_create_ui/product-create-ui.html" id="mypageNavRegister">상품등록</a></li>
+        <li><a href="mypage.html" class="nav-active" id="mypageNavMypage">마이페이지</a></li>
         <li class="nav-auth-item" id="authArea"></li>
       </ul>
     </div>
@@ -87,7 +87,7 @@
     <section class="products-panel">
       <div class="panel-header">
         <h2 class="panel-title">내가 등록한 상품</h2>
-        <a href="../product_create_ui/product-create-ui.html" class="register-btn">
+        <a href="../product_create_ui/product-create-ui.html" class="register-btn" id="mypageRegisterBtn">
           <i class="ti ti-plus"></i> 상품 등록
         </a>
       </div>
@@ -97,7 +97,7 @@
       <div class="empty-state" id="emptyState" style="display:none;">
         <i class="ti ti-box-off"></i>
         <p id="emptyStateMessage">아직 등록한 상품이 없습니다.</p>
-        <a href="../product_create_ui/product-create-ui.html" class="empty-register-btn">
+        <a href="../product_create_ui/product-create-ui.html" class="empty-register-btn" id="mypageEmptyRegisterBtn">
           <i class="ti ti-plus"></i> 첫 상품 등록하기
         </a>
       </div>
@@ -122,11 +122,38 @@
   <script src="../common/app-utils.js"></script>
   <script>
     window.SejongMarketUtils.renderAuthArea("authArea", {
-      loginUrl: "login.html",
-      signupUrl: "login.html",
-      mypageUrl: "mypage.html",
-      afterLogoutUrl: "../main_ui/index.html"
+      loginUrl: window.SejongMarketUtils.pageUrl('login'),
+      signupUrl: window.SejongMarketUtils.pageUrl('login'),
+      mypageUrl: window.SejongMarketUtils.pageUrl('mypage'),
+      afterLogoutUrl: window.SejongMarketUtils.pageUrl('home')
     });
+
+    // 배포/로컬 환경에 맞게 링크 동적 설정
+    (function initMypageLinks() {
+      const utils = window.SejongMarketUtils;
+      if (!utils) return;
+
+      const logoLink = document.getElementById('mypageLogoLink');
+      if (logoLink) logoLink.href = utils.pageUrl('home');
+
+      const navHome = document.getElementById('mypageNavHome');
+      if (navHome) navHome.href = utils.pageUrl('home');
+
+      const navProducts = document.getElementById('mypageNavProducts');
+      if (navProducts) navProducts.href = utils.pageUrl('products');
+
+      const navRegister = document.getElementById('mypageNavRegister');
+      if (navRegister) navRegister.href = utils.pageUrl('productNew');
+
+      const navMypage = document.getElementById('mypageNavMypage');
+      if (navMypage) navMypage.href = utils.pageUrl('mypage');
+
+      const registerBtn = document.getElementById('mypageRegisterBtn');
+      if (registerBtn) registerBtn.href = utils.pageUrl('productNew');
+
+      const emptyRegisterBtn = document.getElementById('mypageEmptyRegisterBtn');
+      if (emptyRegisterBtn) emptyRegisterBtn.href = utils.pageUrl('productNew');
+    })();
   </script>
   <script src="mypage.js"></script>
 </body>

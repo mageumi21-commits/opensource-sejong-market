@@ -1,0 +1,30 @@
+# 세종마켓 Netlify 배포용 리다이렉트 설정
+# 참고: 규칙은 위에서 아래로 매칭되므로, 구체적인 경로가 먼저 와야 합니다.
+# 예 /products/new는 /products/:id 보다 반드시 먼저 선언해야 합니다.
+
+# ── 상품 ──────────────────────────────────────────────
+# 상품 등록 (/products/new → product-create-ui.html)
+/products/new           /product_create_ui/product-create-ui.html  200
+
+# 상품 상세 (/products/:id → product-detail.html?id=:id)
+/products/:id           /product_detail_ui/product-detail.html?id=:id  200
+
+# 상품 목록 (/products → product-list.html)
+/products               /main_ui/product-list.html                  200
+
+# ── 인증 / 계정 ────────────────────────────────────────
+/login                  /login_mypage/login.html                    200
+/signup                 /login_mypage/signup.html                   200
+/mypage                 /login_mypage/mypage.html                   200
+/find-id                /login_mypage/find-id.html                  200
+/find-password          /login_mypage/find-pw.html                  200
+
+# ── 약관 / 정책 ────────────────────────────────────────
+/terms                  /login_mypage/terms.html                    200
+/privacy                /login_mypage/privacy.html                  200
+
+# ── 채팅 ──────────────────────────────────────────────
+/chatrooms/:id          /chat_ui/chat.html?roomId=:id               200
+
+# ── 홈 (루트) ──────────────────────────────────────────
+/                       /main_ui/index.html                         200

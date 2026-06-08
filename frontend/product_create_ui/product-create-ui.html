@@ -769,17 +769,19 @@
   <script src="../common/app-utils.js"></script>
   <script>
     window.SejongMarketUtils.renderAuthArea("authArea", {
-      loginUrl: "../login_mypage/login.html",
-      signupUrl: "../login_mypage/login.html",
-      mypageUrl: "../login_mypage/mypage.html",
-      afterLogoutUrl: "../main_ui/product-list.html"
+      loginUrl: window.SejongMarketUtils.pageUrl('login'),
+      signupUrl: window.SejongMarketUtils.pageUrl('login'),
+      mypageUrl: window.SejongMarketUtils.pageUrl('mypage'),
+      afterLogoutUrl: window.SejongMarketUtils.pageUrl('products')
     });
 
     const loginEmailForAccess = window.SejongMarketUtils.getLoginEmail();
     if (!loginEmailForAccess) {
       alert("상품 등록은 로그인 후 이용할 수 있습니다.");
-      window.location.replace("../login_mypage/login.html");
+
+      window.location.replace(window.SejongMarketUtils.pageUrl('login'));
       throw new Error("로그인이 필요한 화면입니다.");
+
     }
 
     const {
