@@ -511,8 +511,9 @@
       chatPageEl.classList.add("list-mode");
       messageForm.style.display = "none";
       leaveRoomBtn.style.display = "none";
-      roomTitleEl.textContent = opponentName;
-      roomSubTitleEl.textContent = room.productName;
+      roomTitleEl.textContent = "채팅방";
+      roomSubTitleEl.textContent = "참여 중인 대화 목록";
+      messagesEl.innerHTML = `<div class="status">채팅방 목록을 불러오는 중입니다.</div>`;
 
       const loginEmail = getLoginEmail();
       const response = await fetch(`${API_BASE_URL}/api/chatrooms?userEmail=${encodeURIComponent(loginEmail)}`);
@@ -542,8 +543,8 @@
         ? room.buyerNickname || room.buyerEmail
         : room.sellerNickname || room.sellerEmail;
 
-      roomTitleEl.textContent = "\uCC44\uD305\uCC3D";
-      roomSubTitleEl.textContent = "\uCC38\uC5EC \uC911\uC778 \uCC44\uD305\uBC29";
+      roomTitleEl.textContent = opponentName || "채팅창";
+      roomSubTitleEl.textContent = room.productName || "참여 중인 채팅방";
     }
 
     async function loadMessages() {
