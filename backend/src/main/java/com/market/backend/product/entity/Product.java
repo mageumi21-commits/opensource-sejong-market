@@ -111,6 +111,14 @@ public class Product {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void replaceImagePaths(List<String> imagePaths) {
+        this.imagePaths.clear();
+        if (imagePaths != null) {
+            this.imagePaths.addAll(imagePaths);
+        }
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void markSoldOut() {
         this.saleStatus = ProductSaleStatus.SOLD_OUT;
         this.updatedAt = LocalDateTime.now();
