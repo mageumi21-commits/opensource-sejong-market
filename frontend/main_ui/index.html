@@ -796,7 +796,14 @@
         afterLogoutUrl: "index.html"
       });
 
-      const { API_BASE_URL, getLoginEmail, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
+      const {
+        API_BASE_URL,
+        getLoginEmail,
+        toSejongEmail,
+        readErrorMessage,
+        imageSourceAttributes,
+        hydrateRemoteImages
+      } = window.SejongMarketUtils;
       const API_URLS = {
         recommendProducts: `${API_BASE_URL}/api/products/recommendations?limit=5`,
         latestProducts: `${API_BASE_URL}/api/products/latest?limit=5`,
@@ -1009,31 +1016,18 @@
           `;
 
           container.appendChild(card);
+          hydrateRemoteImages(card);
         });
       }
 
       function createProductImageHtml(product) {
         if (product.imageUrl) {
-          const fullImageUrl = getFullImageUrl(product.imageUrl);
-
           return `
-            <img
-              src="${escapeHtml(fullImageUrl)}"
-              alt="${escapeHtml(product.name || "상품 이미지")}" 
-              class="product-real-img"
-            />
+            <img ${imageSourceAttributes(product.imageUrl, product.name || "상품 이미지", "product-real-img")} />
           `;
         }
 
         return getCategoryEmoji(product.category);
-      }
-
-      function getFullImageUrl(imageUrl) {
-        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-          return imageUrl;
-        }
-
-        return API_URLS.imageBaseUrl + imageUrl;
       }
 
       function getCategoryEmoji(category) {

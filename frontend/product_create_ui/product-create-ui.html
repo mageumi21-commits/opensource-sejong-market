@@ -783,6 +783,7 @@
     const {
       API_BASE_URL,
       normalizeImageUrl,
+      setImageElementSource,
       productDetailUrl,
       readErrorMessage
     } = window.SejongMarketUtils;
@@ -922,7 +923,7 @@
       }
 
       const img = document.createElement("img");
-      img.src = normalizeImageUrl(imagePath);
+      setImageElementSource(img, imagePath);
       img.alt = "기존 상품 이미지";
 
       const removeBtn = document.createElement("span");

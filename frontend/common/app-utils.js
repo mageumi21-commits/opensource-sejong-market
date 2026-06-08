@@ -281,6 +281,100 @@ window.SejongMarketUtils = (function () {
     return API_BASE_URL + path;
   }
 
+  const TRANSPARENT_IMAGE =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  const remoteImageCache = new Map();
+
+  function isNgrokImageUrl(url) {
+    try {
+      return new URL(url, window.location.href).hostname.endsWith('.ngrok-free.dev');
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function imageSourceAttributes(path, alt, className = '') {
+    const source = normalizeImageUrl(path);
+    const classAttribute = className ? ` class="${escapeAttribute(className)}"` : '';
+    const altAttribute = ` alt="${escapeAttribute(alt || '상품 이미지')}"`;
+
+    if (!source) {
+      return `src="${TRANSPARENT_IMAGE}"${altAttribute}${classAttribute}`;
+    }
+
+    if (!isNgrokImageUrl(source)) {
+      return `src="${escapeAttribute(source)}"${altAttribute}${classAttribute}`;
+    }
+
+    return `src="${TRANSPARENT_IMAGE}" data-remote-image-src="${escapeAttribute(source)}"${altAttribute}${classAttribute}`;
+  }
+
+  async function resolveRemoteImageUrl(source) {
+    const normalizedSource = normalizeImageUrl(source);
+    if (!normalizedSource || !isNgrokImageUrl(normalizedSource)) {
+      return normalizedSource;
+    }
+
+    if (!remoteImageCache.has(normalizedSource)) {
+      remoteImageCache.set(
+        normalizedSource,
+        fetch(normalizedSource)
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error('이미지를 불러오지 못했습니다.');
+            }
+
+            return response.blob();
+          })
+          .then(function (blob) {
+            return URL.createObjectURL(blob);
+          })
+      );
+    }
+
+    return remoteImageCache.get(normalizedSource);
+  }
+
+  function hydrateRemoteImages(root = document) {
+    root.querySelectorAll('img[data-remote-image-src]').forEach(function (image) {
+      const source = image.dataset.remoteImageSrc;
+      if (!source || image.dataset.remoteImageLoading === 'true') {
+        return;
+      }
+
+      image.dataset.remoteImageLoading = 'true';
+      resolveRemoteImageUrl(source)
+        .then(function (resolvedSource) {
+          if (resolvedSource) {
+            image.src = resolvedSource;
+            image.dataset.resolvedImageSrc = resolvedSource;
+          }
+        })
+        .catch(function (error) {
+          console.warn('원격 이미지를 불러오지 못했습니다.', error);
+        })
+        .finally(function () {
+          delete image.dataset.remoteImageLoading;
+        });
+    });
+  }
+
+  function setImageElementSource(image, path) {
+    const source = normalizeImageUrl(path);
+    if (!image || !source) {
+      return;
+    }
+
+    if (!isNgrokImageUrl(source)) {
+      image.src = source;
+      return;
+    }
+
+    image.src = TRANSPARENT_IMAGE;
+    image.dataset.remoteImageSrc = source;
+    hydrateRemoteImages(image.parentElement || document);
+  }
+
   function formatPrice(price) {
     const value = Number(price);
     if (!Number.isFinite(value)) {
@@ -310,6 +404,10 @@ window.SejongMarketUtils = (function () {
     escapeHtml,
     escapeAttribute,
     normalizeImageUrl,
+    imageSourceAttributes,
+    resolveRemoteImageUrl,
+    hydrateRemoteImages,
+    setImageElementSource,
     formatPrice,
   };
 })();

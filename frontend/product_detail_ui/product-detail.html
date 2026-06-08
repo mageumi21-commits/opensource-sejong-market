@@ -573,7 +573,16 @@
       afterLogoutUrl: "../main_ui/product-list.html"
     });
 
-    const { API_BASE_URL, pageUrl, chatRoomUrl, toSejongEmail, readErrorMessage } = window.SejongMarketUtils;
+    const {
+      API_BASE_URL,
+      pageUrl,
+      chatRoomUrl,
+      toSejongEmail,
+      readErrorMessage,
+      imageSourceAttributes,
+      hydrateRemoteImages,
+      setImageElementSource
+    } = window.SejongMarketUtils;
     const PRODUCT_LIST_URL = pageUrl("products");
 
     const params = new URLSearchParams(location.search);
@@ -618,18 +627,6 @@
       return numberPrice.toLocaleString("ko-KR") + "원";
     }
 
-    function imageUrl(path) {
-      if (!path) {
-        return "";
-      }
-
-      if (path.startsWith("http")) {
-        return path;
-      }
-
-      return API_BASE_URL + path;
-    }
-
     function escapeHtml(value) {
       return String(value || "")
         .replaceAll("&", "&amp;")
@@ -645,7 +642,6 @@
       }
 
       return product.imagePaths
-        .map((path) => imageUrl(path))
         .filter(Boolean)
         .slice(0, 10);
     }
@@ -673,14 +669,14 @@
           data-image="${escapeHtml(image)}"
           aria-label="${index + 1}번째 상품 이미지 보기"
         >
-          <img src="${escapeHtml(image)}" alt="${productName} 썸네일 ${index + 1}" />
+          <img ${imageSourceAttributes(image, `${productName} 썸네일 ${index + 1}`)} />
         </button>
       `).join("");
 
       return `
         <section class="image-area">
           <div class="hero">
-            <img id="mainImage" src="${escapeHtml(images[0])}" alt="${productName} 이미지" />
+            <img id="mainImage" ${imageSourceAttributes(images[0], `${productName} 이미지`)} />
             ${likeButtonHtml}
             <div class="image-count" id="imageCount">1 / ${images.length}</div>
           </div>
@@ -721,7 +717,7 @@
             return;
           }
 
-          mainImage.src = button.dataset.image;
+          setImageElementSource(mainImage, button.dataset.image);
           thumbnailButtons.forEach((item) => item.classList.remove("active"));
           button.classList.add("active");
 
@@ -886,6 +882,7 @@
       `;
 
       bindImageEvents();
+      hydrateRemoteImages(app);
       bindLikeEvent();
       updateChatButtonState(product);
       updateSoldOutButtonState(product);
