@@ -390,8 +390,6 @@
 .nav-active {
   font-weight: 700 !important;
   opacity: 1 !important;
-  border-bottom: 2px solid #fff;
-  padding-bottom: 2px;
 }
 
 /* ── 반응형 ── */

@@ -58,6 +58,8 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  color: #fff;
+  text-decoration: none;
 }
 
 .nav-logo-img {
