@@ -30,4 +30,12 @@ public class User {
         this.nickname = nickname;
         this.studentId = studentId;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }

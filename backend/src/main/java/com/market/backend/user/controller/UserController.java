@@ -6,15 +6,18 @@ import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
 import com.market.backend.user.dto.LoginResponse;
+import com.market.backend.user.dto.MyInfoUpdateRequest;
 import com.market.backend.user.dto.MyPageResponse;
 import com.market.backend.user.dto.PasswordFindCodeSendRequest;
 import com.market.backend.user.dto.PasswordFindResponse;
 import com.market.backend.user.dto.PasswordFindVerifyRequest;
+import com.market.backend.user.dto.PasswordUpdateRequest;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.service.EmailVerificationService;
 import com.market.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -83,5 +86,19 @@ public class UserController {
     public MyPageResponse getMyPage(@RequestParam String email) {
 
         return userService.getMyPage(email);
+    }
+
+    @PatchMapping("/me")
+    public MyPageResponse updateMyInfo(@RequestBody MyInfoUpdateRequest request) {
+
+        return userService.updateMyInfo(request);
+    }
+
+    @PatchMapping("/me/password")
+    public String updatePassword(@RequestBody PasswordUpdateRequest request) {
+
+        userService.updatePassword(request);
+
+        return "비밀번호 수정 완료";
     }
 }

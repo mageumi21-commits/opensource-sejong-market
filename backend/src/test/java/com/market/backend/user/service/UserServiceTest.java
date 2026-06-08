@@ -11,9 +11,11 @@ import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
 import com.market.backend.user.dto.LoginResponse;
+import com.market.backend.user.dto.MyInfoUpdateRequest;
 import com.market.backend.user.dto.PasswordFindCodeSendRequest;
 import com.market.backend.user.dto.PasswordFindResponse;
 import com.market.backend.user.dto.PasswordFindVerifyRequest;
+import com.market.backend.user.dto.PasswordUpdateRequest;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.entity.User;
 import com.market.backend.user.repository.UserRepository;
@@ -239,6 +241,44 @@ class UserServiceTest {
         assertThat(response.getLikedProducts()).isEmpty();
     }
 
+    @Test
+    void updateMyInfo_changesNickname() {
+        User user = user("student@sju.ac.kr", "password123", "테스트유저", "23011234");
+        MyInfoUpdateRequest request = myInfoUpdateRequest("student@sju.ac.kr", "수정유저");
+        when(userRepository.findByEmail("student@sju.ac.kr")).thenReturn(Optional.of(user));
+        when(productRepository.findBySellerOrderByCreatedAtDesc(user)).thenReturn(List.of());
+        when(productLikeRepository.findByUserEmailOrderByIdDesc("student@sju.ac.kr")).thenReturn(List.of());
+
+        var response = userService.updateMyInfo(request);
+
+        assertThat(user.getNickname()).isEqualTo("수정유저");
+        assertThat(response.getNickname()).isEqualTo("수정유저");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updatePassword_changesPasswordWhenCurrentPasswordMatches() {
+        User user = user("student@sju.ac.kr", "password123", "테스트유저", "23011234");
+        PasswordUpdateRequest request = passwordUpdateRequest("student@sju.ac.kr", "password123", "newPassword123");
+        when(userRepository.findByEmail("student@sju.ac.kr")).thenReturn(Optional.of(user));
+
+        userService.updatePassword(request);
+
+        assertThat(user.getPassword()).isEqualTo("newPassword123");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updatePassword_rejectsWrongCurrentPassword() {
+        User user = user("student@sju.ac.kr", "password123", "테스트유저", "23011234");
+        PasswordUpdateRequest request = passwordUpdateRequest("student@sju.ac.kr", "wrong", "newPassword123");
+        when(userRepository.findByEmail("student@sju.ac.kr")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> userService.updatePassword(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("현재 비밀번호가 일치하지 않습니다.");
+    }
+
     private SignupRequest signupRequest(String email, String password, String nickname, String studentId) {
         SignupRequest request = new SignupRequest();
         ReflectionTestUtils.setField(request, "email", email);
@@ -284,6 +324,21 @@ class UserServiceTest {
         ReflectionTestUtils.setField(request, "nickname", nickname);
         ReflectionTestUtils.setField(request, "email", email);
         ReflectionTestUtils.setField(request, "code", code);
+        return request;
+    }
+
+    private MyInfoUpdateRequest myInfoUpdateRequest(String email, String nickname) {
+        MyInfoUpdateRequest request = new MyInfoUpdateRequest();
+        ReflectionTestUtils.setField(request, "email", email);
+        ReflectionTestUtils.setField(request, "nickname", nickname);
+        return request;
+    }
+
+    private PasswordUpdateRequest passwordUpdateRequest(String email, String currentPassword, String newPassword) {
+        PasswordUpdateRequest request = new PasswordUpdateRequest();
+        ReflectionTestUtils.setField(request, "email", email);
+        ReflectionTestUtils.setField(request, "currentPassword", currentPassword);
+        ReflectionTestUtils.setField(request, "newPassword", newPassword);
         return request;
     }
 

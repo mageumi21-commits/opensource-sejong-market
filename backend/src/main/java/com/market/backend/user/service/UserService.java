@@ -8,10 +8,12 @@ import com.market.backend.user.dto.FindIdRequest;
 import com.market.backend.user.dto.FindIdResponse;
 import com.market.backend.user.dto.LoginRequest;
 import com.market.backend.user.dto.LoginResponse;
+import com.market.backend.user.dto.MyInfoUpdateRequest;
 import com.market.backend.user.dto.MyPageResponse;
 import com.market.backend.user.dto.PasswordFindCodeSendRequest;
 import com.market.backend.user.dto.PasswordFindResponse;
 import com.market.backend.user.dto.PasswordFindVerifyRequest;
+import com.market.backend.user.dto.PasswordUpdateRequest;
 import com.market.backend.user.dto.SignupRequest;
 import com.market.backend.user.entity.User;
 import com.market.backend.user.repository.UserRepository;
@@ -76,6 +78,39 @@ public class UserService {
         return MyPageResponse.of(user, products, likedProducts);
     }
 
+    public MyPageResponse updateMyInfo(MyInfoUpdateRequest request) {
+        User user = findUserByEmail(request.getEmail());
+        String nickname = requireText(request.getNickname(), "닉네임을 입력해주세요.");
+
+        user.updateNickname(nickname);
+        userRepository.save(user);
+
+        List<Product> products = productRepository.findBySellerOrderByCreatedAtDesc(user);
+        List<Product> likedProducts = productLikeRepository.findByUserEmailOrderByIdDesc(user.getEmail())
+                .stream()
+                .map(ProductLike::getProduct)
+                .toList();
+
+        return MyPageResponse.of(user, products, likedProducts);
+    }
+
+    public void updatePassword(PasswordUpdateRequest request) {
+        User user = findUserByEmail(request.getEmail());
+        String currentPassword = requireText(request.getCurrentPassword(), "현재 비밀번호를 입력해주세요.");
+        String newPassword = requireText(request.getNewPassword(), "새 비밀번호를 입력해주세요.");
+
+        if (!user.getPassword().equals(currentPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        if (user.getPassword().equals(newPassword)) {
+            throw new IllegalArgumentException("새 비밀번호는 현재 비밀번호와 다르게 입력해주세요.");
+        }
+
+        user.updatePassword(newPassword);
+        userRepository.save(user);
+    }
+
     public FindIdResponse findId(FindIdRequest request) {
         String nickname = requireText(request.getNickname(), "이름을 입력해주세요.");
 
@@ -130,6 +165,12 @@ public class UserService {
         String email = normalizeSejongEmail(request.getEmail());
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("\uC774\uBA54\uC77C \uB610\uB294 \uBE44\uBC00\uBC88\uD638\uAC00 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."));
+    }
+
+    private User findUserByEmail(String email) {
+        String normalizedEmail = normalizeSejongEmail(email);
+        return userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
     }
 
     private String normalizeSejongEmail(String email) {
