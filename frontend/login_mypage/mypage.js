@@ -280,10 +280,10 @@ function updateLoginUserStorage(user) {
 
 function refreshAuthArea() {
   renderAuthArea('authArea', {
-    loginUrl: 'login.html',
-    signupUrl: 'login.html',
-    mypageUrl: 'mypage.html',
-    afterLogoutUrl: '../main_ui/index.html'
+    loginUrl: pageUrl('login'),
+    signupUrl: pageUrl('login'),
+    mypageUrl: pageUrl('mypage'),
+    afterLogoutUrl: pageUrl('home')
   });
 }
 

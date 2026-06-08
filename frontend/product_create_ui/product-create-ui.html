@@ -769,15 +769,15 @@
   <script src="../common/app-utils.js"></script>
   <script>
     window.SejongMarketUtils.renderAuthArea("authArea", {
-      loginUrl: "../login_mypage/login.html",
-      signupUrl: "../login_mypage/login.html",
-      mypageUrl: "../login_mypage/mypage.html",
-      afterLogoutUrl: "../main_ui/product-list.html"
+      loginUrl: window.SejongMarketUtils.pageUrl('login'),
+      signupUrl: window.SejongMarketUtils.pageUrl('login'),
+      mypageUrl: window.SejongMarketUtils.pageUrl('mypage'),
+      afterLogoutUrl: window.SejongMarketUtils.pageUrl('products')
     });
 
     if (!window.SejongMarketUtils.getLoginEmail()) {
       alert("상품 등록은 로그인 후 이용할 수 있습니다.");
-      window.location.href = "../login_mypage/login.html";
+      window.location.href = window.SejongMarketUtils.pageUrl('login');
     }
 
     const {

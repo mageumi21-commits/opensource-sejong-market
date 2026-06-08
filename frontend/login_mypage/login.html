@@ -19,11 +19,11 @@
         <img src="logo.png" alt="세종대학교 로고" class="nav-logo-img" onerror="this.style.display='none'">
         <span class="nav-logo-text">세종대학교 중고거래</span>
       </div>
-      <ul class="nav-links">
-        <li><a href="../main_ui/index.html">홈</a></li>
-        <li><a href="../main_ui/product-list.html">중고거래</a></li>
-        <li><a href="../product_create_ui/product-create-ui.html">상품등록</a></li>
-        <li><a href="mypage.html">마이페이지</a></li>
+      <ul class="nav-links" id="loginNavLinks">
+        <li><a href="../main_ui/index.html" id="navHomeLink">홈</a></li>
+        <li><a href="../main_ui/product-list.html" id="navProductsLink">중고거래</a></li>
+        <li><a href="../product_create_ui/product-create-ui.html" id="navRegisterLink">상품등록</a></li>
+        <li><a href="mypage.html" id="navMypageLink">마이페이지</a></li>
       </ul>
     </div>
   </nav>
@@ -69,11 +69,11 @@
         <button class="login-btn" onclick="handleLogin()">로그인</button>
 
         <div class="bottom-links">
-          <a href="find-id.html">아이디 찾기</a>
+          <a href="find-id.html" id="findIdLink1">아이디 찾기</a>
           <span class="sep">|</span>
-          <a href="find-pw.html">비밀번호 찾기</a>
+          <a href="find-pw.html" id="findPwLink1">비밀번호 찾기</a>
           <span class="sep">|</span>
-          <a href="signup.html">회원가입</a>
+          <a href="signup.html" id="signupLink1">회원가입</a>
         </div>
       </div>
 
@@ -101,11 +101,11 @@
         <button class="login-btn" onclick="handleStudentLogin()">로그인</button>
 
        <div class="bottom-links">
-          <a href="find-id.html">아이디 찾기</a>
+          <a href="find-id.html" id="findIdLink2">아이디 찾기</a>
           <span class="sep">|</span>
-          <a href="find-pw.html">비밀번호 찾기</a>
+          <a href="find-pw.html" id="findPwLink2">비밀번호 찾기</a>
           <span class="sep">|</span>
-          <a href="signup.html">회원가입</a>
+          <a href="signup.html" id="signupLink2">회원가입</a>
         </div>
       </div>
 
@@ -114,5 +114,36 @@
   <script src="../common/api-config.js"></script>
   <script src="../common/app-utils.js"></script>
   <script src="login.js"></script>
+  <script>
+    // 배포/로컬 환경에 맞게 링크 동적 설정
+    (function initLoginLinks() {
+      const utils = window.SejongMarketUtils;
+      if (!utils) return;
+
+      const navHomeLink = document.getElementById('navHomeLink');
+      if (navHomeLink) navHomeLink.href = utils.pageUrl('home');
+
+      const navProductsLink = document.getElementById('navProductsLink');
+      if (navProductsLink) navProductsLink.href = utils.pageUrl('products');
+
+      const navRegisterLink = document.getElementById('navRegisterLink');
+      if (navRegisterLink) navRegisterLink.href = utils.pageUrl('productNew');
+
+      const navMypageLink = document.getElementById('navMypageLink');
+      if (navMypageLink) navMypageLink.href = utils.pageUrl('mypage');
+
+      [document.getElementById('findIdLink1'), document.getElementById('findIdLink2')].forEach(el => {
+        if (el) el.href = utils.pageUrl('findId');
+      });
+
+      [document.getElementById('findPwLink1'), document.getElementById('findPwLink2')].forEach(el => {
+        if (el) el.href = utils.pageUrl('findPassword');
+      });
+
+      [document.getElementById('signupLink1'), document.getElementById('signupLink2')].forEach(el => {
+        if (el) el.href = utils.pageUrl('signup');
+      });
+    })();
+  </script>
 </body>
 </html>
