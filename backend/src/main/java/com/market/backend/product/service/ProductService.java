@@ -111,6 +111,59 @@ public class ProductService {
     }
 
     @Transactional
+    public ProductResponse updateProductWithImages(
+            Long productId,
+            String sellerEmail,
+            String productName,
+            String category,
+            String price,
+            String description,
+            String tradeMethod,
+            Integer locationNumber,
+            String locationName,
+            List<String> remainingImagePaths,
+            List<MultipartFile> images
+    ) {
+        Product product = findProduct(productId);
+        validateOwner(product, sellerEmail);
+        validateProduct(productName, category, price, description, tradeMethod, locationNumber);
+
+        Integer parsedPrice = parsePrice(price);
+        List<String> nextImagePaths = new ArrayList<>();
+        if (remainingImagePaths != null) {
+            nextImagePaths.addAll(remainingImagePaths.stream()
+                    .filter(StringUtils::hasText)
+                    .map(String::trim)
+                    .toList());
+        }
+
+        int newImageCount = images == null ? 0 : images.stream()
+                .filter(image -> image != null && !image.isEmpty())
+                .toList()
+                .size();
+
+        if (nextImagePaths.size() + newImageCount > 10) {
+            throw new IllegalArgumentException("이미지는 최대 10장까지 등록할 수 있습니다.");
+        }
+
+        List<String> savedImagePaths = saveImages(images);
+        nextImagePaths.addAll(savedImagePaths);
+
+        product.update(
+                productName.trim(),
+                category.trim(),
+                parsedPrice,
+                description.trim(),
+                tradeMethod.trim(),
+                locationNumber,
+                StringUtils.hasText(locationName) ? locationName.trim() : null
+        );
+        product.replaceImagePaths(nextImagePaths);
+
+        return ProductResponse.from(product);
+    }
+
+    @Transactional
     public void deleteProduct(Long productId, String sellerEmail) {
         Product product = findProduct(productId);
         validateOwner(product, sellerEmail);

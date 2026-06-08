@@ -836,10 +836,10 @@
     const photoCount = document.getElementById("photoCount");
 
     let selectedImages = [];
-    let existingImageCount = 0;
+    let remainingImagePaths = [];
 
     function updatePhotoCount() {
-      photoCount.textContent = existingImageCount + selectedImages.length;
+      photoCount.textContent = remainingImagePaths.length + selectedImages.length;
     }
 
     function createPhotoPreview(file) {
@@ -848,7 +848,7 @@
         return;
       }
 
-      if (existingImageCount + selectedImages.length >= 10) {
+      if (remainingImagePaths.length + selectedImages.length >= 10) {
         alert("이미지는 최대 10장까지 등록할 수 있어요.");
         return;
       }
@@ -915,6 +915,7 @@
     function createExistingPhotoPreview(imagePath) {
       const photoItem = document.createElement("div");
       photoItem.className = "photo-item";
+      photoItem.dataset.existingImagePath = imagePath;
 
       if (!photoRow.querySelector(".photo-item")) {
         photoItem.classList.add("active");
@@ -923,6 +924,24 @@
       const img = document.createElement("img");
       img.src = normalizeImageUrl(imagePath);
       img.alt = "기존 상품 이미지";
+
+      const removeBtn = document.createElement("span");
+      removeBtn.className = "photo-remove";
+      removeBtn.textContent = "×";
+
+      removeBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        remainingImagePaths = remainingImagePaths.filter(path => path !== imagePath);
+        photoItem.remove();
+
+        const firstPhoto = photoRow.querySelector(".photo-item");
+        const activePhoto = photoRow.querySelector(".photo-item.active");
+        if (!activePhoto && firstPhoto) {
+          firstPhoto.classList.add("active");
+        }
+
+        updatePhotoCount();
+      });
 
       photoItem.addEventListener("click", () => {
         document.querySelectorAll(".photo-item").forEach(item => {
@@ -933,6 +952,7 @@
       });
 
       photoItem.appendChild(img);
+      photoItem.appendChild(removeBtn);
       photoRow.appendChild(photoItem);
     }
 
@@ -1072,8 +1092,7 @@
       document.title = "상품 수정";
       document.querySelector(".logo-sub").textContent = "상품 수정";
       submitBtn.textContent = "수정완료";
-      document.getElementById("photoAdd").style.display = "none";
-      document.querySelector(".upload-help").textContent = "이미지 수정은 추후 지원 예정이며, 현재는 기존 이미지만 확인할 수 있어요.";
+      document.querySelector(".upload-help").textContent = "기존 이미지는 삭제할 수 있고, 새 이미지를 추가할 수 있어요.";
     }
 
     function resetProductCreateForm() {
@@ -1084,7 +1103,7 @@
       descCount.textContent = "0";
 
       selectedImages = [];
-      existingImageCount = 0;
+      remainingImagePaths = [];
       document.querySelectorAll(".photo-item").forEach(item => item.remove());
       updatePhotoCount();
 
@@ -1115,8 +1134,8 @@
       }
 
       const imagePaths = Array.isArray(product.imagePaths) ? product.imagePaths : [];
-      existingImageCount = imagePaths.length;
-      imagePaths.forEach(createExistingPhotoPreview);
+      remainingImagePaths = [...imagePaths];
+      remainingImagePaths.forEach(createExistingPhotoPreview);
       updatePhotoCount();
     }
 
@@ -1147,31 +1166,10 @@
       }
     }
 
-    async function updateProduct({
-      sellerEmail,
-      productNameValue,
-      productCategoryValue,
-      productPriceValue,
-      descriptionValue,
-      tradeMethodValue,
-      selectedLocationNum,
-      selectedLocationNameValue
-    }) {
+    async function updateProduct(formData) {
       const response = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(editProductId)}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          sellerEmail: sellerEmail.trim(),
-          productName: productNameValue.trim(),
-          category: productCategoryValue.trim(),
-          price: Number(productPriceValue),
-          description: descriptionValue.trim(),
-          tradeMethod: tradeMethodValue,
-          locationNumber: tradeMethodValue === "직거래" ? Number(selectedLocationNum) : null,
-          locationName: tradeMethodValue === "직거래" ? selectedLocationNameValue : ""
-        })
+        body: formData
       });
 
       if (!response.ok) {
@@ -1286,6 +1284,12 @@
         formData.append("images", imageFile);
       });
 
+      if (isEditMode) {
+        remainingImagePaths.forEach((imagePath) => {
+          formData.append("remainingImagePaths", imagePath);
+        });
+      }
+
       /*
         TODO 4. 백엔드 API 주소 연결
 
@@ -1298,16 +1302,7 @@
         submitBtn.textContent = isEditMode ? "수정 중..." : "등록 중...";
 
         if (isEditMode) {
-          const result = await updateProduct({
-            sellerEmail,
-            productNameValue,
-            productCategoryValue,
-            productPriceValue,
-            descriptionValue,
-            tradeMethodValue,
-            selectedLocationNum,
-            selectedLocationNameValue
-          });
+          const result = await updateProduct(formData);
 
           alert("상품 정보가 수정되었습니다.");
           location.href = productDetailUrl(result.id || editProductId);

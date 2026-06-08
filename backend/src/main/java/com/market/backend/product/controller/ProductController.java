@@ -62,12 +62,41 @@ public class ProductController {
         return productService.getProduct(productId, userEmail);
     }
 
-    @PatchMapping("/{productId}")
+    @PatchMapping(value = "/{productId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ProductResponse updateProduct(
             @PathVariable Long productId,
             @RequestBody ProductUpdateRequest request
     ) {
         return productService.updateProduct(productId, request);
+    }
+
+    @PatchMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductResponse updateProductWithImages(
+            @PathVariable Long productId,
+            @RequestParam String sellerEmail,
+            @RequestParam String productName,
+            @RequestParam String category,
+            @RequestParam String price,
+            @RequestParam String description,
+            @RequestParam String tradeMethod,
+            @RequestParam(required = false) Integer locationNumber,
+            @RequestParam(required = false) String locationName,
+            @RequestParam(required = false) List<String> remainingImagePaths,
+            @RequestParam(required = false) List<MultipartFile> images
+    ) {
+        return productService.updateProductWithImages(
+                productId,
+                sellerEmail,
+                productName,
+                category,
+                price,
+                description,
+                tradeMethod,
+                locationNumber,
+                locationName,
+                remainingImagePaths,
+                images
+        );
     }
 
     @DeleteMapping("/{productId}")
