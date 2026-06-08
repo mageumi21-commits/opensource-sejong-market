@@ -12,8 +12,8 @@
       --primary-dark: #B71C1C;
       --primary-light: #FDECEC;
       --text-primary: #1a1a1a;
-      --text-secondary: var(--text-secondary);
-      --text-muted: var(--text-muted);
+      --text-secondary: #555;
+      --text-muted: #999;
       --border: #e0e0e0;
       --bg-page: #ffffff;
       --bg-soft: #f7f8fa;
@@ -775,9 +775,11 @@
       afterLogoutUrl: "../main_ui/product-list.html"
     });
 
-    if (!window.SejongMarketUtils.getLoginEmail()) {
+    const loginEmailForAccess = window.SejongMarketUtils.getLoginEmail();
+    if (!loginEmailForAccess) {
       alert("상품 등록은 로그인 후 이용할 수 있습니다.");
-      window.location.href = "../login_mypage/login.html";
+      window.location.replace("../login_mypage/login.html");
+      throw new Error("로그인이 필요한 화면입니다.");
     }
 
     const {
@@ -785,7 +787,8 @@
       normalizeImageUrl,
       setImageElementSource,
       productDetailUrl,
-      readErrorMessage
+      readErrorMessage,
+      toSejongEmail
     } = window.SejongMarketUtils;
     const params = new URLSearchParams(location.search);
     const isEditMode = params.get("mode") === "edit";
@@ -1117,8 +1120,14 @@
     }
 
     function moveAfterProductCreate(result) {
-      const productId = result.id || result.productId;
-      location.href = window.SejongMarketUtils.productDetailUrl(productId || "");
+      const productId = result?.id || result?.productId;
+
+      if (productId) {
+        location.href = window.SejongMarketUtils.productDetailUrl(productId);
+        return;
+      }
+
+      location.href = PRODUCT_LIST_URL;
     }
 
     function fillProductForm(product) {
@@ -1157,6 +1166,15 @@
         }
 
         const product = await response.json();
+        const loginEmail = toSejongEmail(window.SejongMarketUtils.getLoginEmail() || "");
+        const sellerEmail = toSejongEmail(product.sellerEmail || product.seller?.email || "");
+
+        if (sellerEmail && loginEmail && sellerEmail !== loginEmail) {
+          alert("본인 상품만 수정할 수 있습니다.");
+          location.href = productDetailUrl(editProductId);
+          return;
+        }
+
         fillProductForm(product);
       } catch (error) {
         alert(error.message || "상품 정보를 불러오지 못했습니다.");
@@ -1181,6 +1199,16 @@
     }
 
     submitBtn.addEventListener("click", async () => {
+      if (submitBtn.disabled) {
+        return;
+      }
+
+      if (!window.SejongMarketUtils.getLoginEmail()) {
+        alert("상품 등록은 로그인 후 이용할 수 있습니다.");
+        window.location.replace("../login_mypage/login.html");
+        return;
+      }
+
       /*
         TODO 1. 화면에서 유저가 입력한 값 가져오기
 
@@ -1320,7 +1348,7 @@
         */
 
         if (!response.ok) {
-          throw new Error("상품 등록 실패");
+          throw new Error(await readErrorMessage(response));
         }
 
         const result = await response.json();
@@ -1339,7 +1367,10 @@
 
       } catch (error) {
         console.error(error);
-        alert("상품 등록 중 오류가 발생했습니다.");
+        const fallbackMessage = isEditMode
+          ? "상품 수정 중 오류가 발생했습니다."
+          : "상품 등록 중 오류가 발생했습니다.";
+        alert(error.message || fallbackMessage);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = isEditMode ? "수정완료" : "등록하기";

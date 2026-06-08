@@ -617,9 +617,52 @@
       return localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "";
     }
 
+    function normalizeEmailForCompare(email) {
+      return toSejongEmail(String(email || "")).trim().toLowerCase();
+    }
+
     function getNormalizedLoginEmail() {
       const loginEmail = getLoginEmail();
-      return loginEmail ? toSejongEmail(loginEmail) : "";
+      return loginEmail ? normalizeEmailForCompare(loginEmail) : "";
+    }
+
+    function getNormalizedSellerEmail(product) {
+      return product && product.sellerEmail ? normalizeEmailForCompare(product.sellerEmail) : "";
+    }
+
+    function isOwnerProduct(product) {
+      const loginEmail = getNormalizedLoginEmail();
+      const sellerEmail = getNormalizedSellerEmail(product);
+      return Boolean(loginEmail && sellerEmail && loginEmail === sellerEmail);
+    }
+
+    function requireOwnerAction(actionName) {
+      if (!currentProduct) {
+        return "";
+      }
+
+      const loginEmail = getNormalizedLoginEmail();
+      const sellerEmail = getNormalizedSellerEmail(currentProduct);
+
+      if (!loginEmail) {
+        alert("로그인이 필요합니다.");
+        location.href = "../login_mypage/login.html";
+        return "";
+      }
+
+      if (!sellerEmail) {
+        alert("판매자 정보를 확인할 수 없어 처리할 수 없습니다.");
+        return "";
+      }
+
+      if (loginEmail !== sellerEmail) {
+        alert(`본인 상품만 ${actionName}할 수 있습니다.`);
+        updateSoldOutButtonState(currentProduct);
+        updateChatButtonState(currentProduct);
+        return "";
+      }
+
+      return sellerEmail;
     }
 
     function formatPrice(price) {
@@ -768,8 +811,8 @@
     }
 
     function updateChatButtonState(product) {
-      const loginEmail = getLoginEmail().trim().toLowerCase();
-      const sellerEmail = String(product.sellerEmail || "").trim().toLowerCase();
+      const loginEmail = getNormalizedLoginEmail();
+      const sellerEmail = getNormalizedSellerEmail(product);
       const isSoldOut = isProductSoldOut(product);
 
       if (!loginEmail) {
@@ -791,9 +834,7 @@
     }
 
     function updateSoldOutButtonState(product) {
-      const loginEmail = getLoginEmail().trim().toLowerCase();
-      const sellerEmail = String(product.sellerEmail || "").trim().toLowerCase();
-      const isOwner = loginEmail && sellerEmail && loginEmail === sellerEmail;
+      const isOwner = isOwnerProduct(product);
       const isSoldOut = isProductSoldOut(product);
 
       if (!isOwner) {
@@ -828,11 +869,7 @@
     }
 
     function getSaleStatus(product) {
-      if (product.status) {
-        return product.status;
-      }
-
-      if (product.saleStatus === "SOLD_OUT") {
+      if (isProductSoldOut(product)) {
         return "sold-out";
       }
 
@@ -840,7 +877,19 @@
     }
 
     function isProductSoldOut(product) {
-      return product.status === "sold-out" || product.saleStatus === "SOLD_OUT";
+      const status = String(product?.status || "").trim().toUpperCase();
+      const saleStatus = String(product?.saleStatus || "").trim().toUpperCase();
+      const statusText = String(product?.saleStatusText || "").trim();
+
+      return (
+        status === "SOLD_OUT" ||
+        status === "SOLD-OUT" ||
+        status === "SOLDOUT" ||
+        saleStatus === "SOLD_OUT" ||
+        saleStatus === "SOLD-OUT" ||
+        saleStatus === "SOLDOUT" ||
+        statusText === "판매완료"
+      );
     }
 
     function renderProduct(product) {
@@ -911,7 +960,7 @@
         const query = loginEmail ? `?userEmail=${encodeURIComponent(loginEmail)}` : "";
         const response = await fetch(`${API_BASE_URL}/api/products/${productId}${query}`);
         if (!response.ok) {
-          throw new Error(await response.text());
+          throw new Error(await readErrorMessage(response));
         }
 
         currentProduct = await response.json();
@@ -926,9 +975,22 @@
         return;
       }
 
-      const buyerEmail = getLoginEmail();
+      const buyerEmail = getNormalizedLoginEmail();
       if (!buyerEmail) {
         alert("로그인이 필요합니다.");
+        location.href = "../login_mypage/login.html";
+        return;
+      }
+
+      if (isProductSoldOut(currentProduct)) {
+        alert("판매완료 상품은 채팅할 수 없습니다.");
+        updateChatButtonState(currentProduct);
+        return;
+      }
+
+      if (isOwnerProduct(currentProduct)) {
+        alert("본인 상품에는 채팅을 시작할 수 없습니다.");
+        updateChatButtonState(currentProduct);
         return;
       }
 
@@ -948,7 +1010,7 @@
         });
 
         if (!response.ok) {
-          throw new Error(await response.text());
+          throw new Error(await readErrorMessage(response));
         }
 
         const chatRoom = await response.json();
@@ -970,9 +1032,8 @@
         return;
       }
 
-      const sellerEmail = getLoginEmail();
+      const sellerEmail = requireOwnerAction("수정");
       if (!sellerEmail) {
-        alert("로그인이 필요합니다.");
         return;
       }
 
@@ -987,9 +1048,8 @@
         return;
       }
 
-      const sellerEmail = getLoginEmail();
+      const sellerEmail = requireOwnerAction("삭제");
       if (!sellerEmail) {
-        alert("로그인이 필요합니다.");
         return;
       }
 
@@ -1007,7 +1067,7 @@
         );
 
         if (!response.ok) {
-          throw new Error(await response.text());
+          throw new Error(await readErrorMessage(response));
         }
 
         alert("상품이 삭제되었습니다.");
@@ -1024,9 +1084,14 @@
         return;
       }
 
-      const sellerEmail = getLoginEmail();
+      const sellerEmail = requireOwnerAction("판매완료 처리");
       if (!sellerEmail) {
-        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      if (isProductSoldOut(currentProduct)) {
+        alert("이미 판매완료된 상품입니다.");
+        updateSoldOutButtonState(currentProduct);
         return;
       }
 
@@ -1047,7 +1112,7 @@
         });
 
         if (!response.ok) {
-          throw new Error(await response.text());
+          throw new Error(await readErrorMessage(response));
         }
 
         currentProduct = await response.json();

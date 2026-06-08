@@ -500,6 +500,16 @@
       background: #fafafa;
     }
 
+    .empty-message.loading {
+      color: #777;
+    }
+
+    .empty-message.error {
+      color: var(--primary);
+      background: #fff5f5;
+      border-color: #ffd6d6;
+    }
+
     @media (max-width: 1280px) {
 
       .header-inner,
@@ -790,115 +800,6 @@
       imageBaseUrl: API_BASE_URL
     }
       ;
-    const fallbackProducts = [
-      {
-        id: 1,
-        name: "맥북 노트북 판매합니다",
-        price: 650000,
-        category: "전자기기",
-        locationName: "세종대 학생회관",
-        createdAtText: "방금 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 2,
-        name: "초록색 후리스 상태 좋아요",
-        price: 35000,
-        category: "의류",
-        locationName: "군자역 근처",
-        createdAtText: "3분 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 3,
-        name: "에어팟 거의 새상품",
-        price: 85000,
-        category: "전자기기",
-        locationName: "대양AI센터",
-        createdAtText: "10분 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 4,
-        name: "프로그래밍 입문 책",
-        price: 12000,
-        category: "도서",
-        locationName: "광개토관",
-        createdAtText: "20분 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 5,
-        name: "세종대 후드티 판매",
-        price: 28000,
-        category: "의류",
-        locationName: "집현관",
-        createdAtText: "1시간 전",
-        imageUrl: "",
-        badgeText: "SEJONG",
-        liked: false
-      }
-      ,
-      {
-        id: 6,
-        name: "데이터베이스 전공책",
-        price: 18000,
-        category: "도서",
-        locationName: "학술정보원",
-        createdAtText: "방금 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 7,
-        name: "무선 키보드 상태 좋음",
-        price: 25000,
-        category: "전자기기",
-        locationName: "대양AI센터",
-        createdAtText: "5분 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 8,
-        name: "스타벅스 텀블러",
-        price: 15000,
-        category: "생활용품",
-        locationName: "광개토관",
-        createdAtText: "20분 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-      ,
-      {
-        id: 9,
-        name: "캠퍼스 노트 세트",
-        price: 5000,
-        category: "기타",
-        locationName: "군자관",
-        createdAtText: "1시간 전",
-        imageUrl: "",
-        badgeText: "",
-        liked: false
-      }
-    ];
     const searchForm = document.getElementById("searchForm");
     const searchInput = document.getElementById("searchInput");
     const listTitle = document.getElementById("listTitle");
@@ -944,7 +845,8 @@
             params.set("category",
               currentCategory);
           }
-          location.href = `product-list.html?${params.toString()}`;
+          const queryString = params.toString();
+          location.href = queryString ? `product-list.html?${queryString}` : "product-list.html";
         }
       );
       const categoryRadios = document.querySelectorAll("input[name='categoryFilter']");
@@ -961,7 +863,8 @@
               params.set("category",
                 selectedCategory);
             }
-            location.href = `product-list.html?${params.toString()}`;
+            const queryString = params.toString();
+          location.href = queryString ? `product-list.html?${queryString}` : "product-list.html";
           }
         );
       }
@@ -973,13 +876,21 @@
       );
     }
     async function loadProducts() {
-      resultGrid.innerHTML = `<div class="empty-message">상품을 불러오는 중입니다.</div>`;
-      const url = buildApiUrl();
-      const fallbackData = buildFallbackData();
-      currentProducts = await fetchProducts(url,
-        fallbackData);
-      renderProducts();
+      renderStateMessage(resultGrid, "상품을 불러오는 중입니다.", "loading");
+      resultCount.textContent = "상품 0개";
+
+      try {
+        const url = buildApiUrl();
+        currentProducts = await fetchProducts(url);
+        renderProducts();
+      } catch (error) {
+        console.error(error);
+        currentProducts = [];
+        resultCount.textContent = "상품 0개";
+        renderStateMessage(resultGrid, "서버 연결에 실패했거나 상품 목록을 불러오지 못했습니다.", "error");
+      }
     }
+
     /*
       현재 URL의 keyword/category/mode 값을 백엔드 API 쿼리로 바꾸는 함수입니다.
       예: product-list.html?keyword=맥북&category=전자기기
@@ -1014,111 +925,132 @@
       }
       return `${API_URLS.productList}?${queryString}`;
     }
-    async function fetchProducts(url,
-      fallbackData) {
-      try {
-        const response = await fetch(url,
-          {
-            method: "GET",
-            headers: {
-              "Accept": "application/json"
-            }
-          }
-        );
-        if (!response.ok) {
-          throw new Error("상품 목록을 불러오지 못했습니다.");
+    async function fetchProducts(url) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
         }
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          return data;
-        }
-        if (Array.isArray(data.products)) {
-          return data.products;
-        }
-        return fallbackData;
+      });
+
+      if (!response.ok) {
+        const message = await readErrorMessage(response);
+        throw new Error(message || "상품 목록을 불러오지 못했습니다.");
       }
-      catch (error) {
-        console.warn("백엔드 연결 전이거나 API 오류가 있어 임시 데이터를 표시합니다.",
-          error);
-        return fallbackData;
+
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        return data;
       }
+
+      if (Array.isArray(data.products)) {
+        return data.products;
+      }
+
+      if (Array.isArray(data.content)) {
+        return data.content;
+      }
+
+      if (Array.isArray(data.items)) {
+        return data.items;
+      }
+
+      throw new Error("상품 목록 응답 형식이 올바르지 않습니다.");
     }
+
     function renderProducts() {
-      let products = [
-        ...currentProducts
-      ];
+      let products = [...currentProducts];
+
       if (sortSelect.value === "priceLow") {
-        products.sort((a,
-          b) => Number(a.price) - Number(b.price));
+        products.sort((a, b) => Number(a.price) - Number(b.price));
       }
+
       if (sortSelect.value === "priceHigh") {
-        products.sort((a,
-          b) => Number(b.price) - Number(a.price));
+        products.sort((a, b) => Number(b.price) - Number(a.price));
       }
+
       resultCount.textContent = `상품 ${products.length}개`;
       resultGrid.innerHTML = "";
+
       if (products.length === 0) {
-        resultGrid.innerHTML = ` <div class="empty-message"> 표시할 상품이 없습니다. </div> `;
+        renderStateMessage(resultGrid, getEmptyProductsMessage(), "empty");
         return;
       }
+
       products.forEach(product => {
         const card = document.createElement("article");
         const productName = product.productName || product.name || "상품명 없음";
+        const productId = product.id || product.productId;
         const saleStatus = getSaleStatus(product);
         const saleStatusText = getSaleStatusText(product);
-        card.className = "product-card";
-        card.addEventListener("click", () => {
-          location.href = `../product_detail_ui/product-detail.html?id=${product.id}`;
-        });
         const imageBadgeText = getImageBadgeText(product);
         const badgeHtml = imageBadgeText
           ? `<span class="care">${escapeHtml(imageBadgeText)}</span>`
           : "";
 
-        card.innerHTML = `
-  <div class="product-img ${getCategoryColorClass(product.category)}">
-    ${badgeHtml}
-    ${createProductImageHtml(product)}
-    <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
-    <button class="heart ${product.liked ? "liked" : ""}" type="button" aria-label="찜하기" onclick="event.stopPropagation(); toggleProductLike(this, ${Number(product.id)}, ${product.liked ? "true" : "false"})">${product.liked ? "♥" : "♡"}</button>
-  </div>
+        card.className = "product-card";
 
-  <div class="product-info">
-    <p class="product-name">${escapeHtml(productName)}</p>
-    <p class="product-price">${formatPrice(product.price)}</p>
-    <div class="product-meta">
-      <span>${escapeHtml(product.locationName || "위치 미정")}</span>
-      <span>${escapeHtml(product.createdAtText || "")}</span>
-    </div>
-        </div>
-      `;
+        card.addEventListener("click", () => {
+          if (!productId) {
+            alert("상품 정보를 확인할 수 없습니다.");
+            return;
+          }
+
+          location.href = `../product_detail_ui/product-detail.html?id=${encodeURIComponent(productId)}`;
+        });
+
+        card.innerHTML = `
+          <div class="product-img ${getCategoryColorClass(product.category)}">
+            ${badgeHtml}
+            ${createProductImageHtml(product)}
+            <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
+            <button class="heart ${product.liked ? "liked" : ""}" type="button" aria-label="찜하기" onclick="event.stopPropagation(); toggleProductLike(this, ${Number(productId)}, ${product.liked ? "true" : "false"})">${product.liked ? "♥" : "♡"}</button>
+          </div>
+
+          <div class="product-info">
+            <p class="product-name">${escapeHtml(productName)}</p>
+            <p class="product-price">${formatPrice(product.price)}</p>
+            <div class="product-meta">
+              <span>${escapeHtml(product.locationName || "위치 미정")}</span>
+              <span>${escapeHtml(product.createdAtText || "")}</span>
+            </div>
+          </div>
+        `;
+
         resultGrid.appendChild(card);
         hydrateRemoteImages(card);
-      }
-      );
+      });
     }
-    function buildFallbackData() {
-      let result = [
-        ...fallbackProducts
-      ];
-      if (currentKeyword !== "") {
-        const lowerKeyword = currentKeyword.toLowerCase();
-        result = result.filter(product => {
-          return (product.name.toLowerCase().includes(lowerKeyword) || product.category.toLowerCase().includes(lowerKeyword) || product.locationName.toLowerCase().includes(lowerKeyword));
-        }
-        );
+
+    function renderStateMessage(container, message, type = "empty") {
+      container.innerHTML = `
+        <div class="empty-message ${escapeHtml(type)}">
+          ${escapeHtml(message)}
+        </div>
+      `;
+    }
+
+    function getEmptyProductsMessage() {
+      if (hasListFilter()) {
+        return "검색어 또는 카테고리 조건에 맞는 상품이 없습니다.";
       }
-      if (currentCategory !== "전체") {
-        result = result.filter(product => product.category === currentCategory);
-      }
+
       if (currentMode === "latest") {
-        result = result.slice().reverse();
+        return "등록된 최신 상품이 없습니다.";
       }
+
       if (currentMode === "recommend") {
-        result = result.sort(() => Math.random() - 0.5);
+        return "등록된 추천 상품이 없습니다.";
       }
-      return result;
+
+      return "등록된 상품이 없습니다.";
     }
+
+    function hasListFilter() {
+      return currentKeyword.trim() !== "" || currentCategory !== "전체";
+    }
+
     function updateListTitle() {
       if (currentMode === "latest") {
         listTitle.textContent = "최신상품";
