@@ -36,10 +36,22 @@ public class ChatMessage {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    private LocalDateTime readAt;
+
     public ChatMessage(ChatRoom chatRoom, User sender, String content) {
         this.chatRoom = chatRoom;
         this.sender = sender;
         this.content = content;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public boolean isUnreadFor(User user) {
+        return readAt == null && user != null && !sender.getId().equals(user.getId());
+    }
+
+    public void markRead() {
+        if (readAt == null) {
+            readAt = LocalDateTime.now();
+        }
     }
 }

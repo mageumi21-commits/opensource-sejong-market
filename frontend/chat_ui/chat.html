@@ -35,6 +35,14 @@
       background: #fff;
     }
 
+    .chat-page.list-mode {
+      grid-template-rows: 62px 1fr;
+    }
+
+    .chat-page.list-mode .input-area {
+      display: none;
+    }
+
     .header {
       display: flex;
       align-items: center;
@@ -56,7 +64,37 @@
     }
 
     .room-title {
+      flex: 1;
       min-width: 0;
+    }
+
+    .leave-room-btn,
+    .room-leave-btn {
+      border: 1px solid #dce2e8;
+      border-radius: 8px;
+      background: #fff;
+      color: #5d6673;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .leave-room-btn {
+      display: none;
+      flex: 0 0 auto;
+      padding: 8px 10px;
+    }
+
+    .room-leave-btn {
+      flex: 0 0 auto;
+      margin-top: 10px;
+      padding: 6px 8px;
+    }
+
+    .leave-room-btn:hover,
+    .room-leave-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .room-title strong {
@@ -131,6 +169,25 @@
       text-align: right;
     }
 
+    .message-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 5px;
+      color: #9ba4ae;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mine .message-meta {
+      justify-content: flex-end;
+    }
+
+    .unread-one {
+      color: var(--primary);
+      font-weight: 900;
+    }
+
     .input-area {
       display: flex;
       gap: 10px;
@@ -183,6 +240,87 @@
       font-weight: 800;
       text-align: center;
     }
+
+    .room-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .room-card {
+      width: 100%;
+      border: 1px solid #e3e8ee;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(26, 33, 42, 0.04);
+    }
+
+    .room-card:hover {
+      border-color: var(--primary);
+    }
+
+    .room-card-top,
+    .room-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .room-opponent {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .room-time {
+      flex: 0 0 auto;
+      color: #9ba4ae;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .room-product {
+      margin-top: 5px;
+      overflow: hidden;
+      color: #707b88;
+      font-size: 12px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-last-message {
+      min-width: 0;
+      overflow: hidden;
+      color: #3a414a;
+      font-size: 13px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-unread {
+      display: inline-flex;
+      min-width: 18px;
+      height: 18px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0 5px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+    }
   </style>
 </head>
 <body>
@@ -193,6 +331,7 @@
         <strong id="roomTitle">채팅</strong>
         <span id="roomSubTitle">대화 정보를 불러오는 중입니다.</span>
       </div>
+      <button class="leave-room-btn" type="button" id="leaveRoomBtn">&#45208;&#44032;&#44592;</button>
     </header>
 
     <main class="messages" id="messages">
@@ -208,15 +347,17 @@
   <script src="../common/api-config.js"></script>
   <script src="../common/app-utils.js"></script>
   <script>
-    const { API_BASE_URL, pageUrl } = window.SejongMarketUtils;
+    const { API_BASE_URL, pageUrl, chatRoomUrl, toSejongEmail } = window.SejongMarketUtils;
     const params = new URLSearchParams(location.search);
     const roomId = params.get("roomId");
+    const chatPageEl = document.querySelector(".chat-page");
     const messagesEl = document.getElementById("messages");
     const roomTitleEl = document.getElementById("roomTitle");
     const roomSubTitleEl = document.getElementById("roomSubTitle");
     const messageForm = document.getElementById("messageForm");
     const messageInput = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
+    const leaveRoomBtn = document.getElementById("leaveRoomBtn");
     const PRODUCT_LIST_URL = pageUrl("products");
     let pollingId = null;
     let latestRenderedIds = "";
@@ -234,13 +375,13 @@
       try {
         const loginUser = JSON.parse(localStorage.getItem("loginUser"));
         if (loginUser && loginUser.email) {
-          return loginUser.email;
+          return toSejongEmail(loginUser.email);
         }
       } catch (error) {
-        return localStorage.getItem("loginEmail") || "";
+        return toSejongEmail(localStorage.getItem("loginEmail") || "");
       }
 
-      return localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "";
+      return toSejongEmail(localStorage.getItem("loginEmail") || localStorage.getItem("userEmail") || "");
     }
 
     function formatTime(value) {
@@ -270,7 +411,7 @@
     }
 
     function renderMessages(messages) {
-      const ids = messages.map((message) => message.id).join(",");
+      const ids = messages.map((message) => `${message.id}:${message.readAt || ""}`).join(",");
       if (ids === latestRenderedIds) {
         return;
       }
@@ -287,12 +428,13 @@
         const mine = message.senderEmail === loginEmail;
         const sender = escapeHtml(message.senderNickname || message.senderEmail);
         const content = escapeHtml(message.content);
+        const unreadMark = mine && !message.readAt ? `<span class="unread-one">1</span>` : "";
         return `
           <div class="message-row ${mine ? "mine" : ""}">
             <div class="message">
               ${mine ? "" : `<div class="sender">${sender}</div>`}
               <div class="bubble">${content}</div>
-              <div class="time">${formatTime(message.createdAt)}</div>
+              <div class="message-meta">${unreadMark}<span>${formatTime(message.createdAt)}</span></div>
             </div>
           </div>
         `;
@@ -301,13 +443,93 @@
       scrollToBottom();
     }
 
-    async function loadRoom() {
-      if (!roomId) {
-        roomSubTitleEl.textContent = "채팅방 id가 없습니다.";
-        messagesEl.innerHTML = `<div class="status">채팅방 id가 없습니다.</div>`;
-        sendBtn.disabled = true;
+    function renderRoomList(rooms) {
+      if (!rooms.length) {
+        messagesEl.innerHTML = `<div class="status">\uCC38\uC5EC \uC911\uC778 \uCC44\uD305\uBC29\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.</div>`;
         return;
       }
+
+      messagesEl.innerHTML = `
+        <div class="room-list">
+          ${rooms.map((room) => `
+            <div class="room-card" role="button" tabindex="0" data-room-id="${room.roomId}">
+              <div class="room-card-top">
+                <strong class="room-opponent">${escapeHtml(room.opponentNickname || room.opponentEmail || "\uC0C1\uB300\uBC29")}</strong>
+                <span class="room-time">${formatTime(room.lastMessageAt)}</span>
+              </div>
+              <div class="room-product">${escapeHtml(room.productName || "\uC0C1\uD488 \uC815\uBCF4 \uC5C6\uC74C")}</div>
+              <div class="room-card-bottom">
+                <span class="room-last-message">${escapeHtml(room.lastMessage || "\uC544\uC9C1 \uBA54\uC2DC\uC9C0\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.")}</span>
+                ${room.hasUnreadMessages ? `<span class="room-unread">${room.unreadCount || ""}</span>` : ""}
+              </div>
+              <button class="room-leave-btn" type="button" data-leave-room-id="${room.roomId}">&#45208;&#44032;&#44592;</button>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      messagesEl.querySelectorAll("[data-room-id]").forEach((card) => {
+        card.addEventListener("click", () => {
+          location.href = chatRoomUrl(card.dataset.roomId);
+        });
+        card.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            location.href = chatRoomUrl(card.dataset.roomId);
+          }
+        });
+      });
+
+      messagesEl.querySelectorAll("[data-leave-room-id]").forEach((button) => {
+        button.addEventListener("click", async (event) => {
+          event.stopPropagation();
+          await leaveRoom(button.dataset.leaveRoomId);
+          await loadRoomList();
+        });
+      });
+    }
+
+    async function leaveRoom(targetRoomId) {
+      if (!targetRoomId) {
+        return;
+      }
+
+      if (!confirm("\uCC44\uD305\uBC29\uC744 \uB098\uAC00\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?")) {
+        return;
+      }
+
+      const loginEmail = getLoginEmail();
+      const response = await fetch(`${API_BASE_URL}/api/chatrooms/${targetRoomId}?userEmail=${encodeURIComponent(loginEmail)}`, {
+        method: "DELETE"
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+    }
+
+    async function loadRoomList() {
+      chatPageEl.classList.add("list-mode");
+      messageForm.style.display = "none";
+      leaveRoomBtn.style.display = "none";
+      roomTitleEl.textContent = opponentName;
+      roomSubTitleEl.textContent = room.productName;
+
+      const loginEmail = getLoginEmail();
+      const response = await fetch(`${API_BASE_URL}/api/chatrooms?userEmail=${encodeURIComponent(loginEmail)}`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      renderRoomList(await response.json());
+    }
+
+    async function loadRoom() {
+      if (!roomId) {
+        await loadRoomList();
+        return;
+      }
+
+      leaveRoomBtn.style.display = "inline-flex";
 
       const response = await fetch(`${API_BASE_URL}/api/chatrooms/${roomId}`);
       if (!response.ok) {
@@ -320,12 +542,13 @@
         ? room.buyerNickname || room.buyerEmail
         : room.sellerNickname || room.sellerEmail;
 
-      roomTitleEl.textContent = opponentName;
-      roomSubTitleEl.textContent = room.productName;
+      roomTitleEl.textContent = "\uCC44\uD305\uCC3D";
+      roomSubTitleEl.textContent = "\uCC38\uC5EC \uC911\uC778 \uCC44\uD305\uBC29";
     }
 
     async function loadMessages() {
-      const response = await fetch(`${API_BASE_URL}/api/chatrooms/${roomId}/messages`);
+      const loginEmail = getLoginEmail();
+      const response = await fetch(`${API_BASE_URL}/api/chatrooms/${roomId}/messages?userEmail=${encodeURIComponent(loginEmail)}`);
       if (!response.ok) {
         throw new Error(await response.text());
       }
@@ -342,8 +565,10 @@
         }
 
         await loadRoom();
-        await loadMessages();
-        pollingId = setInterval(loadMessages, 2500);
+        if (roomId) {
+          await loadMessages();
+          pollingId = setInterval(loadMessages, 2500);
+        }
       } catch (error) {
         messagesEl.innerHTML = `<div class="status">${error.message || "채팅을 불러오지 못했습니다."}</div>`;
         sendBtn.disabled = true;
@@ -383,6 +608,15 @@
       } finally {
         sendBtn.disabled = false;
         messageInput.focus();
+      }
+    });
+
+    leaveRoomBtn.addEventListener("click", async () => {
+      try {
+        await leaveRoom(roomId);
+        location.href = pageUrl("chatList");
+      } catch (error) {
+        alert(error.message || "\uCC44\uD305\uBC29\uC744 \uB098\uAC00\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.");
       }
     });
 
