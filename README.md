@@ -67,7 +67,7 @@
 ## 3. 프로젝트 구조
 
 ```text
-5.20.test
+sejong_market
 ├─ backend
 │  ├─ src/main/java/com/market/backend
 │  │  ├─ chat
