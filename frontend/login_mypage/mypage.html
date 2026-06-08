@@ -60,9 +60,27 @@
         </div>
       </div>
 
-      <button class="edit-btn" onclick="alert('정보 수정 기능은 준비 중입니다.')">
+      <button class="edit-btn" type="button" id="toggleEditProfileBtn">
         <i class="ti ti-pencil"></i> 정보 수정
       </button>
+
+      <div class="profile-edit-panel" id="profileEditPanel" hidden>
+        <form class="profile-edit-form" id="nicknameEditForm">
+          <label for="nicknameInput">닉네임</label>
+          <div class="edit-input-row">
+            <input type="text" id="nicknameInput" placeholder="닉네임을 입력해 주세요.">
+            <button type="submit">저장</button>
+          </div>
+        </form>
+
+        <form class="profile-edit-form" id="passwordEditForm">
+          <label for="currentPasswordInput">비밀번호 변경</label>
+          <input type="password" id="currentPasswordInput" placeholder="현재 비밀번호">
+          <input type="password" id="newPasswordInput" placeholder="새 비밀번호">
+          <input type="password" id="newPasswordConfirmInput" placeholder="새 비밀번호 확인">
+          <button type="submit" class="password-save-btn">비밀번호 수정</button>
+        </form>
+      </div>
     </aside>
 
     <div class="mypage-content">

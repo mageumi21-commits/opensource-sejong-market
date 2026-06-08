@@ -8,14 +8,30 @@ const {
   escapeHtml,
   escapeAttribute,
   readErrorMessage,
+  renderAuthArea,
 } = window.SejongMarketUtils;
 const LOGIN_URL = pageUrl('login');
+const profileEditPanel = document.getElementById('profileEditPanel');
+const toggleEditProfileBtn = document.getElementById('toggleEditProfileBtn');
+const nicknameEditForm = document.getElementById('nicknameEditForm');
+const passwordEditForm = document.getElementById('passwordEditForm');
+const nicknameInput = document.getElementById('nicknameInput');
+const currentPasswordInput = document.getElementById('currentPasswordInput');
+const newPasswordInput = document.getElementById('newPasswordInput');
+const newPasswordConfirmInput = document.getElementById('newPasswordConfirmInput');
+
+let currentUser = null;
 
 function renderUserInfo(user) {
+  currentUser = user;
   document.getElementById('profileNickname').textContent = user.nickname || '이름 없음';
   document.getElementById('profileEmail').textContent = user.email || '-';
   document.getElementById('profileStudentId').textContent = user.studentId || '-';
   document.getElementById('profileDept').textContent = '세종대학교 중고거래';
+
+  if (nicknameInput) {
+    nicknameInput.value = user.nickname || '';
+  }
 }
 
 function renderProducts(products) {
@@ -307,6 +323,152 @@ async function deleteProduct(id) {
   }
 }
 
+function updateLoginUserStorage(user) {
+  try {
+    const previousLoginUser = JSON.parse(localStorage.getItem('loginUser')) || {};
+    const nextLoginUser = {
+      ...previousLoginUser,
+      email: user.email || previousLoginUser.email || '',
+      nickname: user.nickname || '',
+      studentId: user.studentId || previousLoginUser.studentId || ''
+    };
+
+    localStorage.setItem('loginUser', JSON.stringify(nextLoginUser));
+    if (nextLoginUser.email) {
+      localStorage.setItem('loginEmail', nextLoginUser.email);
+    }
+  } catch (error) {
+    console.warn('로그인 사용자 정보를 갱신하지 못했습니다.', error);
+  }
+}
+
+function refreshAuthArea() {
+  renderAuthArea('authArea', {
+    loginUrl: 'login.html',
+    signupUrl: 'login.html',
+    mypageUrl: 'mypage.html',
+    afterLogoutUrl: '../main_ui/index.html'
+  });
+}
+
+async function updateNickname(event) {
+  event.preventDefault();
+
+  const email = getLoginEmail();
+  const nickname = nicknameInput.value.trim();
+  const submitButton = nicknameEditForm.querySelector('button[type="submit"]');
+
+  if (!email) {
+    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
+    window.location.href = LOGIN_URL;
+    return;
+  }
+
+  if (!nickname) {
+    alert('닉네임을 입력해 주세요.');
+    nicknameInput.focus();
+    return;
+  }
+
+  try {
+    submitButton.disabled = true;
+    submitButton.textContent = '저장 중';
+
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        nickname,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    const data = await response.json();
+    renderUserInfo(data);
+    renderProducts(Array.isArray(data.products) ? data.products : []);
+    renderLikedProducts(Array.isArray(data.likedProducts) ? data.likedProducts : []);
+    updateLoginUserStorage(data);
+    refreshAuthArea();
+    alert('닉네임이 수정되었습니다.');
+  } catch (error) {
+    alert(error.message || '닉네임 수정에 실패했습니다.');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = '저장';
+  }
+}
+
+async function updatePassword(event) {
+  event.preventDefault();
+
+  const email = getLoginEmail();
+  const currentPassword = currentPasswordInput.value;
+  const newPassword = newPasswordInput.value;
+  const newPasswordConfirm = newPasswordConfirmInput.value;
+  const submitButton = passwordEditForm.querySelector('button[type="submit"]');
+
+  if (!email) {
+    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
+    window.location.href = LOGIN_URL;
+    return;
+  }
+
+  if (!currentPassword) {
+    alert('현재 비밀번호를 입력해 주세요.');
+    currentPasswordInput.focus();
+    return;
+  }
+
+  if (!newPassword) {
+    alert('새 비밀번호를 입력해 주세요.');
+    newPasswordInput.focus();
+    return;
+  }
+
+  if (newPassword !== newPasswordConfirm) {
+    alert('새 비밀번호와 확인값이 일치하지 않습니다.');
+    newPasswordConfirmInput.focus();
+    return;
+  }
+
+  try {
+    submitButton.disabled = true;
+    submitButton.textContent = '수정 중';
+
+    const response = await fetch(`${API_BASE_URL}/users/me/password`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        currentPassword,
+        newPassword,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    currentPasswordInput.value = '';
+    newPasswordInput.value = '';
+    newPasswordConfirmInput.value = '';
+    alert('비밀번호가 수정되었습니다. 다음 로그인부터 새 비밀번호를 사용해 주세요.');
+  } catch (error) {
+    alert(error.message || '비밀번호 수정에 실패했습니다.');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = '비밀번호 수정';
+  }
+}
+
 async function loadMyPage() {
   const email = getLoginEmail();
 
@@ -339,5 +501,20 @@ async function loadMyPage() {
     showMessage(error.message || '마이페이지 정보를 불러오지 못했습니다.');
   }
 }
+
+toggleEditProfileBtn.addEventListener('click', function () {
+  const isHidden = profileEditPanel.hidden;
+  profileEditPanel.hidden = !isHidden;
+  toggleEditProfileBtn.innerHTML = isHidden
+    ? '<i class="ti ti-x"></i> 닫기'
+    : '<i class="ti ti-pencil"></i> 정보 수정';
+
+  if (isHidden && currentUser) {
+    nicknameInput.value = currentUser.nickname || '';
+  }
+});
+
+nicknameEditForm.addEventListener('submit', updateNickname);
+passwordEditForm.addEventListener('submit', updatePassword);
 
 loadMyPage();

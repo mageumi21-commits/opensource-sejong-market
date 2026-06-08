@@ -143,6 +143,78 @@
   color: var(--primary);
 }
 
+.profile-edit-panel {
+  width: 100%;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.profile-edit-form:last-child {
+  margin-bottom: 0;
+}
+
+.profile-edit-form label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.profile-edit-form input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.profile-edit-form input:focus {
+  border-color: var(--primary);
+}
+
+.edit-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.edit-input-row input {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-edit-form button {
+  height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-edit-form button:disabled {
+  background: #c8c8c8;
+  cursor: not-allowed;
+}
+
+.password-save-btn {
+  width: 100%;
+}
+
 /* ── 오른쪽 상품 패널 ── */
 .mypage-content {
   flex: 1;
