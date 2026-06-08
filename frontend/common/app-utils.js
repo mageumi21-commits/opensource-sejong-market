@@ -14,6 +14,7 @@ window.SejongMarketUtils = (function () {
     terms: 'login_mypage/terms.html',
     privacy: 'login_mypage/privacy.html',
     mypage: 'login_mypage/mypage.html',
+    chatList: 'chat_ui/chat.html',
     chatRoom: 'chat_ui/chat.html',
   };
   const SERVICE_PATHS = {
@@ -28,6 +29,7 @@ window.SejongMarketUtils = (function () {
     terms: '/terms',
     privacy: '/privacy',
     mypage: '/mypage',
+    chatList: '/chatrooms',
     chatRoom: '/chatrooms/{roomId}',
   };
   const LEGACY_ROUTE_MAP = {
@@ -50,6 +52,7 @@ window.SejongMarketUtils = (function () {
     '../login_mypage/privacy.html': 'privacy',
     'mypage.html': 'mypage',
     '../login_mypage/mypage.html': 'mypage',
+    'chat.html': 'chatList',
     '../chat_ui/chat.html': 'chatRoom',
   };
 
@@ -207,16 +210,24 @@ window.SejongMarketUtils = (function () {
     const loginUrl = options.loginUrl || pageUrl('login');
     const signupUrl = options.signupUrl || loginUrl;
     const mypageUrl = options.mypageUrl || pageUrl('mypage');
+    const chatUrl = options.chatUrl || pageUrl('chatList');
     const afterLogoutUrl = options.afterLogoutUrl || loginUrl;
     const displayName = getLoginDisplayName();
 
     if (displayName) {
       element.innerHTML = `
-        <span class="auth-user-name">${escapeHtml(displayName)}님</span>
+        <span class="auth-user-name">${escapeHtml(displayName)}</span>
+        <button class="auth-action-btn auth-chat-btn" type="button" data-auth-action="chat" style="position: relative;">
+          채팅창
+          <span class="auth-chat-unread-dot" data-chat-unread-dot style="display: none; position: absolute; top: -4px; right: -4px; width: 9px; height: 9px; border-radius: 50%; background: #d93025;"></span>
+        </button>
         <button class="auth-action-btn" type="button" data-auth-action="mypage">마이페이지</button>
         <button class="auth-action-btn auth-logout-btn" type="button" data-auth-action="logout">로그아웃</button>
       `;
 
+      element.querySelector('[data-auth-action="chat"]').addEventListener('click', function () {
+        window.location.href = chatUrl;
+      });
       element.querySelector('[data-auth-action="mypage"]').addEventListener('click', function () {
         window.location.href = mypageUrl;
       });
@@ -224,11 +235,12 @@ window.SejongMarketUtils = (function () {
         clearLoginStorage();
         window.location.href = afterLogoutUrl;
       });
+      updateChatUnreadDot(element);
       return;
     }
 
     element.innerHTML = `
-      <button class="auth-login-btn" type="button" data-auth-action="login">로그인/회원가입</button>
+      <button class="auth-login-btn" type="button" data-auth-action="login">로그인 / 회원가입</button>
     `;
 
     element.querySelector('[data-auth-action="login"]').addEventListener('click', function () {
@@ -236,6 +248,33 @@ window.SejongMarketUtils = (function () {
     });
   }
 
+
+  async function updateChatUnreadDot(target) {
+    const element = typeof target === 'string' ? document.getElementById(target) : target;
+    const dot = element ? element.querySelector('[data-chat-unread-dot]') : null;
+    const email = toSejongEmail(getLoginEmail());
+    if (!dot || !email) {
+      return;
+    }
+
+    dot.style.display = 'none';
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chatrooms/unread?userEmail=${encodeURIComponent(email)}`, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      if (!response.ok) {
+        return;
+      }
+
+      const unread = await response.json();
+      dot.style.display = unread.hasUnreadMessages ? 'block' : 'none';
+      dot.title = unread.unreadCount ? `읽지 않은 메시지 ${unread.unreadCount}개` : '';
+    } catch (error) {
+      console.warn('읽지 않은 채팅 여부를 확인하지 못했습니다.', error);
+    }
+  }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', normalizeInternalLinks);
   } else {
@@ -400,6 +439,7 @@ window.SejongMarketUtils = (function () {
     getLoginDisplayName,
     clearLoginStorage,
     renderAuthArea,
+    updateChatUnreadDot,
     readErrorMessage,
     escapeHtml,
     escapeAttribute,

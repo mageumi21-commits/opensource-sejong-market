@@ -14,6 +14,7 @@ public class ChatMessageResponse {
     private final String senderNickname;
     private final String content;
     private final LocalDateTime createdAt;
+    private final LocalDateTime readAt;
 
     private ChatMessageResponse(ChatMessage message) {
         this.id = message.getId();
@@ -23,6 +24,7 @@ public class ChatMessageResponse {
         this.senderNickname = message.getSender().getNickname();
         this.content = message.getContent();
         this.createdAt = message.getCreatedAt();
+        this.readAt = message.getReadAt();
     }
 
     public static ChatMessageResponse from(ChatMessage message) {

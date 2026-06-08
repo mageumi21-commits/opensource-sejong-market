@@ -41,6 +41,10 @@ public class ChatRoom {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    private LocalDateTime buyerLeftAt;
+
+    private LocalDateTime sellerLeftAt;
+
     public ChatRoom(Product product, User buyer, User seller) {
         this.product = product;
         this.buyer = buyer;
@@ -51,5 +55,48 @@ public class ChatRoom {
 
     public void touch() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isParticipant(User user) {
+        return user != null
+                && (user.getId().equals(buyer.getId()) || user.getId().equals(seller.getId()));
+    }
+
+    public boolean isLeftBy(User user) {
+        if (user == null) {
+            return false;
+        }
+
+        if (user.getId().equals(buyer.getId())) {
+            return buyerLeftAt != null;
+        }
+
+        if (user.getId().equals(seller.getId())) {
+            return sellerLeftAt != null;
+        }
+
+        return false;
+    }
+
+    public void leave(User user) {
+        if (user.getId().equals(buyer.getId())) {
+            buyerLeftAt = LocalDateTime.now();
+            return;
+        }
+
+        if (user.getId().equals(seller.getId())) {
+            sellerLeftAt = LocalDateTime.now();
+        }
+    }
+
+    public void rejoin(User user) {
+        if (user.getId().equals(buyer.getId())) {
+            buyerLeftAt = null;
+            return;
+        }
+
+        if (user.getId().equals(seller.getId())) {
+            sellerLeftAt = null;
+        }
     }
 }
