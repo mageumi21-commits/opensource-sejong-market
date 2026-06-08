@@ -4,6 +4,8 @@ const {
   pageUrl,
   productDetailUrl,
   normalizeImageUrl,
+  imageSourceAttributes,
+  hydrateRemoteImages,
   formatPrice,
   escapeHtml,
   escapeAttribute,
@@ -54,7 +56,9 @@ function renderProducts(products) {
   emptyState.style.display = 'none';
 
   products.forEach(function (product) {
-    list.appendChild(createProductCard(product, { showActions: true }));
+    const card = createProductCard(product, { showActions: true });
+    list.appendChild(card);
+    hydrateRemoteImages(card);
   });
 }
 
@@ -76,7 +80,9 @@ function renderLikedProducts(products) {
   emptyState.style.display = 'none';
 
   products.forEach(function (product) {
-    list.appendChild(createProductCard(product, { showActions: false }));
+    const card = createProductCard(product, { showActions: false });
+    list.appendChild(card);
+    hydrateRemoteImages(card);
   });
 }
 
@@ -169,12 +175,12 @@ function getProductStatusText(product) {
 }
 
 function renderProductImage(product) {
-  const imageUrl = normalizeImageUrl(product.imageUrl || product.image);
-  if (!imageUrl) {
+  const imagePath = product.imageUrl || product.image;
+  if (!normalizeImageUrl(imagePath)) {
     return '<i class="ti ti-photo"></i>';
   }
 
-  return `<img src="${escapeAttribute(imageUrl)}" alt="상품 이미지">`;
+  return `<img ${imageSourceAttributes(imagePath, '상품 이미지')}>`;
 }
 
 function formatCreatedAt(createdAt) {
