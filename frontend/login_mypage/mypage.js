@@ -21,8 +21,19 @@ const nicknameInput = document.getElementById('nicknameInput');
 const currentPasswordInput = document.getElementById('currentPasswordInput');
 const newPasswordInput = document.getElementById('newPasswordInput');
 const newPasswordConfirmInput = document.getElementById('newPasswordConfirmInput');
+const pageParams = new URLSearchParams(window.location.search);
+const likesOnlyView = pageParams.get('view') === 'likes';
 
 let currentUser = null;
+
+function applyPageMode() {
+  if (!likesOnlyView) {
+    return;
+  }
+
+  document.body.classList.add('likes-view');
+  document.title = '찜한 상품 - 세종마켓 중고거래';
+}
 
 function renderUserInfo(user) {
   currentUser = user;
@@ -458,6 +469,7 @@ async function loadMyPage() {
     renderUserInfo(data);
     renderProducts(products);
     renderLikedProducts(likedProducts);
+    scrollToRequestedSection();
   } catch (error) {
     console.error(error);
     renderUserInfo({ email });
@@ -465,6 +477,17 @@ async function loadMyPage() {
     document.getElementById('statWishlist').textContent = '0';
     showMessage(error.message || '마이페이지 정보를 불러오지 못했습니다. 서버 연결 상태를 확인해 주세요.');
     showLikedMessage('찜한 상품 정보를 불러오지 못했습니다.');
+  }
+}
+
+function scrollToRequestedSection() {
+  if (!likesOnlyView && window.location.hash !== '#liked-products') {
+    return;
+  }
+
+  const likedSection = document.getElementById('liked-products');
+  if (likedSection) {
+    likedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 
@@ -483,4 +506,5 @@ toggleEditProfileBtn.addEventListener('click', function () {
 nicknameEditForm.addEventListener('submit', updateNickname);
 passwordEditForm.addEventListener('submit', updatePassword);
 
+applyPageMode();
 loadMyPage();

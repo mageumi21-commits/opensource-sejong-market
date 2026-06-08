@@ -224,6 +224,20 @@
   gap: 1.25rem;
 }
 
+body.likes-view .mypage-layout {
+  display: block;
+  max-width: 900px;
+}
+
+body.likes-view .profile-panel,
+body.likes-view .mypage-content > .products-panel:not(#liked-products) {
+  display: none;
+}
+
+body.likes-view .mypage-content {
+  width: 100%;
+}
+
 .products-panel {
   flex: 1;
   min-width: 0;

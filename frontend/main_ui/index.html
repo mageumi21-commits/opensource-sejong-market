@@ -745,7 +745,7 @@
 
       <section class="quick-menu" id="quickMenu">
         <div class="quick-item">
-          <a href="product-list.html?mode=recommend" class="quick-link" id="quickRecommendLink">
+          <a href="../login_mypage/mypage.html?view=likes" class="quick-link" id="quickRecommendLink">
             <div class="quick-icon">♥</div>
             <p>찜</p>
           </a>
@@ -823,7 +823,7 @@
         if (heroBtn) heroBtn.onclick = () => { location.href = pageUrl('productNew'); };
 
         const quickRecommend = document.getElementById('quickRecommendLink');
-        if (quickRecommend) quickRecommend.href = pageUrl('products', { mode: 'recommend' });
+        if (quickRecommend) quickRecommend.href = pageUrl('mypage', { view: 'likes' });
 
         const quickMypage = document.getElementById('quickMypageLink');
         if (quickMypage) quickMypage.href = pageUrl('mypage');
