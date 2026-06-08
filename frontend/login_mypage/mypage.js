@@ -197,80 +197,10 @@ async function editProduct(product) {
     return;
   }
 
-  const productName = prompt('상품명을 입력해 주세요.', getProductTitle(product));
-  if (productName === null) {
-    return;
-  }
-
-  const category = prompt('카테고리를 입력해 주세요.', product.category || '기타');
-  if (category === null) {
-    return;
-  }
-
-  const priceInput = prompt('가격을 입력해 주세요.', product.price || '');
-  if (priceInput === null) {
-    return;
-  }
-
-  const price = Number(priceInput);
-  if (!Number.isInteger(price) || price < 0) {
-    alert('가격은 0 이상의 숫자로 입력해 주세요.');
-    return;
-  }
-
-  const description = prompt('상품 설명을 입력해 주세요.', product.description || '');
-  if (description === null) {
-    return;
-  }
-
-  const tradeMethod = prompt('거래 방식을 입력해 주세요. 예: 직거래, 택배', product.tradeMethod || '직거래');
-  if (tradeMethod === null) {
-    return;
-  }
-
-  const locationNumberInput = prompt('교내 거래 위치 번호를 입력해 주세요. 없으면 비워두세요.', product.locationNumber || '');
-  if (locationNumberInput === null) {
-    return;
-  }
-
-  const locationNumber = locationNumberInput.trim() ? Number(locationNumberInput) : null;
-  if (locationNumber !== null && (!Number.isInteger(locationNumber) || locationNumber < 0)) {
-    alert('거래 위치 번호는 0 이상의 숫자로 입력해 주세요.');
-    return;
-  }
-
-  const locationName = prompt('교내 거래 위치명을 입력해 주세요. 없으면 비워두세요.', product.locationName || '');
-  if (locationName === null) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(product.id)}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sellerEmail,
-        productName: productName.trim(),
-        category: category.trim(),
-        price,
-        description: description.trim(),
-        tradeMethod: tradeMethod.trim(),
-        locationNumber,
-        locationName: locationName.trim(),
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(await readErrorMessage(response));
-    }
-
-    alert('상품 정보가 수정되었습니다.');
-    loadMyPage();
-  } catch (error) {
-    alert(error.message || '상품 수정에 실패했습니다.');
-  }
+  window.location.href = pageUrl('productNew', {
+    mode: 'edit',
+    id: product.id,
+  });
 }
 
 async function deleteProduct(id) {

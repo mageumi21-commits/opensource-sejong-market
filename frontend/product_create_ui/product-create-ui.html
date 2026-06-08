@@ -780,6 +780,15 @@
       window.location.href = "../login_mypage/login.html";
     }
 
+    const {
+      API_BASE_URL,
+      normalizeImageUrl,
+      productDetailUrl,
+      readErrorMessage
+    } = window.SejongMarketUtils;
+    const params = new URLSearchParams(location.search);
+    const isEditMode = params.get("mode") === "edit";
+    const editProductId = params.get("id");
     const PRODUCT_LIST_URL = window.SejongMarketUtils.pageUrl("products");
     const backBtn = document.getElementById("backBtn");
 
@@ -827,9 +836,10 @@
     const photoCount = document.getElementById("photoCount");
 
     let selectedImages = [];
+    let existingImageCount = 0;
 
     function updatePhotoCount() {
-      photoCount.textContent = selectedImages.length;
+      photoCount.textContent = existingImageCount + selectedImages.length;
     }
 
     function createPhotoPreview(file) {
@@ -838,7 +848,7 @@
         return;
       }
 
-      if (selectedImages.length >= 10) {
+      if (existingImageCount + selectedImages.length >= 10) {
         alert("이미지는 최대 10장까지 등록할 수 있어요.");
         return;
       }
@@ -900,6 +910,30 @@
       };
 
       reader.readAsDataURL(file);
+    }
+
+    function createExistingPhotoPreview(imagePath) {
+      const photoItem = document.createElement("div");
+      photoItem.className = "photo-item";
+
+      if (!photoRow.querySelector(".photo-item")) {
+        photoItem.classList.add("active");
+      }
+
+      const img = document.createElement("img");
+      img.src = normalizeImageUrl(imagePath);
+      img.alt = "기존 상품 이미지";
+
+      photoItem.addEventListener("click", () => {
+        document.querySelectorAll(".photo-item").forEach(item => {
+          item.classList.remove("active");
+        });
+
+        photoItem.classList.add("active");
+      });
+
+      photoItem.appendChild(img);
+      photoRow.appendChild(photoItem);
     }
 
     photoInput.addEventListener("change", function () {
@@ -989,11 +1023,59 @@
       });
     });
 
+    function setTradeMethod(method) {
+      const nextMethod = method === "직거래" ? "직거래" : "택배";
+      const radio = document.querySelector(`input[name='tradeMethod'][value='${nextMethod}']`);
+      radio.checked = true;
+
+      if (nextMethod === "직거래") {
+        directLocationSection.style.display = "block";
+        return;
+      }
+
+      directLocationSection.style.display = "none";
+      selectedPin.style.display = "none";
+      selectedLocationText.textContent = "아직 선택하지 않음";
+      selectedLocationNumber.value = "";
+      selectedLocationName.value = "";
+    }
+
+    function setSelectedLocation(locationNumber, locationName) {
+      if (!locationNumber) {
+        selectedPin.style.display = "none";
+        selectedLocationText.textContent = "아직 선택하지 않음";
+        selectedLocationNumber.value = "";
+        selectedLocationName.value = "";
+        return;
+      }
+
+      const point = document.querySelector(`.map-point[data-num='${locationNumber}']`);
+      if (point) {
+        selectedPin.style.left = point.style.left;
+        selectedPin.style.top = point.style.top;
+      }
+
+      selectedPin.textContent = locationNumber;
+      selectedPin.style.display = "flex";
+      selectedLocationText.textContent = `${locationNumber}번 ${locationName || ""}`.trim();
+      selectedLocationNumber.value = locationNumber;
+      selectedLocationName.value = locationName || "";
+    }
+
     /* =========================
        TODO: 백엔드 연결 위치
        백엔드 개발자분은 이 부분을 보면 됩니다.
     ========================= */
     const submitBtn = document.getElementById("submitBtn");
+
+    if (isEditMode) {
+      document.title = "상품 수정";
+      document.querySelector(".logo-sub").textContent = "상품 수정";
+      submitBtn.textContent = "수정완료";
+      document.getElementById("photoAdd").style.display = "none";
+      document.querySelector(".upload-help").textContent = "이미지 수정은 추후 지원 예정이며, 현재는 기존 이미지만 확인할 수 있어요.";
+    }
+
     function resetProductCreateForm() {
       document.getElementById("productName").value = "";
       document.getElementById("productCategory").value = "";
@@ -1002,6 +1084,7 @@
       descCount.textContent = "0";
 
       selectedImages = [];
+      existingImageCount = 0;
       document.querySelectorAll(".photo-item").forEach(item => item.remove());
       updatePhotoCount();
 
@@ -1016,6 +1099,86 @@
     function moveAfterProductCreate(result) {
       const productId = result.id || result.productId;
       location.href = window.SejongMarketUtils.productDetailUrl(productId || "");
+    }
+
+    function fillProductForm(product) {
+      document.getElementById("productName").value = product.productName || "";
+      document.getElementById("productCategory").value = product.category || "";
+      document.getElementById("productPrice").value = Number(product.price || 0).toLocaleString("ko-KR");
+      document.getElementById("description").value = product.description || "";
+      descCount.textContent = String((product.description || "").length);
+
+      setTradeMethod(product.tradeMethod);
+
+      if (product.tradeMethod === "직거래") {
+        setSelectedLocation(product.locationNumber, product.locationName);
+      }
+
+      const imagePaths = Array.isArray(product.imagePaths) ? product.imagePaths : [];
+      existingImageCount = imagePaths.length;
+      imagePaths.forEach(createExistingPhotoPreview);
+      updatePhotoCount();
+    }
+
+    async function loadProductForEdit() {
+      if (!editProductId) {
+        alert("수정할 상품 정보를 확인할 수 없습니다.");
+        location.href = PRODUCT_LIST_URL;
+        return;
+      }
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "불러오는 중...";
+
+        const response = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(editProductId)}`);
+        if (!response.ok) {
+          throw new Error(await readErrorMessage(response));
+        }
+
+        const product = await response.json();
+        fillProductForm(product);
+      } catch (error) {
+        alert(error.message || "상품 정보를 불러오지 못했습니다.");
+        location.href = PRODUCT_LIST_URL;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "수정완료";
+      }
+    }
+
+    async function updateProduct({
+      sellerEmail,
+      productNameValue,
+      productCategoryValue,
+      productPriceValue,
+      descriptionValue,
+      tradeMethodValue,
+      selectedLocationNum,
+      selectedLocationNameValue
+    }) {
+      const response = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(editProductId)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          sellerEmail: sellerEmail.trim(),
+          productName: productNameValue.trim(),
+          category: productCategoryValue.trim(),
+          price: Number(productPriceValue),
+          description: descriptionValue.trim(),
+          tradeMethod: tradeMethodValue,
+          locationNumber: tradeMethodValue === "직거래" ? Number(selectedLocationNum) : null,
+          locationName: tradeMethodValue === "직거래" ? selectedLocationNameValue : ""
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      return response.json();
     }
 
     submitBtn.addEventListener("click", async () => {
@@ -1090,6 +1253,11 @@
         return;
       }
 
+      if (isEditMode && sellerEmail.trim() === "") {
+        alert("로그인 사용자 정보를 확인할 수 없습니다.");
+        return;
+      }
+
       /*
         TODO 3. 백엔드로 보낼 데이터 만들기
 
@@ -1127,9 +1295,26 @@
 
       try {
         submitBtn.disabled = true;
-        submitBtn.textContent = "등록 중...";
+        submitBtn.textContent = isEditMode ? "수정 중..." : "등록 중...";
 
-        const response = await fetch(`${window.SejongMarketUtils.API_BASE_URL}/api/products`, {
+        if (isEditMode) {
+          const result = await updateProduct({
+            sellerEmail,
+            productNameValue,
+            productCategoryValue,
+            productPriceValue,
+            descriptionValue,
+            tradeMethodValue,
+            selectedLocationNum,
+            selectedLocationNameValue
+          });
+
+          alert("상품 정보가 수정되었습니다.");
+          location.href = productDetailUrl(result.id || editProductId);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
           method: "POST",
           body: formData
         });
@@ -1161,9 +1346,13 @@
         alert("상품 등록 중 오류가 발생했습니다.");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = "등록하기";
+        submitBtn.textContent = isEditMode ? "수정완료" : "등록하기";
       }
     });
+
+    if (isEditMode) {
+      loadProductForEdit();
+    }
   </script>
 </body>
 </html>
