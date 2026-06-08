@@ -92,7 +92,7 @@ function getProductTitle(product) {
 
 function createProductCard(product, options = {}) {
   const card = document.createElement('div');
-  const productId = product.id;
+  const productId = product.id || product.productId;
   const status = getProductStatus(product);
   const statusText = getProductStatusText(product);
   const showActions = options.showActions !== false;
@@ -175,7 +175,7 @@ function getProductStatusText(product) {
 }
 
 function renderProductImage(product) {
-  const imagePath = product.imageUrl || product.image;
+  const imagePath = product.imageUrl || product.image || (Array.isArray(product.imagePaths) ? product.imagePaths[0] : '');
   if (!normalizeImageUrl(imagePath)) {
     return '<i class="ti ti-photo"></i>';
   }
@@ -196,14 +196,46 @@ function formatCreatedAt(createdAt) {
   return date.toLocaleDateString('ko-KR');
 }
 
+function redirectToLogin(message) {
+  if (message) {
+    alert(message);
+  }
+
+  window.location.replace(LOGIN_URL);
+}
+
 function showMessage(message) {
   const list = document.getElementById('productList');
   const emptyState = document.getElementById('emptyState');
   const emptyStateMessage = document.getElementById('emptyStateMessage');
 
+  list.innerHTML = '';
   list.style.display = 'none';
   emptyState.style.display = 'flex';
   emptyStateMessage.textContent = message;
+}
+
+function showLikedMessage(message) {
+  const list = document.getElementById('likedProductList');
+  const emptyState = document.getElementById('likedEmptyState');
+  const messageEl = emptyState.querySelector('p');
+
+  list.innerHTML = '';
+  list.style.display = 'none';
+  emptyState.style.display = 'flex';
+
+  if (messageEl) {
+    messageEl.textContent = message;
+  }
+}
+
+function setProfileLoading() {
+  document.getElementById('profileNickname').textContent = '불러오는 중';
+  document.getElementById('profileEmail').textContent = '-';
+  document.getElementById('profileStudentId').textContent = '-';
+  document.getElementById('profileDept').textContent = '세종대학교 중고거래';
+  document.getElementById('statProducts').textContent = '0';
+  document.getElementById('statWishlist').textContent = '0';
 }
 
 async function editProduct(product) {
@@ -214,14 +246,13 @@ async function editProduct(product) {
 
   const sellerEmail = getLoginEmail();
   if (!sellerEmail) {
-    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
-    window.location.href = LOGIN_URL;
+    redirectToLogin('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
     return;
   }
 
   window.location.href = pageUrl('productNew', {
     mode: 'edit',
-    id: product.id,
+    id: product.id || product.productId,
   });
 }
 
@@ -233,8 +264,7 @@ async function deleteProduct(id) {
 
   const sellerEmail = getLoginEmail();
   if (!sellerEmail) {
-    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
-    window.location.href = LOGIN_URL;
+    redirectToLogin('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
     return;
   }
 
@@ -295,8 +325,7 @@ async function updateNickname(event) {
   const submitButton = nicknameEditForm.querySelector('button[type="submit"]');
 
   if (!email) {
-    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
-    window.location.href = LOGIN_URL;
+    redirectToLogin('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
     return;
   }
 
@@ -350,8 +379,7 @@ async function updatePassword(event) {
   const submitButton = passwordEditForm.querySelector('button[type="submit"]');
 
   if (!email) {
-    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
-    window.location.href = LOGIN_URL;
+    redirectToLogin('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
     return;
   }
 
@@ -409,17 +437,18 @@ async function loadMyPage() {
   const email = getLoginEmail();
 
   if (!email) {
-    alert('로그인 정보가 없습니다. 로그인 후 이용해 주세요.');
-    window.location.href = LOGIN_URL;
+    redirectToLogin('마이페이지는 로그인 후 이용할 수 있습니다.');
     return;
   }
 
   try {
+    setProfileLoading();
     showMessage('마이페이지 정보를 불러오는 중입니다.');
+    showLikedMessage('찜한 상품 정보를 불러오는 중입니다.');
 
     const response = await fetch(`${API_BASE_URL}/users/me?email=${encodeURIComponent(email)}`);
     if (!response.ok) {
-      throw new Error(await response.text());
+      throw new Error(await readErrorMessage(response));
     }
 
     const data = await response.json();
@@ -434,7 +463,8 @@ async function loadMyPage() {
     renderUserInfo({ email });
     document.getElementById('statProducts').textContent = '0';
     document.getElementById('statWishlist').textContent = '0';
-    showMessage(error.message || '마이페이지 정보를 불러오지 못했습니다.');
+    showMessage(error.message || '마이페이지 정보를 불러오지 못했습니다. 서버 연결 상태를 확인해 주세요.');
+    showLikedMessage('찜한 상품 정보를 불러오지 못했습니다.');
   }
 }
 

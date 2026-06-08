@@ -357,6 +357,7 @@
         border: 1px solid #eee;
         transition: 0.2s;
         position: relative;
+        cursor: pointer;
       }
 
       .product-card:hover {
@@ -500,6 +501,16 @@
         background: #fafafa;
       }
 
+      .empty-message.loading {
+        color: #777;
+      }
+
+      .empty-message.error {
+        color: var(--primary);
+        background: #fff5f5;
+        border-color: #ffd6d6;
+      }
+
       @media (max-width: 1280px) {
         .header-inner,
         .nav,
@@ -513,36 +524,29 @@
           flex-wrap: wrap;
           gap: 15px;
         }
-
         .search-form {
           order: 3;
           width: 100%;
         }
-
         .nav {
           height: auto;
           padding: 18px 0;
           overflow-x: auto;
         }
-
         .nav-left {
           gap: 22px;
           white-space: nowrap;
         }
-
         .list-layout {
           grid-template-columns: 1fr;
         }
-
         .filter-sidebar {
           position: static;
           padding-right: 0;
         }
-
         .filter-group {
           padding: 18px 0;
         }
-
         .result-grid {
           grid-template-columns: repeat(2, 1fr);
         }
@@ -552,7 +556,6 @@
         .result-grid {
           grid-template-columns: 1fr;
         }
-
         .list-title {
           font-size: 25px;
         }
@@ -569,11 +572,7 @@
     <header class="header">
       <div class="header-inner">
         <a href="index.html" class="logo">
-          <img
-            src="../login_mypage/logo.png"
-            alt="세종마켓 로고"
-            class="logo-img"
-          />
+          <img src="../login_mypage/logo.png" alt="세종마켓 로고" class="logo-img" />
           <div class="logo-text-wrap">
             <span class="logo-main"> 세종마켓 </span>
             <span class="logo-sub"> 세종대학교 중고거래 </span>
@@ -581,11 +580,7 @@
         </a>
         <form class="search-form" id="searchForm">
           <span class="search-icon"> ⌕ </span>
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="상품명을 검색해주세요"
-          />
+          <input id="searchInput" type="text" placeholder="상품명을 검색해주세요" />
           <button type="submit" class="search-submit-btn">›</button>
         </form>
         <div class="auth-area" id="authArea">
@@ -614,33 +609,27 @@
             <h3 class="filter-group-title">카테고리</h3>
             <label class="filter-option">
               <input type="radio" name="categoryFilter" value="전체" checked />
-              <span class="custom-radio"> </span>
-              전체
+              <span class="custom-radio"> </span> 전체
             </label>
             <label class="filter-option">
               <input type="radio" name="categoryFilter" value="전자기기" />
-              <span class="custom-radio"> </span>
-              전자기기
+              <span class="custom-radio"> </span> 전자기기
             </label>
             <label class="filter-option">
               <input type="radio" name="categoryFilter" value="도서" />
-              <span class="custom-radio"> </span>
-              도서
+              <span class="custom-radio"> </span> 도서
             </label>
             <label class="filter-option">
               <input type="radio" name="categoryFilter" value="의류" />
-              <span class="custom-radio"> </span>
-              의류
+              <span class="custom-radio"> </span> 의류
             </label>
             <label class="filter-option">
               <input type="radio" name="categoryFilter" value="생활용품" />
-              <span class="custom-radio"> </span>
-              생활용품
+              <span class="custom-radio"> </span> 생활용품
             </label>
             <label class="filter-option">
               <input type="radio" name="categoryFilter" value="기타" />
-              <span class="custom-radio"> </span>
-              기타
+              <span class="custom-radio"> </span> 기타
             </label>
           </div>
         </aside>
@@ -668,71 +657,20 @@
         mypageUrl: window.SejongMarketUtils.pageUrl("mypage"),
         afterLogoutUrl: window.SejongMarketUtils.pageUrl("products"),
       });
-
-      /*
+      
+       /*
       ========================= 백엔드 개발자는 여기서 연결하세요 =========================
 
       이 파일(product-list.html)이 실제 검색/카테고리 목록을 처리하는 페이지입니다.
-
-      index.html에서 검색하면 아래처럼 이 페이지로 이동합니다.
-      - product-list.html?keyword=맥북
-
-      카테고리를 누르면 아래처럼 이동합니다.
-      - product-list.html?category=전자기기
-
-      검색어와 카테고리를 같이 쓰면 아래처럼 이동합니다.
-      - product-list.html?keyword=맥북&category=전자기기
-
-      이 페이지는 URL에서 keyword, category 값을 읽고,
-      buildApiUrl() 함수에서 백엔드 요청 주소를 자동으로 만듭니다.
-
+      - 검색: product-list.html?keyword=맥북
+      - 카테고리: product-list.html?category=전자기기
+      
       백엔드에서 처리해야 하는 API 예시:
       - GET /api/products
-      - GET /api/products?keyword=맥북
-      - GET /api/products?category=전자기기
       - GET /api/products?keyword=맥북&category=전자기기
       - GET /api/products?sort=latest
       - GET /api/products?type=recommend
-
-      백엔드는 위 쿼리 파라미터를 기준으로 필터링된 상품 목록을 JSON으로 보내주면 됩니다.
-
-      응답 형식은 아래 둘 중 하나면 됩니다.
-
-      1) 배열로 바로 응답:
-      [
-        {
-          "id": 1,
-          "name": "맥북 노트북 판매합니다",
-          "price": 650000,
-          "category": "전자기기",
-          "locationName": "세종대 학생회관",
-          "createdAtText": "방금 전",
-          "imageUrl": "/uploads/products/macbook.png",
-          "badgeText": "",
-          "liked": false
-        }
-      ]
-
-      2) products 속성으로 감싸서 응답:
-      {
-        "products": [
-          {
-            "id": 1,
-            "name": "맥북 노트북 판매합니다",
-            "price": 650000,
-            "category": "전자기기",
-            "locationName": "세종대 학생회관",
-            "createdAtText": "방금 전",
-            "imageUrl": "/uploads/products/macbook.png",
-            "badgeText": "",
-            "liked": false
-          }
-        ]
-      }
-
-      백엔드가 따로 배포되어 있으면 URL에 ?apiBaseUrl=https://백엔드주소 를 붙이거나
-      localStorage의 SEJONG_MARKET_API_BASE_URL 값을 바꾸면 됩니다.
-    */
+      */
       const {
         API_BASE_URL,
         getLoginEmail,
@@ -743,10 +681,12 @@
         pageUrl,
         productDetailUrl,
       } = window.SejongMarketUtils;
+
       const API_URLS = {
         productList: `${API_BASE_URL}/api/products`,
         imageBaseUrl: API_BASE_URL,
       };
+
       const fallbackProducts = [
         {
           id: 1,
@@ -848,56 +788,49 @@
           liked: false,
         },
       ];
+
       const searchForm = document.getElementById("searchForm");
       const searchInput = document.getElementById("searchInput");
       const listTitle = document.getElementById("listTitle");
       const resultGrid = document.getElementById("resultGrid");
       const resultCount = document.getElementById("resultCount");
       const sortSelect = document.getElementById("sortSelect");
+
       let currentKeyword = "";
       let currentCategory = "전체";
       let currentMode = "";
       let currentProducts = [];
+
       document.addEventListener("DOMContentLoaded", () => {
         readUrlParams();
         applyInitialUI();
         loadProducts();
         bindEvents();
       });
+
       function readUrlParams() {
         const params = new URLSearchParams(location.search);
         currentKeyword = params.get("keyword") || "";
         currentCategory = params.get("category") || "전체";
         currentMode = params.get("mode") || "";
       }
+
       function applyInitialUI() {
         searchInput.value = currentKeyword;
         updateCategoryChecked(currentCategory);
         updateTopCategoryActive(currentCategory);
         updateListTitle();
       }
+
       function bindEvents() {
-        // 네비게이션 카테고리 링크를 환경에 맞게 동적 생성
-        const productListNavLinks = document.getElementById(
-          "productListNavLinks",
-        );
+        const productListNavLinks = document.getElementById("productListNavLinks");
         if (productListNavLinks) {
-          const navCategories = [
-            "전체",
-            "전자기기",
-            "도서",
-            "의류",
-            "생활용품",
-            "기타",
-          ];
+          const navCategories = ["전체", "전자기기", "도서", "의류", "생활용품", "기타"];
           navCategories.forEach((cat) => {
             const a = document.createElement("a");
             a.dataset.category = cat;
             a.textContent = cat;
-            a.href =
-              cat === "전체"
-                ? pageUrl("products")
-                : pageUrl("products", { category: cat });
+            a.href = cat === "전체" ? pageUrl("products") : pageUrl("products", { category: cat });
             productListNavLinks.appendChild(a);
           });
         }
@@ -906,151 +839,163 @@
           event.preventDefault();
           const keyword = searchInput.value.trim();
           const params = new URLSearchParams();
-          if (keyword !== "") {
-            params.set("keyword", keyword);
-          }
-          if (currentCategory !== "전체") {
-            params.set("category", currentCategory);
-          }
-          location.href =
-            pageUrl("products") +
-            (params.toString() ? "?" + params.toString() : "");
+          if (keyword !== "") params.set("keyword", keyword);
+          if (currentCategory !== "전체") params.set("category", currentCategory);
+          
+          location.href = pageUrl("products") + (params.toString() ? "?" + params.toString() : "");
         });
-        const categoryRadios = document.querySelectorAll(
-          "input[name='categoryFilter']",
-        );
+
+        const categoryRadios = document.querySelectorAll("input[name='categoryFilter']");
         categoryRadios.forEach((radio) => {
           radio.addEventListener("change", () => {
             const selectedCategory = radio.value;
             const params = new URLSearchParams();
-            if (currentKeyword !== "") {
-              params.set("keyword", currentKeyword);
-            }
-            if (selectedCategory !== "전체") {
-              params.set("category", selectedCategory);
-            }
-            location.href =
-              pageUrl("products") +
-              (params.toString() ? "?" + params.toString() : "");
+            if (currentKeyword !== "") params.set("keyword", currentKeyword);
+            if (selectedCategory !== "전체") params.set("category", selectedCategory);
+            
+            location.href = pageUrl("products") + (params.toString() ? "?" + params.toString() : "");
           });
         });
+
         sortSelect.addEventListener("change", () => {
           renderProducts();
         });
       }
+
       async function loadProducts() {
-        resultGrid.innerHTML = `<div class="empty-message">상품을 불러오는 중입니다.</div>`;
-        const url = buildApiUrl();
-        const fallbackData = buildFallbackData();
-        currentProducts = await fetchProducts(url, fallbackData);
-        renderProducts();
+        renderStateMessage(resultGrid, "상품을 불러오는 중입니다.", "loading");
+        resultCount.textContent = "상품 0개";
+
+        try {
+          const url = buildApiUrl();
+          const fallbackData = buildFallbackData();
+          currentProducts = await fetchProducts(url, fallbackData);
+          renderProducts();
+        } catch (error) {
+          console.error(error);
+          currentProducts = buildFallbackData();
+          if (currentProducts && currentProducts.length > 0) {
+            renderProducts();
+          } else {
+            resultCount.textContent = "상품 0개";
+            renderStateMessage(resultGrid, "서버 연결에 실패했거나 상품 목록을 불러오지 못했습니다.", "error");
+          }
+        }
       }
-      /*
-      현재 URL의 keyword/category/mode 값을 백엔드 API 쿼리로 바꾸는 함수입니다.
-      예: product-list.html?keyword=맥북&category=전자기기
-      → /api/products?keyword=맥북&category=전자기기
-    */
+
       function buildApiUrl() {
         const params = new URLSearchParams();
-        if (currentKeyword !== "") {
-          params.set("keyword", currentKeyword);
-        }
-        if (currentCategory !== "전체") {
-          params.set("category", currentCategory);
-        }
-        if (currentMode === "latest") {
-          params.set("sort", "latest");
-        }
-        if (currentMode === "recommend") {
-          params.set("type", "recommend");
-        }
+        if (currentKeyword !== "") params.set("keyword", currentKeyword);
+        if (currentCategory !== "전체") params.set("category", currentCategory);
+        if (currentMode === "latest") params.set("sort", "latest");
+        if (currentMode === "recommend") params.set("type", "recommend");
+        
         const loginEmail = getNormalizedLoginEmail();
-        if (loginEmail) {
-          params.set("userEmail", loginEmail);
-        }
+        if (loginEmail) params.set("userEmail", loginEmail);
+        
         const queryString = params.toString();
-        if (queryString === "") {
-          return API_URLS.productList;
-        }
+        if (queryString === "") return API_URLS.productList;
         return `${API_URLS.productList}?${queryString}`;
       }
+
       async function fetchProducts(url, fallbackData) {
         try {
           const response = await fetch(url, {
             method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
+            headers: { Accept: "application/json" },
           });
+
           if (!response.ok) {
-            throw new Error("상품 목록을 불러오지 못했습니다.");
+            const message = await readErrorMessage(response);
+            throw new Error(message || "상품 목록을 불러오지 못했습니다.");
           }
+
           const data = await response.json();
-          if (Array.isArray(data)) {
-            return data;
-          }
-          if (Array.isArray(data.products)) {
-            return data.products;
-          }
-          return fallbackData;
+          if (Array.isArray(data)) return data;
+          if (Array.isArray(data.products)) return data.products;
+          if (Array.isArray(data.content)) return data.content;
+          if (Array.isArray(data.items)) return data.items;
+          
+          throw new Error("상품 목록 응답 형식이 올바르지 않습니다.");
         } catch (error) {
-          console.warn(
-            "백엔드 연결 전이거나 API 오류가 있어 임시 데이터를 표시합니다.",
-            error,
-          );
-          return fallbackData;
+          console.warn("백엔드 연결 전이거나 API 오류가 있어 임시 데이터를 표시합니다.", error);
+          if (fallbackData) return fallbackData;
+          throw error;
         }
       }
+
       function renderProducts() {
         let products = [...currentProducts];
-        if (sortSelect.value === "priceLow") {
-          products.sort((a, b) => Number(a.price) - Number(b.price));
-        }
-        if (sortSelect.value === "priceHigh") {
-          products.sort((a, b) => Number(b.price) - Number(a.price));
-        }
+        if (sortSelect.value === "priceLow") products.sort((a, b) => Number(a.price) - Number(b.price));
+        if (sortSelect.value === "priceHigh") products.sort((a, b) => Number(b.price) - Number(a.price));
+
         resultCount.textContent = `상품 ${products.length}개`;
         resultGrid.innerHTML = "";
+
         if (products.length === 0) {
-          resultGrid.innerHTML = ` <div class="empty-message"> 표시할 상품이 없습니다. </div> `;
+          renderStateMessage(resultGrid, getEmptyProductsMessage(), "empty");
           return;
         }
+
         products.forEach((product) => {
           const card = document.createElement("article");
-          const productName =
-            product.productName || product.name || "상품명 없음";
+          const productName = product.productName || product.name || "상품명 없음";
+          const productId = product.id || product.productId;
           const saleStatus = getSaleStatus(product);
           const saleStatusText = getSaleStatusText(product);
+          const imageBadgeText = getImageBadgeText(product);
+          const badgeHtml = imageBadgeText ? `<span class="care">${escapeHtml(imageBadgeText)}</span>` : "";
+
           card.className = "product-card";
           card.addEventListener("click", () => {
-            location.href = productDetailUrl(product.id);
+            if (!productId) {
+              alert("상품 정보를 확인할 수 없습니다.");
+              return;
+            }
+            location.href = productDetailUrl(productId);
           });
-          const imageBadgeText = getImageBadgeText(product);
-          const badgeHtml = imageBadgeText
-            ? `<span class="care">${escapeHtml(imageBadgeText)}</span>`
-            : "";
 
           card.innerHTML = `
-  <div class="product-img ${getCategoryColorClass(product.category)}">
-    ${badgeHtml}
-    ${createProductImageHtml(product)}
-    <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
-    <button class="heart ${product.liked ? "liked" : ""}" type="button" aria-label="찜하기" onclick="event.stopPropagation(); toggleProductLike(this, ${Number(product.id)}, ${product.liked ? "true" : "false"})">${product.liked ? "♥" : "♡"}</button>
-  </div>
-
-  <div class="product-info">
-    <p class="product-name">${escapeHtml(productName)}</p>
-    <p class="product-price">${formatPrice(product.price)}</p>
-    <div class="product-meta">
-      <span>${escapeHtml(product.locationName || "위치 미정")}</span>
-      <span>${escapeHtml(product.createdAtText || "")}</span>
-    </div>
-        </div>
-      `;
+            <div class="product-img ${getCategoryColorClass(product.category)}">
+              ${badgeHtml}
+              ${createProductImageHtml(product)}
+              <span class="product-status ${escapeHtml(saleStatus)}">${escapeHtml(saleStatusText)}</span>
+              <button class="heart ${product.liked ? "liked" : ""}" type="button" aria-label="찜하기" onclick="event.stopPropagation(); toggleProductLike(this, ${Number(productId)}, ${product.liked ? "true" : "false"})">${product.liked ? "♥" : "♡"}</button>
+            </div>
+            <div class="product-info">
+              <p class="product-name">${escapeHtml(productName)}</p>
+              <p class="product-price">${formatPrice(product.price)}</p>
+              <div class="product-meta">
+                <span>${escapeHtml(product.locationName || "위치 미정")}</span>
+                <span>${escapeHtml(product.createdAtText || "")}</span>
+              </div>
+            </div>
+          `;
+          
           resultGrid.appendChild(card);
           hydrateRemoteImages(card);
         });
       }
+
+      function renderStateMessage(container, message, type = "empty") {
+        container.innerHTML = `
+          <div class="empty-message ${escapeHtml(type)}">
+            ${escapeHtml(message)}
+          </div>
+        `;
+      }
+
+      function getEmptyProductsMessage() {
+        if (hasListFilter()) return "검색어 또는 카테고리 조건에 맞는 상품이 없습니다.";
+        if (currentMode === "latest") return "등록된 최신 상품이 없습니다.";
+        if (currentMode === "recommend") return "등록된 추천 상품이 없습니다.";
+        return "등록된 상품이 없습니다.";
+      }
+
+      function hasListFilter() {
+        return currentKeyword.trim() !== "" || currentCategory !== "전체";
+      }
+
       function buildFallbackData() {
         let result = [...fallbackProducts];
         if (currentKeyword !== "") {
@@ -1064,9 +1009,7 @@
           });
         }
         if (currentCategory !== "전체") {
-          result = result.filter(
-            (product) => product.category === currentCategory,
-          );
+          result = result.filter((product) => product.category === currentCategory);
         }
         if (currentMode === "latest") {
           result = result.slice().reverse();
@@ -1076,6 +1019,7 @@
         }
         return result;
       }
+
       function updateListTitle() {
         if (currentMode === "latest") {
           listTitle.textContent = "최신상품";
@@ -1099,14 +1043,14 @@
         }
         listTitle.textContent = "전체 상품";
       }
+
       function updateCategoryChecked(category) {
-        const targetRadio = document.querySelector(
-          `input[name='categoryFilter'][value='${category}']`,
-        );
+        const targetRadio = document.querySelector(`input[name='categoryFilter'][value='${category}']`);
         if (targetRadio) {
           targetRadio.checked = true;
         }
       }
+
       function updateTopCategoryActive(category) {
         const links = document.querySelectorAll(".nav-left a");
         links.forEach((link) => {
@@ -1117,48 +1061,36 @@
           }
         });
       }
+
       function resetFilter() {
         location.href = pageUrl("products");
       }
+
       function getSaleStatusText(product) {
-        if (product.saleStatusText) {
-          return product.saleStatusText;
-        }
-
-        if (
-          product.status === "sold-out" ||
-          product.saleStatus === "SOLD_OUT"
-        ) {
-          return "판매완료";
-        }
-
+        if (product.saleStatusText) return product.saleStatusText;
+        if (product.status === "sold-out" || product.saleStatus === "SOLD_OUT") return "판매완료";
         return "판매중";
       }
+
       function getSaleStatus(product) {
-        if (product.status) {
-          return product.status;
-        }
-
-        if (product.saleStatus === "SOLD_OUT") {
-          return "sold-out";
-        }
-
+        if (product.status) return product.status;
+        if (product.saleStatus === "SOLD_OUT") return "sold-out";
         return "on-sale";
       }
+
       function getImageBadgeText(product) {
         const badgeText = product.badgeText || "";
-        if (badgeText === "판매중" || badgeText === "판매완료") {
-          return "";
-        }
-
+        if (badgeText === "판매중" || badgeText === "판매완료") return "";
         return badgeText;
       }
+
       function createProductImageHtml(product) {
         if (product.imageUrl) {
           return ` <img ${imageSourceAttributes(product.imageUrl, product.name || "상품 이미지", "product-real-img")} /> `;
         }
         return getCategoryEmoji(product.category);
       }
+
       function getCategoryEmoji(category) {
         if (category === "전자기기") return "💻";
         if (category === "도서") return "📘";
@@ -1166,6 +1098,7 @@
         if (category === "생활용품") return "🥤";
         return "📦";
       }
+
       function getCategoryColorClass(category) {
         if (category === "전자기기") return "blue";
         if (category === "도서") return "green";
@@ -1173,13 +1106,13 @@
         if (category === "생활용품") return "pink";
         return "gray";
       }
+
       function formatPrice(price) {
         const numberPrice = Number(price);
-        if (Number.isNaN(numberPrice)) {
-          return "가격 미정";
-        }
+        if (Number.isNaN(numberPrice)) return "가격 미정";
         return numberPrice.toLocaleString("ko-KR") + "원";
       }
+
       async function toggleProductLike(button, productId, initiallyLiked) {
         const userEmail = getNormalizedLoginEmail();
         if (!userEmail) {
@@ -1206,9 +1139,7 @@
           button.classList.toggle("liked", nextLiked);
           button.textContent = nextLiked ? "♥" : "♡";
           currentProducts = currentProducts.map((product) =>
-            Number(product.id) === Number(productId)
-              ? { ...product, liked: nextLiked }
-              : product,
+            Number(product.id) === Number(productId) ? { ...product, liked: nextLiked } : product,
           );
         } catch (error) {
           alert(error.message || "찜하기 처리에 실패했습니다.");
@@ -1216,13 +1147,16 @@
           button.disabled = false;
         }
       }
+
       function getNormalizedLoginEmail() {
         const loginEmail = getLoginEmail();
         return loginEmail ? toSejongEmail(loginEmail) : "";
       }
+
       function closeBanner() {
         document.querySelector(".top-banner").style.display = "none";
       }
+
       function escapeHtml(value) {
         return String(value)
           .replaceAll("&", "&amp;")
