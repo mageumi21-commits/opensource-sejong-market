@@ -20,4 +20,54 @@
   window.SEJONG_MARKET_API_BASE_URL = normalizeApiBaseUrl(
     readStoredApiBaseUrl() || window.SEJONG_MARKET_API_BASE_URL || DEFAULT_API_BASE_URL
   );
+
+  function isNgrokUrl(url) {
+    try {
+      return new URL(url, window.location.href).hostname.endsWith('.ngrok-free.dev');
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function resolveRequestUrl(input) {
+    if (typeof input === 'string') {
+      return input;
+    }
+
+    if (input && typeof input.url === 'string') {
+      return input.url;
+    }
+
+    return '';
+  }
+
+  function withNgrokSkipHeader(input, init = {}) {
+    const requestUrl = resolveRequestUrl(input);
+    if (!isNgrokUrl(requestUrl)) {
+      return { input, init };
+    }
+
+    const sourceHeaders = init.headers || (input instanceof Request ? input.headers : undefined);
+    const headers = new Headers(sourceHeaders || {});
+    headers.set('ngrok-skip-browser-warning', 'true');
+
+    return {
+      input,
+      init: {
+        ...init,
+        headers,
+      },
+    };
+  }
+
+  if (!window.__SEJONG_MARKET_FETCH_PATCHED__) {
+    const originalFetch = window.fetch.bind(window);
+
+    window.fetch = function (input, init = {}) {
+      const nextRequest = withNgrokSkipHeader(input, init);
+      return originalFetch(nextRequest.input, nextRequest.init);
+    };
+
+    window.__SEJONG_MARKET_FETCH_PATCHED__ = true;
+  }
 })();
