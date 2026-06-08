@@ -209,6 +209,33 @@ frontend/main_ui/index.html
 
 팀원들이 서로 다른 컴퓨터에서 같은 백엔드와 같은 DB를 기준으로 테스트하려면 한 명의 컴퓨터에서 백엔드 서버와 MySQL을 실행하고, ngrok으로 백엔드 주소를 외부에 공개합니다.
 
+### 8.0 테스트용 주소 안내
+
+원격 테스트 시 프론트엔드가 바라볼 백엔드 주소는 테스트를 진행하는 사람이 실행 중인 ngrok 주소로 설정해야 합니다.
+
+본 프로젝트에서 테스트에 사용한 예시 주소는 다음과 같습니다.
+
+```text
+https://trolling-sphere-division.ngrok-free.dev
+```
+
+브라우저 개발자 도구 Console에 아래 명령어를 입력하면 프론트엔드가 해당 백엔드 서버를 바라보게 됩니다.
+
+```js
+localStorage.setItem("SEJONG_MARKET_API_BASE_URL", "https://trolling-sphere-division.ngrok-free.dev");
+location.reload();
+```
+
+주의: ngrok 무료 주소는 실행 상태나 계정 설정에 따라 바뀔 수 있습니다. 위 주소가 동작하지 않으면 서버 실행자가 현재 ngrok 화면에 표시된 `Forwarding` 주소를 다시 공유해야 합니다.
+
+메일 인증 기능은 Gmail SMTP 환경변수가 설정되어 있어야 정상 동작합니다. 본 프로젝트 원격 테스트에서는 아래 메일 계정을 인증번호 발송용으로 사용했습니다.
+
+```text
+loceant777@gmail.com
+```
+
+단, Gmail 앱 비밀번호는 테스트용 계정이어도 공개 저장소에 올리지 않습니다. 서버 실행자가 팀 내부에서 공유받은 앱 비밀번호를 PowerShell 환경변수로 직접 설정해야 합니다.
+
 ### 8.1 백엔드 실행
 
 서버 역할을 하는 컴퓨터에서 MySQL과 Spring Boot 백엔드를 실행합니다.
